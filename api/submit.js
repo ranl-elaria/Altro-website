@@ -42,7 +42,7 @@ export default async function handler(req, res) {
   const adminEmail = process.env.ADMIN_EMAIL
   if (adminEmail) {
     resend.emails.send({
-      from: 'altro <notifications@notifications.altro.io>',
+      from: 'altro <onboarding@resend.dev>',
       to: adminEmail,
       subject: `New enquiry from ${name}${company ? ` (${company})` : ''}`,
       html: `
