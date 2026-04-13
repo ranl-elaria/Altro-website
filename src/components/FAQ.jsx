@@ -4,15 +4,15 @@ import useInView from '../hooks/useInView'
 const faqs = [
   {
     q: 'What types of businesses do you work with?',
-    a: "Companies that have outgrown their current tools — usually 10 to 200 people, across SaaS, logistics, healthcare, and professional services. The common signal is teams spending real time on work that should be automated, or running critical operations through spreadsheets they've duct-taped together.",
+    a: "Companies that have outgrown their current tools. Usually 10 to 200 people, across SaaS, logistics, healthcare, and professional services. The common signal is teams spending real time on work that should be automated, or running critical operations through spreadsheets they've duct-taped together.",
   },
   {
     q: 'How long does a typical project take?',
-    a: "Most focused tools and automations ship in 4–6 weeks. A full internal webapp or multi-agent system is typically 8–12 weeks. You get a fixed timeline estimate after discovery — before we write a single line of code, and before you commit to anything.",
+    a: "Most focused tools and automations ship in 4–6 weeks. A full internal webapp or multi-agent system is typically 8–12 weeks. You get a fixed timeline estimate after discovery, before we write a single line of code, and before you commit to anything.",
   },
   {
     q: "What's the difference between an automation and an AI agent?",
-    a: "Automations follow fixed rules: trigger fires, steps execute, done. Fast and reliable for structured, repeatable work. AI agents handle tasks that require judgment — reading unstructured input, making context-dependent decisions, adapting to variation. Most production systems use both.",
+    a: "Automations follow fixed rules: trigger fires, steps execute, done. Fast and reliable for structured, repeatable work. AI agents handle tasks that require judgment: reading unstructured input, making context-dependent decisions, adapting to variation. Most production systems use both.",
   },
   {
     q: 'Do you offer ongoing support after launch?',
@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     q: 'How do we get started?',
-    a: "Send a message using the form below — describe the problem you're trying to solve, not the solution you think you need. We'll schedule a short call, understand the situation, and tell you honestly whether we're the right fit and what it would take to build.",
+    a: "Send a message using the form below. Describe the problem you're trying to solve, not the solution you think you need. We'll schedule a short call, understand the situation, and tell you honestly whether we're the right fit and what it would take to build.",
   },
 ]
 

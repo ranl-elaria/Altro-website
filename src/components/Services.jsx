@@ -109,7 +109,7 @@ const services = [
   {
     num: '01',
     title: 'Custom Internal Webapps',
-    text: "Your workflow, built into software. No SaaS seats, no workarounds, no adapting to someone else's UX. You describe how your team actually works — we build the tool around it.",
+    text: "Your workflow, built into software. No SaaS seats, no workarounds, no adapting to someone else's UX. You describe how your team actually works. We build the tool around it.",
     tags: ['Dashboards', 'Admin Portals', 'Data Viewers', 'Internal CRMs'],
     visual: <WebappVisual />,
     featured: true,
@@ -117,14 +117,14 @@ const services = [
   {
     num: '02',
     title: 'Process Automations',
-    text: "The gap between your tools is full of manual steps that shouldn't exist. Triggers, transformations, and integrations that run in the background — reliably, every time.",
+    text: "The gap between your tools is full of manual steps that shouldn't exist. Triggers, transformations, and integrations that run in the background. Reliable, every time.",
     tags: ['API Integrations', 'Scheduled Jobs', 'Data Pipelines'],
     visual: <AutomationVisual />,
   },
   {
     num: '03',
     title: 'AI Agents',
-    text: "Some tasks need deterministic rules. Some need judgment. We build agents that read context, make decisions, and act — handling the work that doesn't fit a simple if-then.",
+    text: "Some tasks need deterministic rules. Some need judgment. We build agents that read context, make decisions, and act. They handle the work that doesn't fit a simple if-then.",
     tags: ['LLM Workflows', 'Auto-Reporting', 'Smart Routing'],
     visual: <AgentVisual />,
   },

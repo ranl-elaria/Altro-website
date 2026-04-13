@@ -79,7 +79,7 @@ export default function Contact() {
                       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                     </svg>
                   </span>
-                  No sales pitch — just a genuine conversation
+                  No sales pitch. Just a genuine conversation.
                 </div>
                 <div className="contact__detail">
                   <span className="contact__detail-icon">
@@ -231,7 +231,7 @@ export default function Contact() {
         <div className="container">
           <div className="footer__inner">
             <Logo />
-            <span className="footer__copy">© 2026 altro — all rights reserved</span>
+            <span className="footer__copy">© 2026 altro. All rights reserved.</span>
             <nav className="footer__links">
               <a href="#services" className="footer__link">Services</a>
               <a href="#process" className="footer__link">Process</a>

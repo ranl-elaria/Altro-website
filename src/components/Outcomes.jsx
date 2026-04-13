@@ -23,7 +23,12 @@ const outcomes = [
     value: 10,
     suffix: '×',
     label: 'Workflow speed',
-    desc: 'Teams report 10× faster cycle times once manual steps are automated.',
+    desc: 'Teams report 10x faster cycle times once manual steps are automated.',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    ),
   },
   {
     value: 4,
@@ -31,18 +36,35 @@ const outcomes = [
     suffix: '\u00a0wk',
     label: 'Typical delivery',
     desc: 'Most focused tools and automations ship within a single four-week sprint.',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <path d="M16 2v4M8 2v4M3 10h18" />
+      </svg>
+    ),
   },
   {
     value: 100,
     suffix: '%',
     label: 'Custom built',
     desc: 'Nothing off the shelf. Every solution is designed around your exact workflow.',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
+      </svg>
+    ),
   },
   {
     value: 1,
     suffix: '\u00a0day',
     label: 'Response time',
-    desc: 'Questions, bugs, and change requests — answered and actioned within one business day.',
+    desc: 'Questions, bugs, and change requests. All answered within one business day.',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 6v6l4 2" />
+      </svg>
+    ),
   },
 ]
 
@@ -54,6 +76,7 @@ function OutcomeCard({ item, index, active }) {
       className={`outcome-card outcome-card--${index % 2 === 0 ? 'a' : 'b'}`}
       style={{ transitionDelay: `${index * 0.09}s` }}
     >
+      <div className="outcome-card__icon">{item.icon}</div>
       <div className="outcome-card__num">
         {item.prefix ?? ''}{count}{item.suffix}
       </div>

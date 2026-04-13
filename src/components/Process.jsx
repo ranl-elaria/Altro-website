@@ -4,7 +4,7 @@ const steps = [
   {
     num: '01',
     title: 'Discover',
-    text: 'We map your workflows, bottlenecks, and goals in a structured session. No assumptions — we want to understand how your business actually runs before designing anything.',
+    text: 'We map your workflows, bottlenecks, and goals in a structured session. No assumptions. We want to understand how your business actually runs before designing anything.',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
@@ -14,7 +14,7 @@ const steps = [
   {
     num: '02',
     title: 'Design',
-    text: 'Fixed scope, fixed timeline, clear success criteria — all agreed before a single line of code is written. This is where most projects fail. We make it the foundation.',
+    text: 'Fixed scope, fixed timeline, clear success criteria, all agreed before a single line of code is written. This is where most projects fail. We make it the foundation.',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
@@ -24,7 +24,7 @@ const steps = [
   {
     num: '03',
     title: 'Build',
-    text: 'We build in two-week cycles with regular check-ins. You see working software early — not a big reveal at the end. Edge cases get caught before they reach production.',
+    text: 'We build in two-week cycles with regular check-ins. You see working software early. No big reveal at the end. Edge cases get caught before they reach production.',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
@@ -34,7 +34,7 @@ const steps = [
   {
     num: '04',
     title: 'Ship & Support',
-    text: "We deploy to production and stay on. Real use surfaces things staging never does — we handle them fast. Support and retainers available for teams that want ongoing accountability.",
+    text: "We deploy to production and stay on. Real use surfaces things staging never does. We handle them fast. Support and retainers available for teams that want ongoing accountability.",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />

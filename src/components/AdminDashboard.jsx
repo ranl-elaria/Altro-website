@@ -178,7 +178,7 @@ export default function AdminDashboard() {
                         <span className={`admin-dot${!s.read ? ' admin-dot--unread' : ''}`} />
                       </td>
                       <td className="admin-table__name">{s.name}</td>
-                      <td className="admin-table__muted">{s.company || '—'}</td>
+                      <td className="admin-table__muted">{s.company || 'N/A'}</td>
                       <td className="admin-table__muted">{s.email}</td>
                       <td className="admin-table__preview">{s.message}</td>
                       <td className="admin-table__date">{fmt(s.created_at)}</td>

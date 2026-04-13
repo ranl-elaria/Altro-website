@@ -1,118 +1,122 @@
 import { useRef } from 'react'
 
 const feedItems = [
-  { label: 'Invoice sync completed', time: '2s ago', color: 'green' },
-  { label: 'Weekly report generated', time: '14s ago', color: 'teal' },
-  { label: 'Slack alert dispatched', time: '1m ago', color: 'green' },
+  { label: 'Invoice sync completed', time: '2s ago' },
+  { label: 'Client report generated', time: '18s ago' },
+  { label: 'Slack alert dispatched', time: '1m ago' },
 ]
 
 const chartHeights = [38, 55, 44, 72, 61, 85, 68, 90, 58, 95, 74, 88]
+const integrations = ['Slack', 'HubSpot', 'Sheets', 'Notion', 'Airtable']
 
 function HeroVisual() {
   return (
     <div className="hero__visual" aria-hidden="true">
-      {/* Main pipeline card */}
-      <div className="hero-card hero-card--main">
-        <div className="hero-card__header">
-          <div className="hero-card__header-left">
-            <div className="hero-card__icon-wrap">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <span className="hero-card__title">Automation Pipeline</span>
+      <div className="hero__orb" />
+
+      <div className="hero__app">
+        {/* Window titlebar */}
+        <div className="hero__app-bar">
+          <div className="hero__app-dots">
+            <span className="hero__app-dot hero__app-dot--red" />
+            <span className="hero__app-dot hero__app-dot--yellow" />
+            <span className="hero__app-dot hero__app-dot--green" />
           </div>
-          <span className="hero-card__badge">
-            <span className="hero-card__badge-dot" />
+          <span className="hero__app-title">altro ops</span>
+          <span className="hero__app-live">
+            <span className="hero__app-live-dot" />
             Live
           </span>
         </div>
 
-        <div className="hero-card__metrics">
-          <div className="hero-card__metric">
-            <span className="hero-card__metric-val">2,847</span>
-            <span className="hero-card__metric-label">Tasks today</span>
+        {/* Metrics row */}
+        <div className="hero__app-stats">
+          {[
+            { val: '2,847', label: 'Tasks today' },
+            { val: '98.2%', label: 'Success rate' },
+            { val: '0.4s', label: 'Avg run time' },
+          ].map(s => (
+            <div key={s.label} className="hero__app-stat">
+              <span className="hero__app-stat-val">{s.val}</span>
+              <span className="hero__app-stat-label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Split body */}
+        <div className="hero__app-body">
+          {/* Left: pipeline chart + activity */}
+          <div className="hero__app-col hero__app-col--left">
+            <div className="hero__app-col-hd">
+              <span className="hero__app-col-title">Pipeline activity</span>
+              <span className="hero__app-col-badge">24h</span>
+            </div>
+            <div className="hero__app-chart">
+              {chartHeights.map((h, i) => (
+                <div
+                  key={i}
+                  className="hero__app-bar"
+                  style={{ height: `${h}%`, animationDelay: `${i * 0.05}s` }}
+                />
+              ))}
+            </div>
+            <div className="hero__app-feed">
+              {feedItems.map((item, i) => (
+                <div key={i} className="hero__app-feed-item">
+                  <span className="hero__app-feed-dot" />
+                  <span className="hero__app-feed-text">{item.label}</span>
+                  <span className="hero__app-feed-time">{item.time}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="hero-card__metric">
-            <span className="hero-card__metric-val">98.2%</span>
-            <span className="hero-card__metric-label">Success rate</span>
-          </div>
-          <div className="hero-card__metric">
-            <span className="hero-card__metric-val">0.4s</span>
-            <span className="hero-card__metric-label">Avg run time</span>
+
+          {/* Right: AI agent */}
+          <div className="hero__app-col hero__app-col--right">
+            <div className="hero__app-col-hd">
+              <span className="hero__app-col-title">AI Agent</span>
+              <span className="hero__app-agent-running">
+                <span className="hero__app-agent-dot" />
+                Running
+              </span>
+            </div>
+            {[
+              { label: 'Data extraction', pct: 100 },
+              { label: 'Analysis', pct: 74 },
+              { label: 'Report draft', pct: 31 },
+            ].map(stage => (
+              <div key={stage.label} className="hero__app-stage">
+                <div className="hero__app-stage-hd">
+                  <span className="hero__app-stage-label">{stage.label}</span>
+                  <span className="hero__app-stage-pct">{stage.pct}%</span>
+                </div>
+                <div className="hero__app-progress">
+                  <div className="hero__app-progress-fill" style={{ width: `${stage.pct}%` }} />
+                </div>
+              </div>
+            ))}
+            <div className="hero__app-tokens">
+              <div className="hero__app-tokens-row">
+                <span className="hero__app-tokens-label">Tokens used</span>
+                <span className="hero__app-tokens-val">4,821 / 8,000</span>
+              </div>
+              <div className="hero__app-token-track">
+                <div className="hero__app-token-fill" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="hero-card__chart-wrap">
-          <div className="hero-card__chart">
-            {chartHeights.map((h, i) => (
-              <div
-                key={i}
-                className="hero-card__bar"
-                style={{ height: `${h}%`, animationDelay: `${i * 0.05}s` }}
-              />
+        {/* Integration footer */}
+        <div className="hero__app-footer">
+          <span className="hero__app-footer-label">Connected</span>
+          <div className="hero__app-pills">
+            {integrations.map(name => (
+              <span key={name} className="hero__app-pill">{name}</span>
             ))}
           </div>
-          <div className="hero-card__chart-label">Last 24 runs</div>
-        </div>
-
-        <div className="hero-card__feeds">
-          {feedItems.map((item, i) => (
-            <div key={i} className="hero-card__feed">
-              <span className={`hero-card__feed-dot hero-card__feed-dot--${item.color}`} />
-              <span className="hero-card__feed-label">{item.label}</span>
-              <span className="hero-card__feed-time">{item.time}</span>
-            </div>
-          ))}
         </div>
       </div>
-
-      {/* AI agent card — offset, slightly overlapping */}
-      <div className="hero-card hero-card--agent">
-        <div className="hero-card__header">
-          <div className="hero-card__header-left">
-            <div className="hero-card__icon-wrap hero-card__icon-wrap--teal">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
-                <path d="M3 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <span className="hero-card__title">AI Agent</span>
-          </div>
-          <span className="hero-card__status">
-            <span className="hero-card__status-dot" />
-            Running
-          </span>
-        </div>
-        <div className="hero-card__stages">
-          {[
-            { label: 'Data extraction', pct: 100 },
-            { label: 'Analysis', pct: 74 },
-            { label: 'Report draft', pct: 31 },
-          ].map((stage) => (
-            <div key={stage.label} className="hero-card__stage">
-              <div className="hero-card__stage-header">
-                <span className="hero-card__stage-label">{stage.label}</span>
-                <span className="hero-card__stage-pct">{stage.pct}%</span>
-              </div>
-              <div className="hero-card__progress">
-                <div
-                  className="hero-card__progress-fill"
-                  style={{ width: `${stage.pct}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="hero-card__divider" />
-        <div className="hero-card__token-row">
-          <span className="hero-card__token-label">Tokens used</span>
-          <span className="hero-card__token-val">4,821 / 8,000</span>
-        </div>
-      </div>
-
-      {/* Floating accent orb */}
-      <div className="hero__orb" aria-hidden="true" />
     </div>
   )
 }
@@ -142,11 +146,6 @@ export default function Hero() {
 
       <div className="container hero__container">
         <div className="hero__left">
-          <p className="hero__eyebrow">
-            <span className="hero__eyebrow-dot" />
-            For teams that have outgrown off-the-shelf software
-          </p>
-
           <h1 className="hero__headline">
             <span className="hero__line">Internal tools</span>
             <span className="hero__line">
@@ -161,7 +160,7 @@ export default function Hero() {
 
           <p className="hero__sub">
             altro builds custom webapps, automations, and AI agents for growing companies.
-            We design around your workflow — not the other way around.
+            We design around your workflow. Not the other way around.
           </p>
 
           <div className="hero__actions">
