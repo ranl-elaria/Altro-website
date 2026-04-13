@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import Logo from './Logo'
 
@@ -19,14 +20,41 @@ export default function AdminLogin() {
 
   return (
     <div className="admin-login">
-      <div className="admin-login__card">
-        <div className="admin-login__logo">
-          <Logo />
-        </div>
-        <h1 className="admin-login__title">Admin</h1>
-        <p className="admin-login__sub">Sign in to view submissions</p>
+      {/* Background grid */}
+      <div className="admin-login__grid" aria-hidden="true" />
 
-        <form className="admin-login__form" onSubmit={handleSubmit} noValidate>
+      <motion.div
+        className="admin-login__card"
+        initial={{ opacity: 0, y: 24, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.div
+          className="admin-login__logo"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+        >
+          <Logo />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22, duration: 0.4 }}
+        >
+          <h1 className="admin-login__title">Admin</h1>
+          <p className="admin-login__sub">Sign in to view submissions</p>
+        </motion.div>
+
+        <motion.form
+          className="admin-login__form"
+          onSubmit={handleSubmit}
+          noValidate
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.32, duration: 0.4 }}
+        >
           <div className="form-field">
             <label className="form-label admin-form-label" htmlFor="admin-email">Email</label>
             <input
@@ -53,17 +81,31 @@ export default function AdminLogin() {
             />
           </div>
 
-          {error && <p className="admin-login__error">{error}</p>}
+          {error && (
+            <motion.p
+              className="admin-login__error"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              {error}
+            </motion.p>
+          )}
 
           <button
             type="submit"
             className="btn btn--primary admin-login__submit"
             disabled={loading}
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? (
+              <>
+                <span className="admin-login__spinner" />
+                Signing in
+              </>
+            ) : 'Sign in'}
           </button>
-        </form>
-      </div>
+        </motion.form>
+      </motion.div>
     </div>
   )
 }
