@@ -144,7 +144,7 @@ export default function Hero() {
         <div className="hero__left">
           <p className="hero__eyebrow">
             <span className="hero__eyebrow-dot" />
-            Custom internal tools for modern businesses
+            For teams that have outgrown off-the-shelf software
           </p>
 
           <h1 className="hero__headline">
@@ -160,8 +160,8 @@ export default function Hero() {
           </h1>
 
           <p className="hero__sub">
-            altro designs and builds custom internal webapps, automations, and AI agents
-            — so your team spends less time on manual work and more time on what matters.
+            altro builds custom webapps, automations, and AI agents for growing companies.
+            We design around your workflow — not the other way around.
           </p>
 
           <div className="hero__actions">
@@ -172,13 +172,13 @@ export default function Hero() {
               </svg>
             </a>
             <a href="#process" className="btn btn--ghost">
-              See how we work
+              How we work
             </a>
           </div>
 
           <div className="hero__trust">
             <span className="hero__trust-dot" />
-            <span className="hero__trust-text">Trusted by teams across SaaS, logistics, and professional services</span>
+            <span className="hero__trust-text">Working with SaaS, logistics, healthcare, and professional services teams</span>
           </div>
         </div>
 

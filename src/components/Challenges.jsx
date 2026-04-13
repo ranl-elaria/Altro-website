@@ -3,44 +3,66 @@ import useInView from '../hooks/useInView'
 const challenges = [
   {
     num: '01',
-    title: "Off-the-shelf tools don't fit your workflow",
-    text: "Generic software forces your team to work around it — not the other way around. You end up hacking workflows that should just work.",
+    title: 'Your tools fight your workflow',
+    text: "Generic software is built for the average company. You adapt to it instead of the other way around — and every workaround costs someone time.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3" />
+        <path d="M9 3v18M15 9h3M15 15h3" />
+      </svg>
+    ),
   },
   {
     num: '02',
-    title: 'Manual work still runs your operations',
-    text: 'Repetitive tasks eat hours your team will never get back. Copy-pasting, chasing approvals, reformatting data — none of it should be human work.',
+    title: 'Manual work scales with headcount',
+    text: "Copy-pasting, chasing approvals, reformatting data — it's all human time that compounds as you grow. None of it should still be manual.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="8" r="3" />
+        <path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2" />
+        <path d="M19 8h2M3 8h2" />
+      </svg>
+    ),
   },
   {
     num: '03',
-    title: 'Disconnected tools create costly errors',
-    text: "Your data lives in spreadsheets, Slack threads, and five different apps. Connecting them manually means things fall through the cracks.",
+    title: 'Your data lives in five places',
+    text: "Spreadsheets, Slack threads, three different apps — and no single source of truth. Connecting them by hand means things fall through the cracks.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5" />
+        <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6" />
+      </svg>
+    ),
   },
   {
     num: '04',
-    title: 'No partner to own your internal stack',
-    text: "Hiring a full engineering team isn't the right fit for every business. You need a capable partner who builds, ships, and stays accountable.",
+    title: 'You need a builder, not a headcount',
+    text: "A full internal eng team is overkill for most growing companies. You need a partner who builds, ships, and stays accountable — without the overhead.",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
+      </svg>
+    ),
   },
 ]
 
-function ChallengeItem({ item, index }) {
+function ChallengeCard({ item, index }) {
   const [ref, inView] = useInView()
   return (
     <div
       ref={ref}
-      className={`challenge-item${inView ? ' challenge-item--visible' : ''}`}
-      style={{ transitionDelay: `${index * 0.08}s` }}
+      className={`challenge-card${inView ? ' challenge-card--visible' : ''}`}
+      style={{ transitionDelay: `${index * 0.1}s` }}
     >
-      <span className="challenge-item__num">{item.num}</span>
-      <div className="challenge-item__body">
-        <h3 className="challenge-item__title">{item.title}</h3>
-        <p className="challenge-item__text">{item.text}</p>
+      <div className="challenge-card__corner" aria-hidden="true" />
+      <div className="challenge-card__top">
+        <span className="challenge-card__num">{item.num}</span>
+        <span className="challenge-card__icon">{item.icon}</span>
       </div>
-      <div className="challenge-item__indicator" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M3 9h12M10 4l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
+      <h3 className="challenge-card__title">{item.title}</h3>
+      <p className="challenge-card__text">{item.text}</p>
     </div>
   )
 }
@@ -56,19 +78,19 @@ export default function Challenges() {
           className={`challenges__header reveal${inView ? ' reveal--visible' : ''}`}
         >
           <div>
-            <h2 className="display-heading display-heading--dark">Sound familiar?</h2>
+            <h2 className="display-heading display-heading--dark">The friction<br />is familiar.</h2>
           </div>
           <div className="challenges__header-right">
             <p className="body-sub body-sub--dark">
-              Most businesses outgrow generic tools before they realise it.
-              Here's what we hear most from teams like yours.
+              Most teams hit the same four walls. Off-the-shelf software stops fitting,
+              and the gap gets filled with manual work and disconnected tools.
             </p>
           </div>
         </div>
 
-        <div className="challenges__list">
+        <div className="challenges__grid">
           {challenges.map((item, i) => (
-            <ChallengeItem key={item.num} item={item} index={i} />
+            <ChallengeCard key={item.num} item={item} index={i} />
           ))}
         </div>
       </div>

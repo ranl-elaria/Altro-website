@@ -1,12 +1,12 @@
 const items = [
   'Custom Internal Tools',
-  'Process Automations',
+  '12+ Projects Shipped',
   'AI Agents',
-  'Built for Your Stack',
-  'Ship in Weeks',
-  'Zero Scope Creep',
-  'Webapps & Dashboards',
-  'Workflow Intelligence',
+  'Ship in 4–12 Weeks',
+  'Process Automations',
+  '100% Custom Built',
+  'Internal Webapps',
+  'No Scope Creep',
 ]
 
 export default function Marquee() {

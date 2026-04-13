@@ -4,23 +4,23 @@ import useInView from '../hooks/useInView'
 const faqs = [
   {
     q: 'What types of businesses do you work with?',
-    a: "We work with businesses of all sizes — from lean startups to established companies with complex operations. The common thread is teams that have outgrown generic tools and need something purpose-built. If you're drowning in manual work or stitching together too many disconnected apps, we're probably a good fit.",
+    a: "Companies that have outgrown their current tools — usually 10 to 200 people, across SaaS, logistics, healthcare, and professional services. The common signal is teams spending real time on work that should be automated, or running critical operations through spreadsheets they've duct-taped together.",
   },
   {
     q: 'How long does a typical project take?',
-    a: "It depends on scope, but most projects land between 4 and 12 weeks. A focused automation or internal tool might ship in a month. A full-featured internal webapp or multi-agent system takes longer. We'll give you a clear timeline estimate after the discovery phase, before any build work begins.",
+    a: "Most focused tools and automations ship in 4–6 weeks. A full internal webapp or multi-agent system is typically 8–12 weeks. You get a fixed timeline estimate after discovery — before we write a single line of code, and before you commit to anything.",
   },
   {
     q: "What's the difference between an automation and an AI agent?",
-    a: "Automations follow deterministic rules: if X happens, do Y. They're fast, reliable, and perfect for repetitive structured tasks. AI agents handle tasks that require judgement — reading context, making decisions, and adapting to variability. Most real-world systems benefit from both working together.",
+    a: "Automations follow fixed rules: trigger fires, steps execute, done. Fast and reliable for structured, repeatable work. AI agents handle tasks that require judgment — reading unstructured input, making context-dependent decisions, adapting to variation. Most production systems use both.",
   },
   {
     q: 'Do you offer ongoing support after launch?',
-    a: "Yes. We don't hand over code and disappear. After launch we offer retainer-based support for maintenance, bug fixes, and new features as your needs evolve. We can also train your team to manage simpler changes independently if that's what you prefer.",
+    a: "Yes. We stay on after shipping for bug fixes and monitoring, and offer ongoing retainers for teams that want continued development or want us accountable for uptime. We can also document and hand off to your own team if that's the goal.",
   },
   {
     q: 'How do we get started?',
-    a: "Just send us a message using the form below. Tell us what you're working on and the problem you're trying to solve. We'll schedule a short discovery call — no pitch, just a genuine conversation to understand your situation and see if we're the right fit.",
+    a: "Send a message using the form below — describe the problem you're trying to solve, not the solution you think you need. We'll schedule a short call, understand the situation, and tell you honestly whether we're the right fit and what it would take to build.",
   },
 ]
 
@@ -57,9 +57,9 @@ export default function FAQ() {
       <div className="container">
         <div className="faq__layout">
           <div ref={ref} className={`faq__header reveal${inView ? ' reveal--visible' : ''}`}>
-            <h2 className="display-heading display-heading--dark">Common<br />questions</h2>
+            <h2 className="display-heading display-heading--dark">Questions<br />we get asked</h2>
             <p className="body-sub body-sub--dark faq__sub">
-              If you don't find what you're looking for, just reach out — we're happy to talk.
+              If your question isn't here, just send us a message. We answer every one.
             </p>
             <a href="#contact" className="btn btn--ghost-dark faq__cta">
               Ask a question

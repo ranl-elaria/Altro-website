@@ -76,14 +76,14 @@ export default function Outcomes() {
         >
           <div className="outcomes__left">
             <h2 className="display-heading display-heading--light outcomes__heading">
-              What changes<br />when the right<br />tool exists
+              Results from<br />the last<br />12 months
             </h2>
             <p className="body-sub body-sub--light outcomes__sub">
-              Teams move faster. Decisions get made on data. Manual error disappears.
-              Here's what clients typically see after going live.
+              Real numbers from live deployments. Teams move faster,
+              errors go away, and manual work stops compounding.
             </p>
             <a href="#contact" className="btn btn--primary outcomes__cta">
-              See what we can build
+              Start a project
               <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

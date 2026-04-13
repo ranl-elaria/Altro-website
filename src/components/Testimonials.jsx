@@ -68,10 +68,10 @@ export default function Testimonials() {
       <div className="container">
         <div ref={ref} className={`testimonials__header reveal${inView ? ' reveal--visible' : ''}`}>
           <h2 className="display-heading display-heading--dark">
-            Trusted by teams doing<br />real work
+            From teams<br />we've shipped with
           </h2>
           <p className="body-sub body-sub--dark testimonials__sub">
-            What clients say after working with us.
+            Unsolicited. Unedited. From the people who use what we built.
           </p>
         </div>
         <div className="testimonials__grid">

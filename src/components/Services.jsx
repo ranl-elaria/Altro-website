@@ -109,7 +109,7 @@ const services = [
   {
     num: '01',
     title: 'Custom Internal Webapps',
-    text: "Purpose-built dashboards, portals, and internal tools designed around your exact workflow — not the other way around. Own your stack, not someone else's SaaS seat.",
+    text: "Your workflow, built into software. No SaaS seats, no workarounds, no adapting to someone else's UX. You describe how your team actually works — we build the tool around it.",
     tags: ['Dashboards', 'Admin Portals', 'Data Viewers', 'Internal CRMs'],
     visual: <WebappVisual />,
     featured: true,
@@ -117,14 +117,14 @@ const services = [
   {
     num: '02',
     title: 'Process Automations',
-    text: 'Eliminate the manual steps between your tools. Triggers, workflows, and integrations that run reliably in the background.',
+    text: "The gap between your tools is full of manual steps that shouldn't exist. Triggers, transformations, and integrations that run in the background — reliably, every time.",
     tags: ['API Integrations', 'Scheduled Jobs', 'Data Pipelines'],
     visual: <AutomationVisual />,
   },
   {
     num: '03',
     title: 'AI Agents',
-    text: 'Intelligent agents that handle judgment-intensive tasks — data processing, summarisation, decision support, and automated communication.',
+    text: "Some tasks need deterministic rules. Some need judgment. We build agents that read context, make decisions, and act — handling the work that doesn't fit a simple if-then.",
     tags: ['LLM Workflows', 'Auto-Reporting', 'Smart Routing'],
     visual: <AgentVisual />,
   },
@@ -170,11 +170,12 @@ export default function Services() {
           className={`services__header reveal${inView ? ' reveal--visible' : ''}`}
         >
           <div>
-            <h2 className="display-heading display-heading--dark">Three things we do<br />exceptionally well</h2>
+            <h2 className="display-heading display-heading--dark">What we build</h2>
           </div>
           <div className="services__header-right">
             <p className="body-sub body-sub--dark">
-              Every engagement is different, but our work always falls into one — or more — of these categories.
+              Three categories. Most engagements touch more than one.
+              All of it designed around how your team actually operates.
             </p>
           </div>
         </div>
