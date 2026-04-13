@@ -1,17 +1,34 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Logo from './Logo'
+import useSpeechRecognition from '../hooks/useSpeechRecognition'
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', company: '', email: '', message: '' })
   const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('')
+  const baseTextRef = useRef('')
+  const { isListening, supported, start, stop } = useSpeechRecognition()
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+
+  const handleMicToggle = () => {
+    if (isListening) {
+      stop()
+      return
+    }
+    baseTextRef.current = form.message.trimEnd()
+    start((transcript) => {
+      const base = baseTextRef.current
+      const sep = base && !base.endsWith(' ') ? ' ' : ''
+      setForm(f => ({ ...f, message: base + sep + transcript }))
+    })
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('loading')
     setErrorMsg('')
+    if (isListening) stop()
     try {
       const res = await fetch('/api/submit', {
         method: 'POST',
@@ -34,7 +51,10 @@ export default function Contact() {
   return (
     <>
       <section className="contact section" id="contact">
-        <div className="container">
+        {/* Atmospheric background */}
+        <div className="contact__bg" aria-hidden="true" />
+
+        <div className="container contact__container">
           <div className="contact__layout">
             <div className="contact__header">
               <h2 className="display-heading display-heading--light">
@@ -69,6 +89,14 @@ export default function Contact() {
                   </span>
                   Free discovery call, no commitment needed
                 </div>
+              </div>
+
+              {/* Decorative orbital rings */}
+              <div className="contact__orb" aria-hidden="true">
+                <div className="contact__orb-ring contact__orb-ring--1" />
+                <div className="contact__orb-ring contact__orb-ring--2" />
+                <div className="contact__orb-ring contact__orb-ring--3" />
+                <div className="contact__orb-core" />
               </div>
             </div>
 
@@ -127,16 +155,49 @@ export default function Contact() {
                 </div>
 
                 <div className="form-field">
-                  <label className="form-label" htmlFor="message">What are you working on?</label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    className="form-textarea"
-                    placeholder="Tell us about your project or the problem you're trying to solve..."
-                    value={form.message}
-                    onChange={handleChange}
-                    required
-                  />
+                  <label className="form-label" htmlFor="message">
+                    What are you working on?
+                    {supported && (
+                      <span className="form-label__hint">
+                        {isListening ? '● Recording…' : '· or use voice'}
+                      </span>
+                    )}
+                  </label>
+                  <div className="form-textarea-wrap">
+                    <textarea
+                      id="message"
+                      name="message"
+                      className={`form-textarea${isListening ? ' form-textarea--listening' : ''}`}
+                      placeholder="Tell us about your project or the problem you're trying to solve..."
+                      value={form.message}
+                      onChange={handleChange}
+                      required
+                    />
+                    {supported && (
+                      <button
+                        type="button"
+                        className={`mic-btn${isListening ? ' mic-btn--active' : ''}`}
+                        onClick={handleMicToggle}
+                        title={isListening ? 'Stop recording' : 'Dictate your message'}
+                        aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                      >
+                        {isListening ? (
+                          /* Stop icon */
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="5" y="5" width="14" height="14" rx="3" />
+                          </svg>
+                        ) : (
+                          /* Mic icon */
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" y1="19" x2="12" y2="23" />
+                            <line x1="8" y1="23" x2="16" y2="23" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {status === 'error' && (
