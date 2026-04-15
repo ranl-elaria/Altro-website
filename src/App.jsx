@@ -26,7 +26,7 @@ function Site() {
         <Services />
         <Outcomes />
         <Process />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <FAQ />
         <Contact />
       </main>
