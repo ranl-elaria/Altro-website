@@ -100,6 +100,7 @@ export default function Contact() {
               </div>
             </div>
 
+            <div className="contact__form-card">
             {status === 'success' ? (
               <div className="contact__success">
                 <div className="contact__success-icon">
@@ -223,20 +224,41 @@ export default function Contact() {
                 </div>
               </form>
             )}
+            </div>
           </div>
         </div>
       </section>
 
       <footer className="footer">
         <div className="container">
-          <div className="footer__inner">
-            <Logo />
+          <div className="footer__top">
+            <div className="footer__brand">
+              <Logo />
+              <p className="footer__tagline">Custom software for growing teams.</p>
+            </div>
+            <div className="footer__cols">
+              <div className="footer__col">
+                <span className="footer__col-head">Services</span>
+                <a href="#services" className="footer__link">Internal Webapps</a>
+                <a href="#services" className="footer__link">Process Automations</a>
+                <a href="#services" className="footer__link">AI Agents</a>
+              </div>
+              <div className="footer__col">
+                <span className="footer__col-head">Company</span>
+                <a href="#process" className="footer__link">How we work</a>
+                <a href="#outcomes" className="footer__link">Outcomes</a>
+                <a href="#faq" className="footer__link">FAQ</a>
+              </div>
+              <div className="footer__col">
+                <span className="footer__col-head">Contact</span>
+                <a href="#contact" className="footer__link">Start a project</a>
+                <a href="mailto:hello@altro.build" className="footer__link">hello@altro.build</a>
+              </div>
+            </div>
+          </div>
+          <div className="footer__bottom">
             <span className="footer__copy">© 2026 altro. All rights reserved.</span>
-            <nav className="footer__links">
-              <a href="#services" className="footer__link">Services</a>
-              <a href="#process" className="footer__link">Process</a>
-              <a href="#contact" className="footer__link">Contact</a>
-            </nav>
+            <span className="footer__copy">Built with purpose. Shipped with care.</span>
           </div>
         </div>
       </footer>

@@ -7,7 +7,7 @@ const testimonials = [
     role: "Head of Operations",
     company: "Packform",
     initials: "SC",
-    featured: true,
+    color: '#0CB6B1',
   },
   {
     quote: "The automation pipeline they built for our client onboarding saves 12+ hours a week. Reliable, well-documented, and they were responsive throughout.",
@@ -15,6 +15,7 @@ const testimonials = [
     role: "CTO",
     company: "Forma Health",
     initials: "MW",
+    color: '#818CF8',
   },
   {
     quote: "We needed an AI agent for ticket classification and routing. Altro delivered something that handles 85% of tickets without any human review.",
@@ -22,14 +23,39 @@ const testimonials = [
     role: "Director of Engineering",
     company: "Helios",
     initials: "PN",
+    color: '#F59E0B',
+  },
+  {
+    quote: "We had a process bottleneck that took 3 people 2 days to complete every week. Altro automated it end-to-end in three weeks. It now runs in under 10 minutes.",
+    name: "James Okafor",
+    role: "VP of Operations",
+    company: "Swyft Logistics",
+    initials: "JO",
+    color: '#34D399',
+  },
+  {
+    quote: "The internal CRM they built fits our sales process exactly. No customization hacks, no workarounds. It does precisely what our team needs and nothing it doesn't.",
+    name: "Elena Vasquez",
+    role: "Head of Sales",
+    company: "Meridian Capital",
+    initials: "EV",
+    color: '#F97316',
+  },
+  {
+    quote: "I was skeptical a small team could deliver this quality. The codebase is clean, well-documented, and our engineers can extend it without any issues.",
+    name: "David Kim",
+    role: "Engineering Manager",
+    company: "Brightpath",
+    initials: "DK",
+    color: '#A78BFA',
   },
 ]
 
 function Stars() {
   return (
-    <div className="testimonial-card__stars" aria-label="5 stars">
+    <div className="tc__stars" aria-label="5 stars">
       {Array(5).fill(0).map((_, i) => (
-        <svg key={i} className="testimonial-card__star" width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+        <svg key={i} width="11" height="11" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
           <path d="M6 1l1.27 3.9H11L7.9 7.05 9.18 11 6 8.82 2.82 11 4.1 7.05 1 4.9h3.73L6 1z" />
         </svg>
       ))}
@@ -37,23 +63,25 @@ function Stars() {
   )
 }
 
-function TestimonialCard({ item, index }) {
-  const [ref, inView] = useInView()
-
+function TestimonialCard({ item }) {
   return (
-    <div
-      ref={ref}
-      className={`testimonial-card${item.featured ? ' testimonial-card--featured' : ''}${inView ? ' testimonial-card--visible' : ''}`}
-      style={{ transitionDelay: `${index * 0.1}s` }}
-    >
-      <div className="testimonial-card__quote-mark" aria-hidden="true">"</div>
+    <div className="tc">
       <Stars />
-      <p className="testimonial-card__text">{item.quote}</p>
-      <div className="testimonial-card__footer">
-        <div className="testimonial-card__avatar">{item.initials}</div>
-        <div className="testimonial-card__meta">
-          <div className="testimonial-card__name">{item.name}</div>
-          <div className="testimonial-card__role">{item.role} · {item.company}</div>
+      <p className="tc__text">{item.quote}</p>
+      <div className="tc__footer">
+        <div
+          className="tc__avatar"
+          style={{
+            background: `${item.color}18`,
+            border: `1px solid ${item.color}38`,
+            color: item.color,
+          }}
+        >
+          {item.initials}
+        </div>
+        <div className="tc__meta">
+          <div className="tc__name">{item.name}</div>
+          <div className="tc__role">{item.role} · {item.company}</div>
         </div>
       </div>
     </div>
@@ -62,6 +90,9 @@ function TestimonialCard({ item, index }) {
 
 export default function Testimonials() {
   const [ref, inView] = useInView()
+
+  // Triple-replicate so the -33.333% translate loops invisibly
+  const row = [...testimonials, ...testimonials, ...testimonials]
 
   return (
     <section className="testimonials section" id="testimonials">
@@ -74,9 +105,15 @@ export default function Testimonials() {
             Unsolicited. Unedited. From the people who use what we built.
           </p>
         </div>
-        <div className="testimonials__grid">
-          {testimonials.map((item, i) => (
-            <TestimonialCard key={item.name} item={item} index={i} />
+      </div>
+
+      <div className="testimonials__track">
+        <div className="testimonials__fade testimonials__fade--l" aria-hidden="true" />
+        <div className="testimonials__fade testimonials__fade--r" aria-hidden="true" />
+
+        <div className="testimonials__row testimonials__row--fwd">
+          {row.map((item, i) => (
+            <TestimonialCard key={i} item={item} />
           ))}
         </div>
       </div>
