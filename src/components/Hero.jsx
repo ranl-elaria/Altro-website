@@ -2,17 +2,90 @@ import { useRef } from 'react'
 
 // ── Workflow graph data ──────────────────────────────
 const SOURCES = [
-  { id: 'sales',   label: 'Sales',   abbr: 'Sa', color: '#3B82F6', bg: 'rgba(59,130,246,0.14)'   },
-  { id: 'finance', label: 'Finance', abbr: 'Fi', color: '#10B981', bg: 'rgba(16,185,129,0.14)'   },
-  { id: 'ops',     label: 'Ops',     abbr: 'Op', color: '#F59E0B', bg: 'rgba(245,158,11,0.14)'   },
-  { id: 'support', label: 'Support', abbr: 'Su', color: '#A78BFA', bg: 'rgba(167,139,250,0.14)'  },
+  {
+    id: 'sales', label: 'Sales', color: '#3B82F6', bg: 'rgba(59,130,246,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="1,12 5,7 9,9.5 15,3" />
+        <polyline points="12,3 15,3 15,6" />
+      </svg>
+    ),
+  },
+  {
+    id: 'finance', label: 'Finance', color: '#10B981', bg: 'rgba(16,185,129,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <path d="M8 1.5v13" />
+        <path d="M11 4.5c0-1.1-1.34-2-3-2s-3 .9-3 2 1.34 2 3 2 3 .9 3 2-1.34 2-3 2-3-.9-3-2" />
+      </svg>
+    ),
+  },
+  {
+    id: 'ops', label: 'Ops', color: '#F59E0B', bg: 'rgba(245,158,11,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="8" cy="8" r="2.5" />
+        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" />
+      </svg>
+    ),
+  },
+  {
+    id: 'support', label: 'Support', color: '#A78BFA', bg: 'rgba(167,139,250,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1.5 10V8a6.5 6.5 0 0 1 13 0v2" />
+        <rect x="1.5" y="9" width="2.5" height="4" rx="1.2" />
+        <rect x="12" y="9" width="2.5" height="4" rx="1.2" />
+        <path d="M14.5 12.5A3.5 3.5 0 0 1 11 15H9" />
+      </svg>
+    ),
+  },
 ]
 
 const OUTPUTS = [
-  { id: 'reports',  label: 'Reports',   abbr: 'Re', color: '#0CB6B1', bg: 'rgba(12,182,177,0.14)'   },
-  { id: 'alerts',   label: 'Alerts',    abbr: 'Al', color: '#F97316', bg: 'rgba(249,115,22,0.14)'   },
-  { id: 'tasks',    label: 'Tasks',     abbr: 'Tk', color: '#818CF8', bg: 'rgba(129,140,248,0.14)'  },
-  { id: 'saved',    label: 'Time saved', abbr: '↑', color: '#34D399', bg: 'rgba(52,211,153,0.14)'   },
+  {
+    id: 'reports', label: 'Reports', color: '#0CB6B1', bg: 'rgba(12,182,177,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 1.5H3.5a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z" />
+        <path d="M9 1.5V6h4.5" />
+        <line x1="5" y1="9.5" x2="11" y2="9.5" />
+        <line x1="5" y1="12" x2="8.5" y2="12" />
+      </svg>
+    ),
+  },
+  {
+    id: 'alerts', label: 'Alerts', color: '#F97316', bg: 'rgba(249,115,22,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 1.5a5 5 0 0 1 5 5c0 3.5 1.5 4.5 1.5 4.5H1.5S3 11 3 6.5a5 5 0 0 1 5-5z" />
+        <path d="M6.5 14a1.5 1.5 0 0 0 3 0" />
+      </svg>
+    ),
+  },
+  {
+    id: 'tasks', label: 'Tasks', color: '#818CF8', bg: 'rgba(129,140,248,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="2" width="5.5" height="5.5" rx="1" />
+        <polyline points="2.8,4.8 4,6 6.5,3.2" />
+        <line x1="10" y1="4.5" x2="14" y2="4.5" />
+        <line x1="10" y1="7.5" x2="13" y2="7.5" />
+        <line x1="2" y1="11" x2="14" y2="11" />
+        <line x1="2" y1="13.5" x2="10" y2="13.5" />
+      </svg>
+    ),
+  },
+  {
+    id: 'saved', label: 'Time saved', color: '#34D399', bg: 'rgba(52,211,153,0.14)',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="8" cy="8" r="6.5" />
+        <polyline points="8,4.5 8,8 10.5,10" />
+        <polyline points="5.5,1.5 8,4 10.5,1.5" />
+      </svg>
+    ),
+  },
 ]
 
 const FEED = [
@@ -122,8 +195,8 @@ function HeroVisual() {
               style={{ top: `${NYS[i] - 18}px` }}
             >
               <div className="hero__graph-icon"
-                style={{ background: s.bg, borderColor: `${s.color}40` }}>
-                <span style={{ color: s.color }}>{s.abbr}</span>
+                style={{ background: s.bg, borderColor: `${s.color}40`, color: s.color }}>
+                {s.icon}
               </div>
               <span className="hero__graph-label">{s.label}</span>
             </div>
@@ -158,8 +231,8 @@ function HeroVisual() {
             >
               <span className="hero__graph-label">{o.label}</span>
               <div className="hero__graph-icon"
-                style={{ background: o.bg, borderColor: `${o.color}40` }}>
-                <span style={{ color: o.color }}>{o.abbr}</span>
+                style={{ background: o.bg, borderColor: `${o.color}40`, color: o.color }}>
+                {o.icon}
               </div>
             </div>
           ))}
