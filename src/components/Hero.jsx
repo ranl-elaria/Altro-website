@@ -1,4 +1,42 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import useInView from '../hooks/useInView'
+
+function useCounter(target, duration, active) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    let startTime = null
+    const step = (ts) => {
+      if (!startTime) startTime = ts
+      const progress = Math.min((ts - startTime) / duration, 1)
+      setCount(Math.floor(progress * target))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [active, target, duration])
+  return count
+}
+
+function AnimatedStat({ target, suffix, label }) {
+  const [ref, inView] = useInView()
+  const count = useCounter(target, 1100, inView)
+  return (
+    <div ref={ref} className="hero__stat">
+      <span className="hero__stat-num">{count}{suffix}</span>
+      <span className="hero__stat-label">{label}</span>
+    </div>
+  )
+}
+
+function FadeStat({ num, label }) {
+  const [ref, inView] = useInView()
+  return (
+    <div ref={ref} className={`hero__stat hero__stat--fade${inView ? ' hero__stat--fade-in' : ''}`}>
+      <span className="hero__stat-num">{num}</span>
+      <span className="hero__stat-label">{label}</span>
+    </div>
+  )
+}
 
 // ── Workflow graph data ──────────────────────────────
 const SOURCES = [
@@ -329,17 +367,10 @@ export default function Hero() {
       <div className="hero__statsbar">
         <div className="container">
           <div className="hero__stats">
-            {[
-              { num: '12+',   label: 'Projects shipped' },
-              { num: '4–12 wk', label: 'Typical delivery' },
-              { num: '100%', label: 'Custom built' },
-              { num: '1 day', label: 'Response time' },
-            ].map((s, i) => (
-              <div key={i} className="hero__stat">
-                <span className="hero__stat-num">{s.num}</span>
-                <span className="hero__stat-label">{s.label}</span>
-              </div>
-            ))}
+            <AnimatedStat target={12} suffix="+" label="Projects shipped" />
+            <FadeStat num="4–12 wk" label="Typical delivery" />
+            <AnimatedStat target={100} suffix="%" label="Custom built" />
+            <FadeStat num="1 day" label="Response time" />
           </div>
         </div>
       </div>

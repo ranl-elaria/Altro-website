@@ -11,6 +11,7 @@ import Process from './components/Process'
 import FAQ from './components/FAQ'
 import Testimonials from './components/Testimonials'
 import Contact from './components/Contact'
+import FloatingCTA from './components/FloatingCTA'
 
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 
@@ -19,6 +20,7 @@ function Site() {
     <>
       <Grain />
       <Navbar />
+      <FloatingCTA />
       <main>
         <Hero />
         <Marquee />
