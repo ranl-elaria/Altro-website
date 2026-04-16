@@ -59,31 +59,6 @@ input, textarea, select { font-family: var(--font); }
 .container { max-width: var(--container); margin: 0 auto; padding: 0 36px; }
 .section    { padding: var(--section-pad) 0; }
 
-/* =============================================
-   STACKING SECTIONS (Option D)
-   ============================================= */
-.hero {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-.marquee {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-.section {
-  position: sticky;
-  top: 0;
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.28);
-}
-.challenges { z-index: 3; }
-.services   { z-index: 4; }
-.outcomes   { z-index: 5; }
-.process    { z-index: 6; }
-.faq        { z-index: 7; }
-.contact    { z-index: 8; }
 
 /* Scroll reveal */
 .reveal {
@@ -1860,6 +1835,43 @@ input, textarea, select { font-family: var(--font); }
   transition: opacity 0.8s var(--ease);
 }
 .hero__stat--fade-in { opacity: 1; }
+
+/* =============================================
+   STACKING SECTIONS
+   Placed last so these rules override each section's
+   own `position: relative` declarations above.
+   ============================================= */
+
+/* Hero — first card, no rounded top needed */
+.hero {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Marquee — slides over hero */
+.marquee {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.28);
+}
+
+/* All content sections */
+.section {
+  position: sticky;
+  top: 0;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.28);
+}
+
+.challenges { z-index: 3; }
+.services   { z-index: 4; }
+.outcomes   { z-index: 5; }
+.process    { z-index: 6; }
+.faq        { z-index: 7; }
+.contact    { z-index: 8; }
 
 /* =============================================
    RESPONSIVE
