@@ -10,7 +10,8 @@
   --teal-border: rgba(12, 182, 177, 0.22);
   --teal-glow:   rgba(12, 182, 177, 0.06);
 
-  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font:      'Inter Variable', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
   --nav-height:  72px;
   --section-pad: 120px;
@@ -26,6 +27,7 @@
 html { scroll-behavior: smooth; font-size: 16px; }
 body {
   font-family: var(--font);
+  font-feature-settings: "cv01", "ss03";
   background: #F1F0EB;
   color: #0B0D1A;
   line-height: 1.5;
@@ -90,14 +92,14 @@ input, textarea, select { font-family: var(--font); }
 
 .display-heading {
   font-size: clamp(32px, 4vw, 52px);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.06;
-  letter-spacing: -0.038em;
+  letter-spacing: -0.04em;
 }
 
 .body-sub {
   font-size: 16.5px;
-  line-height: 1.7;
+  line-height: 1.62;
   font-weight: 400;
   max-width: 480px;
   margin-top: 18px;
@@ -182,6 +184,9 @@ input, textarea, select { font-family: var(--font); }
   top: 0; left: 0; right: 0;
   z-index: 100;
   height: var(--nav-height);
+  background: rgba(11,13,26,0.55);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
   transition: background 0.35s var(--ease), backdrop-filter 0.35s, box-shadow 0.35s;
 }
 
@@ -219,6 +224,7 @@ input, textarea, select { font-family: var(--font); }
 .navbar__link {
   font-size: 13.5px;
   font-weight: 500;
+  font-feature-settings: "cv01", "ss03";
   color: rgba(237,234,227,0.65);
   transition: color 0.2s;
   letter-spacing: -0.01em;
@@ -502,7 +508,8 @@ input, textarea, select { font-family: var(--font); }
 }
 .hero__graph-bar-live {
   display: flex; align-items: center; gap: 5px;
-  font-size: 9.5px; font-weight: 700; letter-spacing: 0.07em;
+  font-family: var(--font-mono);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em;
   text-transform: uppercase; color: var(--teal);
 }
 .hero__graph-bar-live-dot {
@@ -628,10 +635,12 @@ input, textarea, select { font-family: var(--font); }
 .hero__graph-feed-row:nth-child(3) .hero__graph-feed-dot { animation-delay: 1.0s; }
 .hero__graph-feed-text {
   flex: 1;
+  font-family: var(--font-mono);
   font-size: 10px; color: rgba(237,234,227,0.40);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .hero__graph-feed-time {
+  font-family: var(--font-mono);
   font-size: 9px; color: rgba(237,234,227,0.22);
   flex-shrink: 0;
 }
@@ -1176,6 +1185,9 @@ input, textarea, select { font-family: var(--font); }
 .outcomes__grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
   background: rgba(0,0,0,0.07); border-radius: 18px; overflow: hidden;
+  box-shadow:
+    rgba(50,50,93,0.10) 0px 12px 40px -8px,
+    rgba(0,0,0,0.06)    0px 4px 16px -4px;
 }
 
 .outcome-card {
@@ -1219,8 +1231,9 @@ input, textarea, select { font-family: var(--font); }
 }
 
 .outcome-card__num {
+  font-family: var(--font-mono);
   font-size: clamp(40px, 4.2vw, 60px);
-  font-weight: 700; letter-spacing: -0.055em; line-height: 1;
+  font-weight: 700; letter-spacing: -0.04em; line-height: 1;
   background: linear-gradient(135deg, #0B0D1A 40%, rgba(11,13,26,0.45));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1342,12 +1355,14 @@ input, textarea, select { font-family: var(--font); }
 .process__step-body--left .process__step-hd { flex-direction: row-reverse; }
 
 .process__step-num {
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em;
   color: var(--teal); background: var(--teal-dim); border: 1px solid var(--teal-border);
   border-radius: 100px; padding: 3px 10px; line-height: 1.4; white-space: nowrap;
 }
 .process__step-duration {
-  font-size: 10.5px; font-weight: 600; white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 10.5px; font-weight: 500; white-space: nowrap;
   color: rgba(255,255,255,0.28);
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
   border-radius: 100px; padding: 3px 10px; line-height: 1.4;
