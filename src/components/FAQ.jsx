@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import useInView from '../hooks/useInView'
 
 const faqs = [
@@ -24,11 +24,31 @@ const faqs = [
   },
 ]
 
-function FAQItem({ item, index }) {
+function FAQItem({ item, index, inView }) {
   const [open, setOpen] = useState(false)
+  const itemRef = useRef(null)
+
+  const handleMouseMove = useCallback((e) => {
+    const el = itemRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    el.style.setProperty('--faq-x', `${e.clientX - rect.left}px`)
+    el.style.setProperty('--faq-y', `${e.clientY - rect.top}px`)
+    el.style.setProperty('--faq-glow-op', '1')
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    if (itemRef.current) itemRef.current.style.setProperty('--faq-glow-op', '0')
+  }, [])
 
   return (
-    <div className={`faq__item${open ? ' faq__item--open' : ''}`}>
+    <div
+      ref={itemRef}
+      className={`faq__item${open ? ' faq__item--open' : ''}${inView ? ' faq__item--visible' : ''}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ '--faq-glow-op': 0, transitionDelay: inView ? `${index * 0.07}s` : '0s' }}
+    >
       <button
         className="faq__question"
         onClick={() => setOpen(o => !o)}
@@ -71,7 +91,7 @@ export default function FAQ() {
 
           <div className="faq__list" role="list">
             {faqs.map((item, i) => (
-              <FAQItem key={item.q} item={item} index={i} />
+              <FAQItem key={item.q} item={item} index={i} inView={inView} />
             ))}
           </div>
         </div>

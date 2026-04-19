@@ -59,3 +59,56 @@ credentials.json, token.json # Google OAuth (gitignore-d)
 ## Bottom Line
 You sit between what I want (workflows) and what actually gets done (tools). Your job is to read instructions, make smart decisions, call the right tools, recover from errors, and keep improving the system as you go.
 Stay pragmatic. Stay reliable. Keep learning.
+
+---
+
+# Altro Website — Project Guide
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Commands
+
+```bash
+npm run dev       # Start Vite dev server at localhost:5173
+npm run build     # Production build
+npm run preview   # Preview production build locally
+```
+
+No test runner is configured. Verify UI changes in the browser at localhost:5173.
+
+## Environment
+
+Copy `.env.example` to `.env`. Required vars:
+- `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` — browser-safe (VITE_ prefix exposes them)
+- `SUPABASE_SERVICE_ROLE_KEY` + `RESEND_API_KEY` — server-side only, never VITE_-prefixed
+
+## Architecture
+
+**Stack:** React 18 + Vite 6, plain JSX (no TypeScript), plain CSS (`src/index.css`). Tailwind is installed but not actively used — all styling is hand-authored CSS with CSS custom properties.
+
+**Routing:** Two routes via React Router. `/` renders the full marketing site. `/admin` lazy-loads `AdminPage`, which gates on Supabase auth: session → `AdminDashboard`, no session → `AdminLogin`.
+
+**Page section order (`App.jsx`):**
+`Hero → Marquee → Challenges → Services → [Outcomes hidden] → Process → FAQ → Contact`
+
+**CSS architecture — stacking scroll effect:** At the end of `index.css`, sections get `position: sticky; top: 0` with ascending z-index values. Each section stacks over the previous as you scroll. **Any section taller than the viewport must override with `position: relative`** (currently `.challenges` and `.process`) or its bottom content is permanently clipped. The stacking block sits at the very end of `index.css` so it overrides earlier rules — keep it there.
+
+**Scroll-driven animations — two patterns:**
+1. `useInView` hook (IntersectionObserver, one-shot) — entrance animations. Toggle `reveal--visible` or component-specific `--visible` modifier classes on the watched element.
+2. `scroll` event + `getBoundingClientRect()` — used in Process for the spine fill progress. Use this (not `offsetTop`) on non-sticky sections.
+
+**Custom hooks:**
+- `useInView(options)` → `[ref, inView]` — disconnects after first trigger.
+- `useActiveSection` — tracks which section is active for navbar highlighting.
+- `useSpeechRecognition` — Web Speech API wrapper for the Contact form mic button.
+
+**Per-card theming:** Challenge cards use inline CSS custom properties (`--cc`, `--cc-bg`, `--cc-border`, `--cc-glow`) on each card element, referenced in the shared `.challenge-card` CSS rules.
+
+**Admin area:** Supabase auth via `onAuthStateChange`. Dashboard reads contact form submissions from Supabase. Email notifications on submit use Resend (server-side only).
+
+## Brand Colors
+
+- Teal: `#3C6E71` (brand) / `#0CB6B1` (brighter `--teal` CSS var used for glows/highlights)
+- Navy: `#284B63`
+- Charcoal: `#353535`
+- Light Gray: `#D9D9D9`

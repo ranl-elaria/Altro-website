@@ -1,6 +1,7 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
+import useInView from '../hooks/useInView'
 
-// ── SVG step graphics (unchanged) ───────────────────────────────────────────
+// ── SVG step graphics ────────────────────────────────────────────────────────
 
 const UnderstandGraphic = () => (
   <svg className="process__graphic" viewBox="0 0 140 140" fill="none" aria-hidden="true">
@@ -16,8 +17,6 @@ const UnderstandGraphic = () => (
     <line x1="111" y1="70" x2="86" y2="70" stroke="rgba(12,182,177,0.3)" strokeWidth="1" strokeDasharray="3 4" />
     <line x1="70" y1="111" x2="70" y2="86" stroke="rgba(12,182,177,0.3)" strokeWidth="1" strokeDasharray="3 4" />
     <line x1="29" y1="70" x2="54" y2="70" stroke="rgba(12,182,177,0.3)" strokeWidth="1" strokeDasharray="3 4" />
-    <line x1="103" y1="37" x2="86" y2="56" stroke="rgba(12,182,177,0.2)" strokeWidth="1" strokeDasharray="2 5" />
-    <line x1="37" y1="103" x2="56" y2="84" stroke="rgba(12,182,177,0.2)" strokeWidth="1" strokeDasharray="2 5" />
     <circle cx="70" cy="70" r="16" fill="rgba(12,182,177,0.08)" stroke="rgba(12,182,177,0.35)" strokeWidth="1.2" />
     <circle cx="70" cy="70" r="8" fill="rgba(12,182,177,0.2)" />
     <circle cx="70" cy="70" r="4" fill="rgba(12,182,177,0.9)" className="pg-pulse" />
@@ -37,17 +36,20 @@ const DesignGraphic = () => (
     <rect x="44" y="30" width="32" height="4" rx="2" fill="rgba(12,182,177,0.7)" />
     {[0,1,2,3].map((i) => (
       <g key={i} transform={`translate(0, ${i * 16})`}>
-        <rect x="44" y="52" width="10" height="10" rx="2.5" fill={i < 3 ? 'rgba(12,182,177,0.18)' : 'rgba(255,255,255,0.05)'} stroke={i < 3 ? 'rgba(12,182,177,0.6)' : 'rgba(255,255,255,0.2)'} strokeWidth="1" />
-        {i < 3 && <polyline points={`47,${57+i*16} 50,${60+i*16} 55,${54+i*16}`} stroke="rgba(12,182,177,0.9)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" transform={`translate(0,${-i*16})`} />}
-        <rect x="60" y="54" width={i === 3 ? 20 : 28} height="4" rx="2" fill={i < 3 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)'} />
+        <rect x="44" y="52" width="10" height="10" rx="2.5"
+          fill={i < 3 ? 'rgba(12,182,177,0.18)' : 'rgba(255,255,255,0.05)'}
+          stroke={i < 3 ? 'rgba(12,182,177,0.6)' : 'rgba(255,255,255,0.2)'} strokeWidth="1" />
+        {i < 3 && <polyline
+          points={`47,${57+i*16} 50,${60+i*16} 55,${54+i*16}`}
+          stroke="rgba(12,182,177,0.9)" strokeWidth="1.3"
+          strokeLinecap="round" strokeLinejoin="round"
+          transform={`translate(0,${-i*16})`} />}
+        <rect x="60" y="54" width={i === 3 ? 20 : 28} height="4" rx="2"
+          fill={i < 3 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)'} />
         {i < 3 && <rect x="60" y="60" width={14 + i*4} height="3" rx="1.5" fill="rgba(255,255,255,0.1)" />}
       </g>
     ))}
-    <rect x="60" y="102" width="14" height="4" rx="2" fill="rgba(255,255,255,0.1)" />
     <rect x="74" y="101" width="1.5" height="6" rx="0.75" fill="rgba(12,182,177,0.9)" className="pg-blink" />
-    <circle cx="56" cy="120" r="2" fill="rgba(12,182,177,0.4)" />
-    <circle cx="64" cy="120" r="2" fill="rgba(12,182,177,0.25)" />
-    <circle cx="72" cy="120" r="2" fill="rgba(12,182,177,0.15)" />
   </svg>
 )
 
@@ -69,13 +71,10 @@ const BuildGraphic = () => (
     <rect x="92" y="52" width="12" height="4" rx="2" fill="rgba(52,211,153,0.6)" />
     <rect x="42" y="66" width="12" height="4" rx="2" fill="rgba(12,182,177,0.8)" />
     <rect x="58" y="66" width="20" height="4" rx="2" fill="rgba(255,255,255,0.25)" />
-    <rect x="82" y="66" width="8" height="4" rx="2" fill="rgba(249,115,22,0.6)" />
-    <rect x="94" y="66" width="14" height="4" rx="2" fill="rgba(255,255,255,0.2)" />
     <rect x="42" y="80" width="16" height="4" rx="2" fill="rgba(129,140,248,0.5)" />
     <rect x="62" y="80" width="28" height="4" rx="2" fill="rgba(255,255,255,0.2)" />
     <rect x="42" y="94" width="10" height="4" rx="2" fill="rgba(12,182,177,0.6)" />
     <rect x="56" y="94" width="22" height="4" rx="2" fill="rgba(255,255,255,0.15)" />
-    <rect x="42" y="108" width="20" height="4" rx="2" fill="rgba(52,211,153,0.5)" />
     <rect x="94" y="66" width="2" height="10" rx="1" fill="rgba(12,182,177,1)" className="pg-blink" />
   </svg>
 )
@@ -93,20 +92,15 @@ const ShipGraphic = () => (
     <rect x="56" y="44" width="28" height="22" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
     <rect x="88" y="44" width="28" height="22" rx="4" fill="rgba(12,182,177,0.08)" stroke="rgba(12,182,177,0.2)" strokeWidth="1" />
     <rect x="28" y="48" width="12" height="5" rx="2" fill="rgba(52,211,153,0.8)" />
-    <rect x="28" y="56" width="18" height="3" rx="1.5" fill="rgba(255,255,255,0.2)" />
     <rect x="60" y="48" width="10" height="5" rx="2" fill="rgba(255,255,255,0.5)" />
-    <rect x="60" y="56" width="16" height="3" rx="1.5" fill="rgba(255,255,255,0.2)" />
     <rect x="92" y="48" width="14" height="5" rx="2" fill="rgba(12,182,177,0.8)" />
-    <rect x="92" y="56" width="18" height="3" rx="1.5" fill="rgba(12,182,177,0.35)" />
     <rect x="24" y="72" width="92" height="36" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-    <line x1="24" y1="84" x2="116" y2="84" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-    <line x1="24" y1="96" x2="116" y2="96" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-    <polyline points="28,100 38,92 48,95 58,86 68,88 78,80 88,82 98,76 108,74 116,72" stroke="rgba(12,182,177,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    <path d="M28,100 38,92 48,95 58,86 68,88 78,80 88,82 98,76 108,74 116,72 116,108 28,108 Z" fill="rgba(12,182,177,0.06)" />
+    <polyline points="28,100 38,92 48,95 58,86 68,88 78,80 88,82 98,76 108,74 116,72"
+      stroke="rgba(12,182,177,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    <path d="M28,100 38,92 48,95 58,86 68,88 78,80 88,82 98,76 108,74 116,72 116,108 28,108 Z"
+      fill="rgba(12,182,177,0.06)" />
     <rect x="24" y="114" width="42" height="14" rx="4" fill="rgba(52,211,153,0.12)" stroke="rgba(52,211,153,0.35)" strokeWidth="1" />
     <circle cx="33" cy="121" r="3" fill="rgba(52,211,153,0.7)" className="pg-status" />
-    <rect x="39" y="118.5" width="20" height="3" rx="1.5" fill="rgba(52,211,153,0.6)" />
-    <rect x="39" y="123" width="14" height="3" rx="1.5" fill="rgba(255,255,255,0.2)" />
     <circle cx="108" cy="121" r="5" fill="rgba(12,182,177,0.15)" stroke="rgba(12,182,177,0.4)" strokeWidth="1" />
     <circle cx="108" cy="121" r="2.5" fill="rgba(12,182,177,0.8)" className="pg-pulse" />
   </svg>
@@ -145,27 +139,55 @@ const steps = [
   },
 ]
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Step row ─────────────────────────────────────────────────────────────────
+
+function ProcessStep({ step, index }) {
+  const [ref, inView] = useInView({ threshold: 0.25 })
+  return (
+    <div ref={ref} className="process__step">
+      {/* Node column */}
+      <div className="process__step-node-col">
+        <div className={`process__step-node${inView ? ' process__step-node--active' : ''}`}>
+          <div className="process__step-node-dot" />
+        </div>
+      </div>
+
+      {/* Content column */}
+      <div
+        className={`process__step-content${inView ? ' process__step-content--visible' : ''}`}
+        style={{ transitionDelay: `${index * 0.06}s` }}
+      >
+        <div className="process__step-meta">
+          <span className="process__step-num">{step.num}</span>
+          <span className="process__step-duration">{step.duration}</span>
+        </div>
+        <h3 className="process__step-title">{step.title}</h3>
+        <p className="process__step-text">{step.text}</p>
+        <div className="process__step-visual">{step.graphic}</div>
+      </div>
+    </div>
+  )
+}
+
+// ── Section ──────────────────────────────────────────────────────────────────
 
 export default function Process() {
   const sectionRef = useRef(null)
-  const [activeStep, setActiveStep] = useState(0)
+  const fillRef = useRef(null)
+  const [headerRef, headerInView] = useInView()
 
+  // Spine fill — draws down as you scroll through the section
   useEffect(() => {
     const handle = () => {
-      const el = sectionRef.current
-      if (!el) return
-      // offsetTop = natural document position, unaffected by sticky
-      const sectionTop = el.offsetTop
-      const scrolledIn = window.scrollY - sectionTop
-      if (scrolledIn <= 0) { setActiveStep(0); return }
-      const scrollable = el.offsetHeight - window.innerHeight
-      if (scrollable <= 0 || scrolledIn >= scrollable) {
-        setActiveStep(steps.length - 1)
-        return
-      }
-      const idx = Math.floor((scrolledIn / scrollable) * steps.length)
-      setActiveStep(Math.min(idx, steps.length - 1))
+      const section = sectionRef.current
+      const fill = fillRef.current
+      if (!section || !fill) return
+      const rect = section.getBoundingClientRect()
+      const viewH = window.innerHeight
+      const entered = viewH - rect.top
+      const total = rect.height + viewH
+      const progress = Math.max(0, Math.min(1, entered / total))
+      fill.style.height = `${progress * 100}%`
     }
     window.addEventListener('scroll', handle, { passive: true })
     handle()
@@ -174,82 +196,34 @@ export default function Process() {
 
   return (
     <section className="process section" id="process" ref={sectionRef}>
-      {/* Decorative top rule */}
-      <div className="process__rule" aria-hidden="true" />
+      <div className="container">
 
-      {/* The visible 100vh viewport — stays at top while section is sticky */}
-      <div className="process__view">
-        <div className="container process__layout">
-
-          {/* ── Left: header + step nav ── */}
-          <div className="process__nav">
-            <div className="process__nav-header">
-              <h2 className="display-heading display-heading--light">How we<br />work</h2>
-              <p className="body-sub body-sub--light">
-                Scope is fixed before we build.<br />
-                Four stages, no surprises.
-              </p>
-            </div>
-
-            <nav className="process__nav-list" aria-label="Process steps">
-              {/* Vertical connector line */}
-              <div className="process__nav-spine" aria-hidden="true">
-                <div
-                  className="process__nav-spine-fill"
-                  style={{ height: `${(activeStep / (steps.length - 1)) * 100}%` }}
-                />
-              </div>
-
-              {steps.map((step, i) => (
-                <div
-                  key={step.num}
-                  className={`process__nav-item${i === activeStep ? ' process__nav-item--active' : ''}`}
-                  aria-current={i === activeStep ? 'step' : undefined}
-                >
-                  <div className="process__nav-dot">
-                    <div className="process__nav-dot-inner" />
-                  </div>
-                  <div className="process__nav-item-text">
-                    <span className="process__nav-num">{step.num}</span>
-                    <span className="process__nav-title">{step.title}</span>
-                  </div>
-                  <span className="process__nav-duration">{step.duration}</span>
-                </div>
-              ))}
-            </nav>
+        <div
+          ref={headerRef}
+          className={`process__header reveal${headerInView ? ' reveal--visible' : ''}`}
+        >
+          <div>
+            <h2 className="display-heading display-heading--light">How we work</h2>
           </div>
-
-          {/* ── Right: animated content panels ── */}
-          <div className="process__panels" aria-live="polite">
-            {steps.map((step, i) => (
-              <div
-                key={step.num}
-                className={`process__panel${i === activeStep ? ' process__panel--active' : ''}`}
-                aria-hidden={i !== activeStep}
-              >
-                <div className="process__panel-graphic">{step.graphic}</div>
-                <div className="process__panel-body">
-                  <div className="process__panel-meta">
-                    <span className="process__panel-badge">{step.num} / {String(steps.length).padStart(2, '0')}</span>
-                    <span className="process__panel-duration">{step.duration}</span>
-                  </div>
-                  <h3 className="process__panel-title">{step.title}</h3>
-                  <p className="process__panel-text">{step.text}</p>
-                </div>
-              </div>
-            ))}
+          <div className="process__header-right">
+            <p className="body-sub body-sub--light">
+              Scope is fixed before we build.<br />
+              Four stages, no surprises.
+            </p>
           </div>
         </div>
 
-        {/* Step progress dots */}
-        <div className="process__dots" aria-hidden="true">
-          {steps.map((_, i) => (
-            <div
-              key={i}
-              className={`process__dot${i === activeStep ? ' process__dot--active' : ''}`}
-            />
+        <div className="process__timeline">
+          {/* Vertical spine */}
+          <div className="process__spine" aria-hidden="true">
+            <div className="process__spine-fill" ref={fillRef} />
+          </div>
+
+          {steps.map((step, i) => (
+            <ProcessStep key={step.num} step={step} index={i} />
           ))}
         </div>
+
       </div>
     </section>
   )

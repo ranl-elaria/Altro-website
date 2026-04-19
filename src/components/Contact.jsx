@@ -116,43 +116,49 @@ export default function Contact() {
                 <div className="form-row">
                   <div className="form-field">
                     <label className="form-label" htmlFor="name">Name</label>
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      className="form-input"
-                      placeholder="Your name"
-                      value={form.name}
-                      onChange={handleChange}
-                      required
-                    />
+                    <div className="form-input-wrap">
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        className="form-input"
+                        placeholder="Your name"
+                        value={form.name}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
                   </div>
                   <div className="form-field">
                     <label className="form-label" htmlFor="company">Company</label>
-                    <input
-                      id="company"
-                      name="company"
-                      type="text"
-                      className="form-input"
-                      placeholder="Your company"
-                      value={form.company}
-                      onChange={handleChange}
-                    />
+                    <div className="form-input-wrap">
+                      <input
+                        id="company"
+                        name="company"
+                        type="text"
+                        className="form-input"
+                        placeholder="Your company"
+                        value={form.company}
+                        onChange={handleChange}
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div className="form-field">
                   <label className="form-label" htmlFor="email">Email</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    className="form-input"
-                    placeholder="you@company.com"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
-                  />
+                  <div className="form-input-wrap">
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      className="form-input"
+                      placeholder="you@company.com"
+                      value={form.email}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="form-field">
