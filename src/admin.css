@@ -41,6 +41,20 @@
   border-radius: 8px; padding: 10px 14px;
 }
 .admin-login__submit { width: 100%; justify-content: center; }
+.admin-login__forgot {
+  width: 100%; margin-top: 4px;
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; color: rgba(237,234,227,0.35);
+  text-align: center; padding: 6px;
+  transition: color 0.2s;
+}
+.admin-login__forgot:hover:not(:disabled) { color: var(--teal); }
+.admin-login__forgot:disabled { opacity: 0.5; cursor: default; }
+.admin-login__reset-sent {
+  font-size: 13px; color: #34d399;
+  background: rgba(52,211,153,0.07); border: 1px solid rgba(52,211,153,0.18);
+  border-radius: 8px; padding: 10px 14px;
+}
 .admin-login__spinner {
   width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
   border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff;

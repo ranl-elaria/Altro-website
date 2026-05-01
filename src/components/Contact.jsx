@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react'
-import Logo from './Logo'
 import useSpeechRecognition from '../hooks/useSpeechRecognition'
 
 export default function Contact() {
@@ -64,39 +63,52 @@ export default function Contact() {
                 Tell us what you're working on and we'll get back to you within one business day.
               </p>
 
-              <div className="contact__details">
-                <div className="contact__detail">
-                  <span className="contact__detail-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.5 12 19.79 19.79 0 011.21 3.28 2 2 0 013.22 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-                    </svg>
-                  </span>
-                  Response within one business day
-                </div>
-                <div className="contact__detail">
-                  <span className="contact__detail-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                    </svg>
-                  </span>
-                  No sales pitch. Just a genuine conversation.
-                </div>
-                <div className="contact__detail">
-                  <span className="contact__detail-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </span>
-                  Free discovery call, no commitment needed
-                </div>
-              </div>
-
-              {/* Decorative orbital rings */}
+              {/* Decorative orbital rings — comet style */}
               <div className="contact__orb" aria-hidden="true">
-                <div className="contact__orb-ring contact__orb-ring--1" />
-                <div className="contact__orb-ring contact__orb-ring--2" />
-                <div className="contact__orb-ring contact__orb-ring--3" />
-                <div className="contact__orb-core" />
+                <svg width="180" height="180" viewBox="-90 -90 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <radialGradient id="orbCore" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stopColor="#0CB6B1" stopOpacity="0.9" />
+                      <stop offset="50%" stopColor="#0CB6B1" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#0CB6B1" stopOpacity="0" />
+                    </radialGradient>
+                    <linearGradient id="comet1" gradientUnits="userSpaceOnUse" x1="-35" y1="0" x2="35" y2="0">
+                      <stop offset="0%" stopColor="#0CB6B1" stopOpacity="0" />
+                      <stop offset="55%" stopColor="#0CB6B1" stopOpacity="0.85" />
+                      <stop offset="100%" stopColor="#0CB6B1" stopOpacity="0.15" />
+                    </linearGradient>
+                    <linearGradient id="comet2" gradientUnits="userSpaceOnUse" x1="-55" y1="0" x2="55" y2="0">
+                      <stop offset="0%" stopColor="#3C6E71" stopOpacity="0" />
+                      <stop offset="55%" stopColor="#3C6E71" stopOpacity="0.7" />
+                      <stop offset="100%" stopColor="#3C6E71" stopOpacity="0.1" />
+                    </linearGradient>
+                    <linearGradient id="comet3" gradientUnits="userSpaceOnUse" x1="-80" y1="0" x2="80" y2="0">
+                      <stop offset="0%" stopColor="#0CB6B1" stopOpacity="0" />
+                      <stop offset="55%" stopColor="#0CB6B1" stopOpacity="0.5" />
+                      <stop offset="100%" stopColor="#0CB6B1" stopOpacity="0.1" />
+                    </linearGradient>
+                  </defs>
+                  {/* Base rings */}
+                  <circle cx="0" cy="0" r="35" stroke="rgba(60,110,113,0.22)" strokeWidth="1" />
+                  <circle cx="0" cy="0" r="55" stroke="rgba(60,110,113,0.15)" strokeWidth="1" />
+                  <circle cx="0" cy="0" r="80" stroke="rgba(60,110,113,0.09)" strokeWidth="1" />
+                  {/* Comet arcs */}
+                  <circle cx="0" cy="0" r="35" stroke="url(#comet1)" strokeWidth="1.8"
+                    strokeDasharray="88 132" strokeDashoffset="0">
+                    <animate attributeName="stroke-dashoffset" from="0" to="-220" dur="4s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="0" cy="0" r="55" stroke="url(#comet2)" strokeWidth="1.5"
+                    strokeDasharray="138 207" strokeDashoffset="0">
+                    <animate attributeName="stroke-dashoffset" from="0" to="345" dur="7s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="0" cy="0" r="80" stroke="url(#comet3)" strokeWidth="1.2"
+                    strokeDasharray="150 352" strokeDashoffset="0">
+                    <animate attributeName="stroke-dashoffset" from="0" to="-503" dur="11s" repeatCount="indefinite" />
+                  </circle>
+                  {/* Core */}
+                  <circle cx="0" cy="0" r="14" fill="url(#orbCore)" />
+                  <circle cx="0" cy="0" r="5" fill="#0CB6B1" opacity="0.9" />
+                </svg>
               </div>
             </div>
 
@@ -231,43 +243,37 @@ export default function Contact() {
               </form>
             )}
             </div>
+
+            {/* Trust badges — separate grid item so CSS can place them below form on mobile */}
+            <div className="contact__details">
+              <div className="contact__detail">
+                <span className="contact__detail-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.5 12 19.79 19.79 0 011.21 3.28 2 2 0 013.22 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                  </svg>
+                </span>
+                Response within one business day
+              </div>
+              <div className="contact__detail">
+                <span className="contact__detail-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                  </svg>
+                </span>
+                No sales pitch. Just a genuine conversation.
+              </div>
+              <div className="contact__detail">
+                <span className="contact__detail-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
+                Free discovery call, no commitment needed
+              </div>
+            </div>
           </div>
         </div>
       </section>
-
-      <footer className="footer">
-        <div className="container">
-          <div className="footer__top">
-            <div className="footer__brand">
-              <Logo />
-              <p className="footer__tagline">Custom software for growing teams.</p>
-            </div>
-            <div className="footer__cols">
-              <div className="footer__col">
-                <span className="footer__col-head">Services</span>
-                <a href="#services" className="footer__link">Internal Webapps</a>
-                <a href="#services" className="footer__link">Process Automations</a>
-                <a href="#services" className="footer__link">AI Agents</a>
-              </div>
-              <div className="footer__col">
-                <span className="footer__col-head">Company</span>
-                <a href="#process" className="footer__link">How we work</a>
-                <a href="#outcomes" className="footer__link">Outcomes</a>
-                <a href="#faq" className="footer__link">FAQ</a>
-              </div>
-              <div className="footer__col">
-                <span className="footer__col-head">Contact</span>
-                <a href="#contact" className="footer__link">Start a project</a>
-                <a href="mailto:hello@altro.build" className="footer__link">hello@altro.build</a>
-              </div>
-            </div>
-          </div>
-          <div className="footer__bottom">
-            <span className="footer__copy">© 2026 altro. All rights reserved.</span>
-            <span className="footer__copy">Built with purpose. Shipped with care.</span>
-          </div>
-        </div>
-      </footer>
     </>
   )
 }

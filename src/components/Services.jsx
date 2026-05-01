@@ -1,5 +1,47 @@
 import useInView from '../hooks/useInView'
 
+const BEAM = {
+  webapp: { color: '#0CB6B1', dim: 'rgba(12,182,177,0.10)' },
+  auto:   { color: '#7C6DD8', dim: 'rgba(124,109,216,0.10)' },
+  agent:  { color: '#F97316', dim: 'rgba(249,115,22,0.10)' },
+}
+
+function CardBeam({ slug }) {
+  const { color, dim } = BEAM[slug] || BEAM.webapp
+  const id = `bg-${slug}`
+  return (
+    <svg
+      className="svc-card__beam-svg"
+      viewBox="0 0 300 120"
+      fill="none"
+      aria-hidden="true"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor={color} stopOpacity="0" />
+          <stop offset="45%"  stopColor={color} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* Beam path 1 */}
+      <path d="M-20,28 Q110,6 320,58" stroke={dim} strokeWidth="0.8" />
+      <path d="M-20,28 Q110,6 320,58"
+        stroke={`url(#${id})`} strokeWidth="1.6"
+        strokeDasharray="90 230" strokeDashoffset="0">
+        <animate attributeName="stroke-dashoffset" from="0" to="-320" dur="3.2s" repeatCount="indefinite" />
+      </path>
+      {/* Beam path 2 */}
+      <path d="M-20,78 Q80,48 320,88" stroke={dim} strokeWidth="0.8" />
+      <path d="M-20,78 Q80,48 320,88"
+        stroke={`url(#${id})`} strokeWidth="1.2"
+        strokeDasharray="65 255" strokeDashoffset="-80">
+        <animate attributeName="stroke-dashoffset" from="-80" to="-400" dur="4.6s" repeatCount="indefinite" />
+      </path>
+    </svg>
+  )
+}
+
 // ── Inline visuals (compact SVG, ~160×110 viewBox) ──────────────────────────
 
 function WebappVisual() {
@@ -244,6 +286,7 @@ function ServiceCard({ svc, index }) {
           <div className="svc-card__ring svc-card__ring--1" />
           <div className="svc-card__ring svc-card__ring--2" />
         </div>
+        <CardBeam slug={svc.slug} />
         <span className="svc-card__num">{svc.num}</span>
         <h3 className="svc-card__title">{svc.title}</h3>
         <div className="svc-card__visual">{svc.visual}</div>

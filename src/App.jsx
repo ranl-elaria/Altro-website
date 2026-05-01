@@ -11,17 +11,23 @@ import Process from './components/Process'
 import FAQ from './components/FAQ'
 import Testimonials from './components/Testimonials'
 import Contact from './components/Contact'
+import Footer from './components/Footer'
 import FloatingCTA from './components/FloatingCTA'
+import CookieBanner from './components/CookieBanner'
 
-const AdminPage = lazy(() => import('./pages/AdminPage'))
+const AdminPage    = lazy(() => import('./pages/AdminPage'))
+const PrivacyPage  = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsPage    = lazy(() => import('./pages/Terms'))
+const NotFoundPage = lazy(() => import('./pages/NotFound'))
 
 function Site() {
   return (
     <>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       <Grain />
       <Navbar />
       <FloatingCTA />
-      <main>
+      <main id="main-content">
         <Hero />
         <Marquee />
         <Challenges />
@@ -32,9 +38,13 @@ function Site() {
         <FAQ />
         <Contact />
       </main>
+      <Footer />
+      <CookieBanner />
     </>
   )
 }
+
+const legalFallback = <div className="legal-loading" aria-busy="true">Loading…</div>
 
 export default function App() {
   return (
@@ -48,6 +58,18 @@ export default function App() {
               <AdminPage />
             </Suspense>
           }
+        />
+        <Route
+          path="/privacy"
+          element={<Suspense fallback={legalFallback}><PrivacyPage /></Suspense>}
+        />
+        <Route
+          path="/terms"
+          element={<Suspense fallback={legalFallback}><TermsPage /></Suspense>}
+        />
+        <Route
+          path="*"
+          element={<Suspense fallback={legalFallback}><NotFoundPage /></Suspense>}
         />
       </Routes>
     </BrowserRouter>

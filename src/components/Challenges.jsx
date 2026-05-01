@@ -1,223 +1,332 @@
 import useInView from '../hooks/useInView'
 
-// ── Illustrations ─────────────────────────────────────────────────────────────
+// ── Isometric depth helpers ────────────────────────────────────────────────────
+// All illustrations use viewBox="0 0 300 190", full-width banner format.
+// Depth vector: dx=14, dy=-10 (upper-right isometric direction)
+const ISO = { dx: 14, dy: -10 }
 
-/* 01 — Three disconnected tool windows, broken arrows between them */
+// Returns SVG polygon points string for the TOP face of a box
+const isoTop = (x, y, w) =>
+  `${x},${y} ${x + w},${y} ${x + w + ISO.dx},${y + ISO.dy} ${x + ISO.dx},${y + ISO.dy}`
+
+// Returns SVG polygon points string for the RIGHT SIDE face of a box
+const isoRight = (x, y, w, h) =>
+  `${x + w},${y} ${x + w + ISO.dx},${y + ISO.dy} ${x + w + ISO.dx},${y + h + ISO.dy} ${x + w},${y + h}`
+
+// ── 01 — Three floating iso screens, broken connections ────────────────────────
 const ToolsIllustration = () => {
+  const c = '#F97316'
   const a = o => `rgba(249,115,22,${o})`
+
+  // IsoScreen: a floating screen panel rendered as isometric 3D tile
+  const IsoScreen = ({ x, y, w = 78, h = 90, children }) => (
+    <g>
+      {/* Shadow ellipse */}
+      <ellipse cx={x + w / 2 + 6} cy={y + h + 8} rx={w * 0.42} ry={5}
+        fill={a(.18)} filter="url(#blur-sm)" />
+      {/* Top face */}
+      <polygon points={isoTop(x, y, w)} fill={a(.28)} />
+      {/* Right face */}
+      <polygon points={isoRight(x, y, w, h)} fill={a(.16)} />
+      {/* Front face */}
+      <rect x={x} y={y} width={w} height={h} rx="5"
+        fill={a(.10)} stroke={a(.55)} strokeWidth="1.3" />
+      {/* Title bar */}
+      <rect x={x} y={y} width={w} height={11} rx="5" fill={a(.22)} />
+      <rect x={x} y={y + 8} width={w} height={3} fill={a(.15)} />
+      <circle cx={x + 6} cy={y + 5.5} r={1.8} fill={a(.6)} />
+      <circle cx={x + 12} cy={y + 5.5} r={1.8} fill={a(.4)} />
+      {children}
+    </g>
+  )
+
   return (
-    <svg viewBox="0 0 180 130" fill="none" className="challenge-illustration" aria-hidden="true">
-      {/* App 1: CRM */}
-      <rect x="8" y="30" width="42" height="56" rx="8" fill={a(.06)} stroke={a(.35)} strokeWidth="1.2"/>
-      <rect x="8" y="30" width="42" height="10" rx="8" fill={a(.12)}/>
-      <rect x="8" y="37" width="42" height="3" fill={a(.12)}/>
-      <circle cx="14" cy="35" r="1.8" fill={a(.5)}/><circle cx="20" cy="35" r="1.8" fill={a(.3)}/>
-      {/* Person icon */}
-      <circle cx="29" cy="55" r="6" fill={a(.1)} stroke={a(.65)} strokeWidth="1.2"/>
-      <path d="M17 75v-1a12 12 0 0124 0v1" stroke={a(.45)} strokeWidth="1.2" strokeLinecap="round"/>
+    <svg viewBox="0 0 300 190" fill="none" className="challenge-illustration" aria-hidden="true">
+      <defs>
+        <filter id="blur-sm"><feGaussianBlur stdDeviation="3" /></filter>
+        <filter id="glow-o" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="6" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
 
-      {/* App 2: Spreadsheet */}
-      <rect x="69" y="30" width="42" height="56" rx="8" fill={a(.06)} stroke={a(.35)} strokeWidth="1.2"/>
-      <rect x="69" y="30" width="42" height="10" rx="8" fill={a(.12)}/>
-      <rect x="69" y="37" width="42" height="3" fill={a(.12)}/>
-      <circle cx="75" cy="35" r="1.8" fill={a(.5)}/><circle cx="81" cy="35" r="1.8" fill={a(.3)}/>
-      {/* Grid */}
-      <line x1="69" y1="52" x2="111" y2="52" stroke={a(.14)} strokeWidth=".8"/>
-      <line x1="69" y1="60" x2="111" y2="60" stroke={a(.14)} strokeWidth=".8"/>
-      <line x1="69" y1="68" x2="111" y2="68" stroke={a(.14)} strokeWidth=".8"/>
-      <line x1="83" y1="40" x2="83" y2="86" stroke={a(.11)} strokeWidth=".8"/>
-      <line x1="97" y1="40" x2="97" y2="86" stroke={a(.11)} strokeWidth=".8"/>
-      <rect x="72" y="43" width="9" height="7" rx="1.5" fill={a(.35)}/>
-      <rect x="72" y="53" width="9" height="5" rx="1"   fill={a(.2)}/>
-      <rect x="72" y="61" width="9" height="5" rx="1"   fill={a(.15)}/>
-      <rect x="86" y="43" width="12" height="3" rx="1"  fill={a(.2)}/>
-      <rect x="86" y="48" width="8"  height="3" rx="1"  fill={a(.12)}/>
+      {/* Background glow dots */}
+      <circle cx="70" cy="80" r="50" fill={a(.06)} filter="url(#blur-sm)" />
+      <circle cx="230" cy="80" r="50" fill={a(.06)} filter="url(#blur-sm)" />
 
-      {/* App 3: Chat */}
-      <rect x="130" y="30" width="42" height="56" rx="8" fill={a(.06)} stroke={a(.35)} strokeWidth="1.2"/>
-      <rect x="130" y="30" width="42" height="10" rx="8" fill={a(.12)}/>
-      <rect x="130" y="37" width="42" height="3" fill={a(.12)}/>
-      <circle cx="136" cy="35" r="1.8" fill={a(.5)}/><circle cx="142" cy="35" r="1.8" fill={a(.3)}/>
-      <rect x="136" y="46" width="28" height="12" rx="5" fill={a(.13)} stroke={a(.38)} strokeWidth="1"/>
-      <rect x="140" y="50" width="16" height="2" rx="1" fill={a(.5)}/>
-      <rect x="140" y="54" width="11" height="2" rx="1" fill={a(.3)}/>
-      <path d="M138 58 L134 66" stroke={a(.3)} strokeWidth="1.1" strokeLinecap="round"/>
-      <rect x="136" y="70" width="22" height="9" rx="4" fill={a(.07)} stroke={a(.22)} strokeWidth="1"/>
-      <rect x="140" y="73" width="12" height="2" rx="1" fill={a(.3)}/>
+      {/* Screen 1 — CRM (left) */}
+      <IsoScreen x={14} y={28}>
+        <circle cx={53} cy={68} r={9} stroke={a(.7)} strokeWidth="1.4" fill={a(.08)} />
+        <circle cx={53} cy={63} r={3.5} fill={a(.55)} />
+        <path d="M42 86v-1a11 11 0 0122 0v1" stroke={a(.55)} strokeWidth="1.3" strokeLinecap="round" />
+        <rect x={22} y={100} width={55} height={2.5} rx="1" fill={a(.2)} />
+        <rect x={22} y={106} width={40} height={2.5} rx="1" fill={a(.14)} />
+      </IsoScreen>
 
-      {/* Broken connection 1→2 */}
-      <line x1="50" y1="58" x2="56" y2="58" stroke={a(.28)} strokeWidth="1.2" strokeDasharray="3 2"/>
-      <line x1="64" y1="58" x2="69" y2="58" stroke={a(.28)} strokeWidth="1.2" strokeDasharray="3 2"/>
-      <line x1="56" y1="54" x2="64" y2="62" stroke={a(.8)} strokeWidth="1.6" strokeLinecap="round"/>
-      <line x1="64" y1="54" x2="56" y2="62" stroke={a(.8)} strokeWidth="1.6" strokeLinecap="round"/>
+      {/* Screen 2 — Spreadsheet (right, slightly raised) */}
+      <IsoScreen x={208} y={20}>
+        {[0,1,2,3].map(r => (
+          <line key={r} x1={208} y1={52 + r * 10} x2={286} y2={52 + r * 10}
+            stroke={a(.12)} strokeWidth=".8" />
+        ))}
+        {[0,1].map(c => (
+          <line key={c} x1={228 + c * 22} y1={31} x2={228 + c * 22} y2={118}
+            stroke={a(.10)} strokeWidth=".8" />
+        ))}
+        <rect x={212} y={34} width={14} height={7} rx="1.5" fill={a(.45)} />
+        <rect x={212} y={43} width={14} height={5} rx="1" fill={a(.28)} />
+        <rect x={212} y={53} width={14} height={5} rx="1" fill={a(.18)} />
+        <rect x={230} y={34} width={20} height={3} rx="1" fill={a(.22)} />
+        <rect x={230} y={39} width={14} height={3} rx="1" fill={a(.14)} />
+        <rect x={230} y={43} width={18} height={3} rx="1" fill={a(.18)} />
+      </IsoScreen>
 
-      {/* Broken connection 2→3 */}
-      <line x1="111" y1="58" x2="117" y2="58" stroke={a(.28)} strokeWidth="1.2" strokeDasharray="3 2"/>
-      <line x1="125" y1="58" x2="130" y2="58" stroke={a(.28)} strokeWidth="1.2" strokeDasharray="3 2"/>
-      <line x1="117" y1="54" x2="125" y2="62" stroke={a(.8)} strokeWidth="1.6" strokeLinecap="round"/>
-      <line x1="125" y1="54" x2="117" y2="62" stroke={a(.8)} strokeWidth="1.6" strokeLinecap="round"/>
+      {/* Screen 3 — Chat (center-bottom, lower) */}
+      <IsoScreen x={111} y={82} w={78} h={80}>
+        <rect x={119} y={102} width={54} height={13} rx="6" fill={a(.16)} stroke={a(.45)} strokeWidth="1" />
+        <rect x={123} y={106} width={34} height={2.5} rx="1" fill={a(.55)} />
+        <rect x={123} y={111} width={24} height={2.5} rx="1" fill={a(.35)} />
+        <path d="M121 115 L117 124" stroke={a(.3)} strokeWidth="1.1" strokeLinecap="round" />
+        <rect x={119} y={128} width={44} height={10} rx="5" fill={a(.08)} stroke={a(.28)} strokeWidth=".8" />
+        <rect x={123} y={131} width={28} height={2.5} rx="1" fill={a(.3)} />
+      </IsoScreen>
 
-      {/* Arrow hints */}
-      <path d="M53 55 L56 58 L53 61" fill="none" stroke={a(.2)} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M114 55 L117 58 L114 61" fill="none" stroke={a(.2)} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Broken link 1→3 */}
+      <line x1={92} y1={84} x2={108} y2={100} stroke={a(.22)} strokeWidth="1.2" strokeDasharray="3 2.5" />
+      <line x1={100} y1={87} x2={106} y2={95} stroke={a(.9)} strokeWidth="1.8" strokeLinecap="round" />
+      <line x1={106} y1={87} x2={100} y2={95} stroke={a(.9)} strokeWidth="1.8" strokeLinecap="round" />
+
+      {/* Broken link 2→3 */}
+      <line x1={209} y1={98} x2={194} y2={104} stroke={a(.22)} strokeWidth="1.2" strokeDasharray="3 2.5" />
+      <line x1={205} y1={97} x2={196} y2={107} stroke={a(.9)} strokeWidth="1.8" strokeLinecap="round" />
+      <line x1={196} y1={97} x2={205} y2={107} stroke={a(.9)} strokeWidth="1.8" strokeLinecap="round" />
+
+      {/* Broken link 1→2 — top */}
+      <line x1={92} y1={52} x2={208} y2={46} stroke={a(.18)} strokeWidth="1.2" strokeDasharray="4 3" />
+      <line x1={146} y1={45} x2={152} y2={52} stroke={a(.85)} strokeWidth="1.8" strokeLinecap="round" />
+      <line x1={152} y1={45} x2={146} y2={52} stroke={a(.85)} strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   )
 }
 
-/* 02 — Person buried in repeating manual tasks, cycling arrows */
+// ── 02 — Isometric paper stack with manual-copy loop ──────────────────────────
 const ManualWorkIllustration = () => {
   const a = o => `rgba(251,191,36,${o})`
+
+  // Stacked iso document cards
+  const DocStack = ({ x, y, count = 5 }) => (
+    <g>
+      {Array.from({ length: count }, (_, i) => {
+        const oy = i * -6  // each card raised 6px
+        return (
+          <g key={i}>
+            <polygon points={isoTop(x, y + oy, 68)} fill={a(0.16 + i * 0.03)} />
+            <polygon points={isoRight(x, y + oy, 68, 36)} fill={a(0.10)} />
+            <rect x={x} y={y + oy} width={68} height={36} rx="4"
+              fill={a(0.07 + i * 0.01)} stroke={a(0.35 + i * 0.05)} strokeWidth="1.1" />
+            {i === count - 1 && (
+              <>
+                <rect x={x + 6} y={y + oy + 8} width={42} height={3} rx="1.5" fill={a(.55)} />
+                <rect x={x + 6} y={y + oy + 14} width={32} height={2.5} rx="1.2" fill={a(.35)} />
+                <rect x={x + 6} y={y + oy + 20} width={38} height={2.5} rx="1.2" fill={a(.28)} />
+                <rect x={x + 6} y={y + oy + 26} width={22} height={2.5} rx="1.2" fill={a(.2)} />
+              </>
+            )}
+          </g>
+        )
+      })}
+    </g>
+  )
+
   return (
-    <svg viewBox="0 0 180 130" fill="none" className="challenge-illustration" aria-hidden="true">
-      {/* Circular orbit path */}
-      <ellipse cx="90" cy="65" rx="62" ry="48" stroke={a(.1)} strokeWidth="1" strokeDasharray="4 4"/>
+    <svg viewBox="0 0 300 190" fill="none" className="challenge-illustration" aria-hidden="true">
+      <defs>
+        <filter id="blur-y"><feGaussianBlur stdDeviation="5" /></filter>
+      </defs>
 
-      {/* Orbit arrow (clockwise hint) */}
-      <path d="M152 65 C152 38 124 18 90 18" stroke={a(.18)} strokeWidth="1.2" strokeLinecap="round"/>
-      <path d="M86 14 L90 18 L94 14" fill="none" stroke={a(.25)} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      {/* Left doc stack — source */}
+      <DocStack x={18} y={90} count={6} />
+      <rect x={18} y={96} width={32} height={9} rx="3" fill={a(.18)} stroke={a(.4)} strokeWidth=".8" />
+      <text x={34} y={103} textAnchor="middle" fill={a(.9)} fontSize="7.5" fontWeight="800" fontFamily="monospace">×12</text>
 
-      {/* Center: person silhouette */}
-      <circle cx="90" cy="58" r="10" fill={a(.12)} stroke={a(.6)} strokeWidth="1.4"/>
-      <circle cx="90" cy="53" r="4"  fill={a(.5)}/>
-      <path d="M82 72v-1a8 8 0 0116 0v1" stroke={a(.6)} strokeWidth="1.4" strokeLinecap="round"/>
+      {/* Right doc stack — destination (smaller) */}
+      <DocStack x={200} y={102} count={3} />
 
-      {/* Task 1 — Document (top) */}
-      <rect x="74" y="6" width="32" height="22" rx="5" fill={a(.08)} stroke={a(.4)} strokeWidth="1.2"/>
-      <path d="M96 6 L96 14 L104 14" stroke={a(.25)} strokeWidth="1" strokeLinecap="round"/>
-      <rect x="78" y="15" width="14" height="2" rx="1" fill={a(.45)}/>
-      <rect x="78" y="19" width="10" height="2" rx="1" fill={a(.28)}/>
-      {/* "×n" badge */}
-      <rect x="101" y="2"  width="16" height="12" rx="4" fill={a(.18)} stroke={a(.4)} strokeWidth="1"/>
-      <text x="109" y="11" textAnchor="middle" fill={a(1)} fontSize="7" fontWeight="700" fontFamily="monospace">×3</text>
+      {/* Transfer arrow: curved path from left to right */}
+      <path d="M100 72 Q150 28 200 72" stroke={a(.35)} strokeWidth="1.5"
+        strokeDasharray="5 3" strokeLinecap="round" fill="none" />
+      <path d="M196 68 L200 72 L196 76" fill="none" stroke={a(.6)}
+        strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
 
-      {/* Task 2 — Copy/paste (right) */}
-      <rect x="144" y="54" width="28" height="22" rx="5" fill={a(.08)} stroke={a(.4)} strokeWidth="1.2"/>
-      <rect x="146" y="56" width="18" height="14" rx="3" fill={a(.06)} stroke={a(.28)} strokeWidth="1"/>
-      <rect x="150" y="60" width="18" height="14" rx="3" fill={a(.1)} stroke={a(.4)} strokeWidth="1"/>
-      <rect x="153" y="64" width="10" height="2" rx="1" fill={a(.5)}/>
-      <rect x="153" y="68" width="7" height="2" rx="1" fill={a(.3)}/>
+      {/* Flying document (mid-transfer) */}
+      <g transform="translate(148,36) rotate(-8)">
+        <polygon points={isoTop(0, 0, 52)} fill={a(.30)} />
+        <rect x={0} y={0} width={52} height={30} rx="3"
+          fill={a(.15)} stroke={a(.65)} strokeWidth="1.4" />
+        <rect x={6} y={7} width={32} height={2.5} rx="1.2" fill={a(.6)} />
+        <rect x={6} y={13} width={22} height={2.5} rx="1.2" fill={a(.4)} />
+        <rect x={6} y={19} width={28} height={2.5} rx="1.2" fill={a(.3)} />
+      </g>
 
-      {/* Task 3 — Clock (bottom) */}
-      <circle cx="90" cy="113" r="13" fill={a(.08)} stroke={a(.4)} strokeWidth="1.2"/>
-      <line x1="90" y1="104" x2="90" y2="113" stroke={a(.7)} strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="90" y1="113" x2="97" y2="117" stroke={a(.5)} strokeWidth="1.2" strokeLinecap="round"/>
-      <circle cx="90" cy="113" r="1.5" fill={a(.8)}/>
+      {/* Clock — bottom center */}
+      <circle cx={150} cy={158} r={20} fill={a(.06)} stroke={a(.4)} strokeWidth="1.4" />
+      <circle cx={150} cy={158} r={2} fill={a(.8)} />
+      <line x1={150} y1={141} x2={150} y2={158} stroke={a(.75)} strokeWidth="1.6" strokeLinecap="round" />
+      <line x1={150} y1={158} x2={162} y2={164} stroke={a(.55)} strokeWidth="1.3" strokeLinecap="round" />
+      {/* Speed marks */}
+      <path d="M164 145 Q168 140 172 145" stroke={a(.35)} strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <path d="M166 150 Q172 145 178 150" stroke={a(.25)} strokeWidth="1" fill="none" strokeLinecap="round" />
 
-      {/* Task 4 — Form/table (left) */}
-      <rect x="8" y="54" width="30" height="22" rx="5" fill={a(.08)} stroke={a(.4)} strokeWidth="1.2"/>
-      <line x1="8" y1="62" x2="38" y2="62" stroke={a(.15)} strokeWidth=".8"/>
-      <line x1="8" y1="69" x2="38" y2="69" stroke={a(.15)} strokeWidth=".8"/>
-      <line x1="18" y1="54" x2="18" y2="76" stroke={a(.12)} strokeWidth=".8"/>
-      <rect x="11" y="57" width="4" height="4" rx="1" fill={a(.3)}/>
-      <rect x="21" y="57" width="12" height="2" rx="1" fill={a(.35)}/>
-      <rect x="11" y="64" width="4" height="4" rx="1" fill={a(.2)}/>
-      <rect x="21" y="64" width="9" height="2" rx="1" fill={a(.22)}/>
+      {/* Return dashed arrow (loop) */}
+      <path d="M200 130 Q150 175 100 130" stroke={a(.25)} strokeWidth="1.3"
+        strokeDasharray="4 3" strokeLinecap="round" fill="none" />
+      <path d="M104 134 L100 130 L104 126" fill="none" stroke={a(.45)}
+        strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
-/* 03 — Dashboard with empty KPIs and hollow chart bars */
+// ── 03 — Isometric dashboard with fog + question marks ────────────────────────
 const FlyingBlindIllustration = () => {
   const a = o => `rgba(129,140,248,${o})`
-  return (
-    <svg viewBox="0 0 180 130" fill="none" className="challenge-illustration" aria-hidden="true">
-      {/* Screen frame */}
-      <rect x="10" y="10" width="160" height="110" rx="10" fill={a(.05)} stroke={a(.28)} strokeWidth="1.2"/>
-      <rect x="10" y="10" width="160" height="14" rx="10" fill={a(.1)}/>
-      <rect x="10" y="20" width="160" height="4" fill={a(.1)}/>
-      <circle cx="18" cy="17" r="2" fill={a(.4)}/><circle cx="25" cy="17" r="2" fill={a(.25)}/><circle cx="32" cy="17" r="2" fill={a(.15)}/>
-      <rect x="130" y="13" width="32" height="8" rx="4" fill={a(.12)} stroke={a(.25)} strokeWidth=".8"/>
-      <rect x="133" y="15.5" width="16" height="3" rx="1.5" fill={a(.3)}/>
+  const bars = [45, 28, 60, 18, 52, 35, 42]
 
-      {/* KPI row — three cards, all showing dashes */}
-      {[0,1,2].map(i => (
+  return (
+    <svg viewBox="0 0 300 190" fill="none" className="challenge-illustration" aria-hidden="true">
+      <defs>
+        <linearGradient id="fog" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(11,13,26,0)" />
+          <stop offset="60%" stopColor="rgba(11,13,26,0.88)" />
+          <stop offset="100%" stopColor="rgba(11,13,26,0.97)" />
+        </linearGradient>
+        <filter id="blur-fog"><feGaussianBlur stdDeviation="4" /></filter>
+      </defs>
+
+      {/* Main screen — isometric 3D monitor */}
+      {/* Top face */}
+      <polygon points={isoTop(16, 18, 268)} fill={a(.22)} />
+      {/* Right face */}
+      <polygon points={isoRight(16, 18, 268, 148)} fill={a(.12)} />
+      {/* Screen body */}
+      <rect x={16} y={18} width={268} height={148} rx="10"
+        fill={a(.05)} stroke={a(.35)} strokeWidth="1.4" />
+      {/* Title bar */}
+      <rect x={16} y={18} width={268} height={16} rx="10" fill={a(.18)} />
+      <rect x={16} y={30} width={268} height={4} fill={a(.12)} />
+      <circle cx={26} cy={26} r={2.5} fill={a(.5)} />
+      <circle cx={35} cy={26} r={2.5} fill={a(.3)} />
+      <circle cx={44} cy={26} r={2.5} fill={a(.2)} />
+      {/* "Yesterday" badge */}
+      <rect x={200} y={20} width={76} height={12} rx="5" fill={a(.2)} stroke={a(.4)} strokeWidth=".8" />
+      <rect x={204} y={23} width={50} height={3} rx="1.5" fill={a(.5)} />
+      <rect x={204} y={28} width={36} height={2.5} rx="1.2" fill={a(.3)} />
+
+      {/* KPI row */}
+      {[0, 1, 2].map(i => (
         <g key={i}>
-          <rect x={18 + i*50} y="30" width="44" height="32" rx="6" fill={a(.06)} stroke={a(.22)} strokeWidth="1"/>
-          {/* "—" placeholder */}
-          <rect x={30 + i*50} y="40" width="20" height="4" rx="2" fill={a(.25)}/>
-          <rect x={26 + i*50} y="48" width="26" height="3" rx="1.5" fill={a(.12)}/>
-          {/* Question mark dot */}
-          <circle cx={58 + i*50} cy="33" r="3" fill={a(.2)} stroke={a(.4)} strokeWidth=".8"/>
-          <text x={58 + i*50} y={36} textAnchor="middle" fill={a(.75)} fontSize="4.5" fontWeight="700">?</text>
+          <rect x={24 + i * 90} y={42} width={82} height={38} rx="6"
+            fill={a(.07)} stroke={a(.2)} strokeWidth="1" />
+          <rect x={38 + i * 90} y={54} width={36} height={5} rx="2.5" fill={a(.22)} />
+          <rect x={32 + i * 90} y={64} width={44} height={3} rx="1.5" fill={a(.12)} />
         </g>
       ))}
 
-      {/* Chart area */}
-      <rect x="18" y="68" width="144" height="42" rx="6" fill={a(.04)} stroke={a(.15)} strokeWidth=".8"/>
-      {/* X axis */}
-      <line x1="28" y1="102" x2="154" y2="102" stroke={a(.2)} strokeWidth=".8"/>
-      {/* Bars — hollow/dotted = no data */}
-      {[0,1,2,3,4,5,6].map((i) => {
-        const barHeights = [24, 0, 18, 0, 28, 0, 16]
-        const h = barHeights[i]
-        const x = 32 + i * 18
-        const isEmpty = h === 0
-        return isEmpty ? (
-          <rect key={i} x={x} y={74} width="10" height="28" rx="2"
-            fill="none" stroke={a(.25)} strokeWidth="1" strokeDasharray="2.5 2"/>
-        ) : (
-          <rect key={i} x={x} y={102 - h} width="10" height={h} rx="2" fill={a(.35)}/>
-        )
-      })}
-      {/* "Last updated" label */}
-      <rect x="18" y="112" width="80" height="5" rx="2.5" fill={a(.08)}/>
-      <rect x="18" y="112" width="45" height="5" rx="2.5" fill={a(.18)}/>
+      {/* Chart bars — visible from bottom */}
+      {bars.map((h, i) => (
+        <rect key={i} x={28 + i * 36} y={162 - h} width={24} height={h} rx="3"
+          fill={a(.38)} />
+      ))}
+      {/* Horizontal axis */}
+      <line x1={24} y1={162} x2={280} y2={162} stroke={a(.2)} strokeWidth=".8" />
+
+      {/* FOG LAYER — covers most of the screen */}
+      <rect x={16} y={80} width={268} height={86} rx="0"
+        fill="url(#fog)" />
+      {/* Extra fog blur blob */}
+      <ellipse cx={150} cy={130} rx={140} ry={50}
+        fill={a(.12)} filter="url(#blur-fog)" />
+
+      {/* Floating question marks in the fog */}
+      {[
+        { cx: 68,  cy: 118, r: 18, fs: 22 },
+        { cx: 150, cy: 128, r: 22, fs: 26 },
+        { cx: 232, cy: 115, r: 16, fs: 20 },
+      ].map(({ cx, cy, r, fs }, i) => (
+        <g key={i}>
+          <circle cx={cx} cy={cy} r={r} fill={a(.10)} stroke={a(.30)} strokeWidth="1.2" />
+          <text x={cx} y={cy + fs * 0.38} textAnchor="middle"
+            fill={a(.65)} fontSize={fs} fontWeight="800" fontFamily="monospace">?</text>
+        </g>
+      ))}
     </svg>
   )
 }
 
-/* 04 — A square block trying to fit through a round hole */
+// ── 04 — Isometric SaaS box vs unique company shape ───────────────────────────
 const WrongFitIllustration = () => {
   const a = o => `rgba(52,211,153,${o})`
+
   return (
-    <svg viewBox="0 0 180 130" fill="none" className="challenge-illustration" aria-hidden="true">
-      {/* "Your workflow" label */}
-      <rect x="14" y="8" width="60" height="14" rx="4" fill={a(.08)} stroke={a(.25)} strokeWidth=".8"/>
-      <rect x="18" y="12" width="36" height="3" rx="1.5" fill={a(.35)}/>
-      <rect x="18" y="17" width="24" height="3" rx="1.5" fill={a(.2)}/>
+    <svg viewBox="0 0 300 190" fill="none" className="challenge-illustration" aria-hidden="true">
+      <defs>
+        <filter id="blur-g"><feGaussianBlur stdDeviation="4" /></filter>
+      </defs>
 
-      {/* Custom-shaped workflow block (left) — unique irregular shape */}
+      {/* Glow */}
+      <ellipse cx={150} cy={95} rx={100} ry={70} fill={a(.06)} filter="url(#blur-g)" />
+
+      {/* The generic SaaS box (isometric) — uniform, same for everyone */}
+      {/* Top */}
+      <polygon points={isoTop(60, 18, 180)} fill={a(.18)} />
+      {/* Right */}
+      <polygon points={isoRight(60, 18, 180, 150)} fill={a(.10)} />
+      {/* Front */}
+      <rect x={60} y={18} width={180} height={150} rx="10"
+        fill={a(.05)} stroke={a(.32)} strokeWidth="1.5" />
+
+      {/* "Off-the-shelf SaaS" label on top face */}
+      <text x={164} y={10} textAnchor="middle" fill={a(.45)}
+        fontSize="8" fontWeight="700" letterSpacing="1">OFF-THE-SHELF SAAS</text>
+
+      {/* The unique company workflow — irregular polygon, different shape */}
+      {/* It doesn't fit: overflows the box edges, angles wrong */}
       <path
-        d="M14 38 L52 38 L58 50 L52 62 L38 62 L38 74 L14 74 Z"
-        fill={a(.1)} stroke={a(.65)} strokeWidth="1.4"
-      />
-      {/* Internal detail lines */}
-      <line x1="14" y1="52" x2="52" y2="52" stroke={a(.2)} strokeWidth=".8" strokeDasharray="3 2"/>
-      <rect x="20" y="43" width="16" height="3" rx="1.5" fill={a(.4)}/>
-      <rect x="20" y="57" width="12" height="3" rx="1.5" fill={a(.3)}/>
-      <rect x="20" y="65" width="10" height="3" rx="1.5" fill={a(.2)}/>
-
-      {/* Arrow (trying to connect) */}
-      <path d="M62 56 L88 56" stroke={a(.3)} strokeWidth="1.3" strokeDasharray="3 2" strokeLinecap="round"/>
-      <path d="M84 52 L88 56 L84 60" fill="none" stroke={a(.4)} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-
-      {/* The SaaS "slot" — circular aperture that doesn't match */}
-      <circle cx="112" cy="56" r="32" fill={a(.04)} stroke={a(.22)} strokeWidth="1.2"/>
-      <circle cx="112" cy="56" r="20" fill="rgba(11,13,26,0.9)" stroke={a(.18)} strokeWidth="1"/>
-      {/* SaaS label */}
-      <rect x="84" y="8" width="56" height="14" rx="4" fill={a(.06)} stroke={a(.2)} strokeWidth=".8"/>
-      <rect x="90" y="12" width="28" height="3" rx="1.5" fill={a(.25)}/>
-      <rect x="94" y="17" width="18" height="3" rx="1.5" fill={a(.15)}/>
-
-      {/* The workflow block trying to enter the round hole — rotated square */}
-      <rect x="98" y="44" width="28" height="24" rx="3"
-        fill={a(.12)} stroke={a(.7)} strokeWidth="1.4"
-        transform="rotate(22 112 56)"
+        d="M 95 48 L 200 42 L 225 80 L 210 130 L 170 155 L 110 158 L 72 120 L 78 70 Z"
+        fill={a(.12)} stroke={a(.72)} strokeWidth="2" strokeLinejoin="round"
       />
 
-      {/* Gap/mismatch indicators */}
-      <line x1="130" y1="32" x2="138" y2="24" stroke={a(.5)} strokeWidth="1.2" strokeLinecap="round"/>
-      <line x1="132" y1="80" x2="140" y2="88" stroke={a(.5)} strokeWidth="1.2" strokeLinecap="round"/>
+      {/* Internal workflow lines — the company's unique process */}
+      <line x1={110} y1={80} x2={190} y2={75} stroke={a(.3)} strokeWidth=".9" strokeDasharray="4 2" />
+      <line x1={105} y1={100} x2={210} y2={96} stroke={a(.22)} strokeWidth=".9" strokeDasharray="4 2" />
+      <line x1={112} y1={120} x2={195} y2={118} stroke={a(.18)} strokeWidth=".9" strokeDasharray="4 2" />
+      <rect x={116} y={72} width={42} height={4} rx="2" fill={a(.45)} />
+      <rect x={116} y={92} width={34} height={4} rx="2" fill={a(.32)} />
+      <rect x={116} y={112} width={50} height={4} rx="2" fill={a(.28)} />
 
-      {/* Right side: workarounds */}
-      <rect x="150" y="30" width="22" height="52" rx="6" fill={a(.05)} stroke={a(.2)} strokeWidth="1" strokeDasharray="3 2"/>
-      <rect x="154" y="36" width="14" height="3" rx="1.5" fill={a(.25)}/>
-      <rect x="154" y="42" width="10" height="3" rx="1.5" fill={a(.18)}/>
-      <rect x="154" y="48" width="12" height="3" rx="1.5" fill={a(.15)}/>
-      <rect x="150" y="56" width="22" height="8" rx="3" fill={a(.1)} stroke={a(.3)} strokeWidth=".8"/>
-      <rect x="154" y="59" width="14" height="2.5" rx="1.2" fill={a(.4)}/>
-      <rect x="154" y="64" width="9" height="3" rx="1.5" fill={a(.12)}/>
-      <rect x="154" y="70" width="11" height="3" rx="1.5" fill={a(.1)}/>
+      {/* Stress / crack lines — where shapes collide */}
+      {[
+        { x1: 60, y1: 66, x2: 76, y2: 52 },
+        { x1: 240, y1: 72, x2: 224, y2: 82 },
+        { x1: 100, y1: 168, x2: 112, y2: 158 },
+        { x1: 214, y1: 152, x2: 204, y2: 140 },
+      ].map((l, i) => (
+        <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
+          stroke={a(.7)} strokeWidth="1.8" strokeLinecap="round" />
+      ))}
+
+      {/* Overflow corners — parts of company shape poking outside the SaaS box */}
+      <path d="M 224 80 L 242 70 L 228 60" fill="none"
+        stroke={a(.6)} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 166 156 L 172 172 L 156 170" fill="none"
+        stroke={a(.6)} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* Gap indicators (⟷ symbols showing mismatch) */}
+      <line x1={64} y1={100} x2={78} y2={100} stroke={a(.45)} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1={64} y1={97} x2={64} y2={103} stroke={a(.45)} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1={78} y1={97} x2={78} y2={103} stroke={a(.45)} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1={224} y1={110} x2={238} y2={110} stroke={a(.45)} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1={224} y1={107} x2={224} y2={113} stroke={a(.45)} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1={238} y1={107} x2={238} y2={113} stroke={a(.45)} strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   )
 }

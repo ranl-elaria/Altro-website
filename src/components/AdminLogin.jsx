@@ -8,6 +8,8 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -16,6 +18,20 @@ export default function AdminLogin() {
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
     if (authError) setError('Invalid email or password.')
     setLoading(false)
+  }
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Enter your email above, then click "Forgot password".')
+      return
+    }
+    setError('')
+    setResetLoading(true)
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/admin`,
+    })
+    setResetSent(true)
+    setResetLoading(false)
   }
 
   return (
@@ -92,6 +108,17 @@ export default function AdminLogin() {
             </motion.p>
           )}
 
+          {resetSent && (
+            <motion.p
+              className="admin-login__reset-sent"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              Reset link sent — check your inbox.
+            </motion.p>
+          )}
+
           <button
             type="submit"
             className="btn btn--primary admin-login__submit"
@@ -103,6 +130,15 @@ export default function AdminLogin() {
                 Signing in
               </>
             ) : 'Sign in'}
+          </button>
+
+          <button
+            type="button"
+            className="admin-login__forgot"
+            onClick={handleForgotPassword}
+            disabled={resetLoading}
+          >
+            {resetLoading ? 'Sending…' : 'Forgot password?'}
           </button>
         </motion.form>
       </motion.div>

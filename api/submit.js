@@ -3,6 +3,32 @@ import { Resend } from 'resend'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// Simple in-memory rate limiter: max 3 submissions per IP per hour
+const rateLimitMap = new Map()
+const RATE_LIMIT_MAX = 3
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000
+
+function isRateLimited(ip) {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now - entry.first > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(ip, { count: 1, first: now })
+    return false
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return true
+  entry.count++
+  return false
+}
+
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -13,6 +39,11 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() ?? 'unknown'
+  if (isRateLimited(ip)) {
+    return res.status(429).json({ error: 'Too many submissions. Please try again later.' })
   }
 
   const body = req.body ?? {}
@@ -43,7 +74,7 @@ export default async function handler(req, res) {
       await resend.emails.send({
         from: 'altro <onboarding@resend.dev>',
         to: adminEmail,
-        subject: `New enquiry from ${name}${company ? ` (${company})` : ''}`,
+        subject: `New enquiry from ${esc(name)}${company ? ` (${esc(company)})` : ''}`,
         html: `
           <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#353535;">
             <div style="background:#353535;padding:28px 32px;border-radius:8px 8px 0 0;">
@@ -58,28 +89,28 @@ export default async function handler(req, res) {
               <table style="width:100%;border-collapse:collapse;">
                 <tr>
                   <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;width:90px;font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.06em;">Name</td>
-                  <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;font-size:15px;color:#353535;">${name}</td>
+                  <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;font-size:15px;color:#353535;">${esc(name)}</td>
                 </tr>
                 ${company ? `
                 <tr>
                   <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.06em;">Company</td>
-                  <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;font-size:15px;color:#353535;">${company}</td>
+                  <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;font-size:15px;color:#353535;">${esc(company)}</td>
                 </tr>` : ''}
                 <tr>
                   <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.06em;">Email</td>
                   <td style="padding:10px 0;border-bottom:1px solid #e8e8e8;font-size:15px;color:#353535;">
-                    <a href="mailto:${email}" style="color:#3C6E71;text-decoration:none;">${email}</a>
+                    <a href="mailto:${esc(email)}" style="color:#3C6E71;text-decoration:none;">${esc(email)}</a>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:14px 0 0;font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.06em;vertical-align:top;">Message</td>
-                  <td style="padding:14px 0 0;font-size:15px;color:#353535;line-height:1.65;">${message.replace(/\n/g, '<br>')}</td>
+                  <td style="padding:14px 0 0;font-size:15px;color:#353535;line-height:1.65;">${esc(message).replace(/\n/g, '<br>')}</td>
                 </tr>
               </table>
 
               <div style="margin-top:32px;padding-top:24px;border-top:1px solid #e8e8e8;">
-                <a href="mailto:${email}" style="display:inline-block;background:#3C6E71;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;font-weight:600;">
-                  Reply to ${name} →
+                <a href="mailto:${esc(email)}" style="display:inline-block;background:#3C6E71;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-size:14px;font-weight:600;">
+                  Reply to ${esc(name)} →
                 </a>
               </div>
             </div>
