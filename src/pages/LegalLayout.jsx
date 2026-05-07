@@ -34,7 +34,7 @@ export default function LegalLayout({ title, lastUpdated, children }) {
           <div className="legal-footer-links">
             <Link to="/privacy" className="legal-footer-link">Privacy Policy</Link>
             <Link to="/terms" className="legal-footer-link">Terms of Service</Link>
-            <a href="mailto:hello@altro.build" className="legal-footer-link">Contact</a>
+            <a href="mailto:altroaiteam@gmail.com" className="legal-footer-link">Contact</a>
           </div>
         </div>
       </footer>

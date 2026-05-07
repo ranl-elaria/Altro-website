@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
           altro ("we", "us", "our") is a custom software studio that builds internal tools,
           automations, and AI agents for growing businesses. We are operated from Israel
           and can be reached at{' '}
-          <a href="mailto:hello@altro.build" className="legal-link">hello@altro.build</a>.
+          <a href="mailto:altroaiteam@gmail.com" className="legal-link">altroaiteam@gmail.com</a>.
         </p>
         <p>
           This Privacy Policy explains how we collect, use, and protect your personal
@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
         </ul>
         <p>
           To exercise any of these rights, contact us at{' '}
-          <a href="mailto:hello@altro.build" className="legal-link">hello@altro.build</a>.
+          <a href="mailto:altroaiteam@gmail.com" className="legal-link">altroaiteam@gmail.com</a>.
           We will respond within 30 days.
         </p>
       </Section>
@@ -176,7 +176,7 @@ export default function PrivacyPolicy() {
         </p>
         <address className="legal-address">
           <strong>altro</strong><br />
-          <a href="mailto:hello@altro.build" className="legal-link">hello@altro.build</a>
+          <a href="mailto:altroaiteam@gmail.com" className="legal-link">altroaiteam@gmail.com</a>
         </address>
       </Section>
 

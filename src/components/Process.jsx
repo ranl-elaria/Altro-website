@@ -1,193 +1,240 @@
 import { useRef, useEffect } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import useInView from '../hooks/useInView'
 
-// ── SVG step graphics ────────────────────────────────────────────────────────
+const C = '#0CB6B1' // primary teal
 
-const UnderstandGraphic = () => (
-  <svg className="process__graphic" viewBox="0 0 140 140" fill="none" aria-hidden="true">
-    <circle cx="70" cy="70" r="46" stroke="rgba(12,182,177,0.18)" strokeWidth="1" strokeDasharray="4 6" className="pg-spin" />
-    <circle cx="70" cy="70" r="32" stroke="rgba(12,182,177,0.12)" strokeWidth="1" strokeDasharray="2 8" className="pg-spin-rev" />
-    <circle cx="70" cy="24" r="5" fill="rgba(12,182,177,0.15)" stroke="rgba(12,182,177,0.55)" strokeWidth="1.2" />
-    <circle cx="116" cy="70" r="5" fill="rgba(12,182,177,0.15)" stroke="rgba(12,182,177,0.55)" strokeWidth="1.2" />
-    <circle cx="70" cy="116" r="5" fill="rgba(12,182,177,0.15)" stroke="rgba(12,182,177,0.55)" strokeWidth="1.2" />
-    <circle cx="24" cy="70" r="5" fill="rgba(12,182,177,0.15)" stroke="rgba(12,182,177,0.55)" strokeWidth="1.2" />
-    <circle cx="107" cy="33" r="4" fill="rgba(12,182,177,0.10)" stroke="rgba(12,182,177,0.4)" strokeWidth="1" />
-    <circle cx="33" cy="107" r="4" fill="rgba(12,182,177,0.10)" stroke="rgba(12,182,177,0.4)" strokeWidth="1" />
-    <line x1="70" y1="29" x2="70" y2="54" stroke="rgba(12,182,177,0.3)" strokeWidth="1" strokeDasharray="3 4" />
-    <line x1="111" y1="70" x2="86" y2="70" stroke="rgba(12,182,177,0.3)" strokeWidth="1" strokeDasharray="3 4" />
-    <line x1="70" y1="111" x2="70" y2="86" stroke="rgba(12,182,177,0.3)" strokeWidth="1" strokeDasharray="3 4" />
-    <line x1="29" y1="70" x2="54" y2="70" stroke="rgba(12,182,177,0.3)" strokeWidth="1" strokeDasharray="3 4" />
-    <circle cx="70" cy="70" r="16" fill="rgba(12,182,177,0.08)" stroke="rgba(12,182,177,0.35)" strokeWidth="1.2" />
-    <circle cx="70" cy="70" r="8" fill="rgba(12,182,177,0.2)" />
-    <circle cx="70" cy="70" r="4" fill="rgba(12,182,177,0.9)" className="pg-pulse" />
-    <g style={{transformOrigin: '70px 70px'}} className="pg-sweep">
-      <path d="M70 70 L70 24" stroke="rgba(12,182,177,0.5)" strokeWidth="1.2" strokeLinecap="round" />
-      <line x1="70" y1="70" x2="106" y2="70" stroke="rgba(12,182,177,0.2)" strokeWidth="1" strokeLinecap="round" />
-    </g>
-  </svg>
-)
+// ── Step icons ────────────────────────────────────────
+const ICONS = {
+  understand: (
+    // Magnifying glass / discovery
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      <line x1="11" y1="8" x2="11" y2="14" />
+      <line x1="8" y1="11" x2="14" y2="11" />
+    </svg>
+  ),
+  design: (
+    // Document / scope
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <polyline points="9 15 11 17 15 13" />
+    </svg>
+  ),
+  build: (
+    // Code brackets
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  ),
+  ship: (
+    // Rocket / deploy
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+    </svg>
+  ),
+}
 
-const DesignGraphic = () => (
-  <svg className="process__graphic" viewBox="0 0 140 140" fill="none" aria-hidden="true">
-    <rect x="36" y="26" width="72" height="90" rx="8" fill="rgba(12,182,177,0.04)" />
-    <rect x="32" y="22" width="72" height="90" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-    <rect x="32" y="22" width="72" height="22" rx="8" fill="rgba(12,182,177,0.10)" />
-    <rect x="32" y="36" width="72" height="8" fill="rgba(12,182,177,0.10)" />
-    <rect x="44" y="30" width="32" height="4" rx="2" fill="rgba(12,182,177,0.7)" />
-    {[0,1,2,3].map((i) => (
-      <g key={i} transform={`translate(0, ${i * 16})`}>
-        <rect x="44" y="52" width="10" height="10" rx="2.5"
-          fill={i < 3 ? 'rgba(12,182,177,0.18)' : 'rgba(255,255,255,0.05)'}
-          stroke={i < 3 ? 'rgba(12,182,177,0.6)' : 'rgba(255,255,255,0.2)'} strokeWidth="1" />
-        {i < 3 && <polyline
-          points={`47,${57+i*16} 50,${60+i*16} 55,${54+i*16}`}
-          stroke="rgba(12,182,177,0.9)" strokeWidth="1.3"
-          strokeLinecap="round" strokeLinejoin="round"
-          transform={`translate(0,${-i*16})`} />}
-        <rect x="60" y="54" width={i === 3 ? 20 : 28} height="4" rx="2"
-          fill={i < 3 ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)'} />
-        {i < 3 && <rect x="60" y="60" width={14 + i*4} height="3" rx="1.5" fill="rgba(255,255,255,0.1)" />}
+// ── Hub-ring scene — simplified hero-style illustration ───────────────────────
+function HubScene({ icon, num, orbitPoints = [], glow = C }) {
+  const cx = 270, cy = 130
+  return (
+    <svg viewBox="0 0 540 260" className="process__graphic-scene"
+      preserveAspectRatio="xMidYMid meet" aria-hidden="true" fill="none">
+      <defs>
+        <filter id={`ps-halo-${num}`} x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="12" />
+        </filter>
+        <filter id={`ps-glow-${num}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+
+      {/* Ghost step number watermark */}
+      <text x={cx} y={cy + 55} textAnchor="middle"
+        fill={glow} fillOpacity="0.05" fontSize="140" fontWeight="900"
+        fontFamily="var(--font-mono)" style={{ userSelect: 'none' }}>
+        {num}
+      </text>
+
+      {/* Ambient halo */}
+      <ellipse cx={cx} cy={cy} rx="160" ry="110"
+        fill={glow} fillOpacity="0.08" filter={`url(#ps-halo-${num})`} />
+
+      {/* Orbital rings — 3 concentric */}
+      <circle cx={cx} cy={cy} r="100"
+        stroke={glow} strokeOpacity="0.10" strokeWidth="1"
+        strokeDasharray="6 9" className="pg-spin" />
+      <circle cx={cx} cy={cy} r="68"
+        stroke={glow} strokeOpacity="0.16" strokeWidth="1"
+        strokeDasharray="4 7" className="pg-spin-rev" />
+      <circle cx={cx} cy={cy} r="40"
+        stroke={glow} strokeOpacity="0.24" strokeWidth="1.2" />
+
+      {/* Orbit accent dots */}
+      {orbitPoints.map((angle, i) => {
+        const rad = (angle * Math.PI) / 180
+        const r = 100
+        const ox = cx + r * Math.cos(rad)
+        const oy = cy + r * Math.sin(rad)
+        return (
+          <g key={i}>
+            <circle cx={ox} cy={oy} r="5"
+              fill={glow} fillOpacity="0.12"
+              stroke={glow} strokeOpacity="0.5" strokeWidth="1" />
+            <circle cx={ox} cy={oy} r="2.5" fill={glow} fillOpacity="0.8" />
+            {/* Spoke to center */}
+            <line x1={ox} y1={oy} x2={cx} y2={cy}
+              stroke={glow} strokeOpacity="0.10" strokeWidth="0.6" strokeDasharray="3 4" />
+          </g>
+        )
+      })}
+
+      {/* Hub body */}
+      <circle cx={cx} cy={cy} r="28"
+        fill="rgba(8,12,24,0.92)" stroke={glow} strokeWidth="1.8"
+        filter={`url(#ps-glow-${num})`} />
+      <circle cx={cx} cy={cy} r="20" fill={glow} fillOpacity="0.10" />
+      <circle cx={cx} cy={cy} r="13" fill={glow} fillOpacity="0.06" />
+
+      {/* Step icon */}
+      <g transform={`translate(${cx - 11}, ${cy - 11})`}
+        color={glow} stroke={glow} strokeWidth="1.8"
+        strokeLinecap="round" strokeLinejoin="round" fill="none">
+        {icon}
       </g>
-    ))}
-    <rect x="74" y="101" width="1.5" height="6" rx="0.75" fill="rgba(12,182,177,0.9)" className="pg-blink" />
-  </svg>
-)
+    </svg>
+  )
+}
 
-const BuildGraphic = () => (
-  <svg className="process__graphic" viewBox="0 0 140 140" fill="none" aria-hidden="true">
-    <rect x="20" y="22" width="100" height="96" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
-    <rect x="20" y="22" width="100" height="20" rx="8" fill="rgba(255,255,255,0.06)" />
-    <rect x="20" y="34" width="100" height="8" fill="rgba(255,255,255,0.06)" />
-    <circle cx="33" cy="32" r="3.5" fill="rgba(255,80,80,0.5)" />
-    <circle cx="44" cy="32" r="3.5" fill="rgba(255,180,0,0.4)" />
-    <circle cx="55" cy="32" r="3.5" fill="rgba(0,200,80,0.4)" />
-    <rect x="20" y="42" width="18" height="76" fill="rgba(0,0,0,0.15)" />
-    {[0,1,2,3,4].map((i) => (
-      <rect key={i} x="24" y={50 + i * 14} width="8" height="3" rx="1.5" fill="rgba(255,255,255,0.15)" />
-    ))}
-    <rect x="38" y="63" width="76" height="11" rx="2" fill="rgba(12,182,177,0.08)" />
-    <rect x="42" y="52" width="18" height="4" rx="2" fill="rgba(129,140,248,0.7)" />
-    <rect x="64" y="52" width="24" height="4" rx="2" fill="rgba(255,255,255,0.3)" />
-    <rect x="92" y="52" width="12" height="4" rx="2" fill="rgba(52,211,153,0.6)" />
-    <rect x="42" y="66" width="12" height="4" rx="2" fill="rgba(12,182,177,0.8)" />
-    <rect x="58" y="66" width="20" height="4" rx="2" fill="rgba(255,255,255,0.25)" />
-    <rect x="42" y="80" width="16" height="4" rx="2" fill="rgba(129,140,248,0.5)" />
-    <rect x="62" y="80" width="28" height="4" rx="2" fill="rgba(255,255,255,0.2)" />
-    <rect x="42" y="94" width="10" height="4" rx="2" fill="rgba(12,182,177,0.6)" />
-    <rect x="56" y="94" width="22" height="4" rx="2" fill="rgba(255,255,255,0.15)" />
-    <rect x="94" y="66" width="2" height="10" rx="1" fill="rgba(12,182,177,1)" className="pg-blink" />
-  </svg>
-)
-
-const ShipGraphic = () => (
-  <svg className="process__graphic" viewBox="0 0 140 140" fill="none" aria-hidden="true">
-    <rect x="18" y="20" width="104" height="100" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
-    <rect x="18" y="20" width="104" height="18" rx="8" fill="rgba(255,255,255,0.05)" />
-    <rect x="18" y="30" width="104" height="8" fill="rgba(255,255,255,0.05)" />
-    <circle cx="30" cy="29" r="3" fill="rgba(52,211,153,0.8)" className="pg-status" />
-    <circle cx="40" cy="29" r="3" fill="rgba(52,211,153,0.6)" className="pg-status" style={{animationDelay:'0.4s'}} />
-    <circle cx="50" cy="29" r="3" fill="rgba(52,211,153,0.5)" className="pg-status" style={{animationDelay:'0.8s'}} />
-    <rect x="100" y="26" width="14" height="6" rx="3" fill="rgba(12,182,177,0.3)" stroke="rgba(12,182,177,0.5)" strokeWidth="0.8" />
-    <rect x="24" y="44" width="28" height="22" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-    <rect x="56" y="44" width="28" height="22" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-    <rect x="88" y="44" width="28" height="22" rx="4" fill="rgba(12,182,177,0.08)" stroke="rgba(12,182,177,0.2)" strokeWidth="1" />
-    <rect x="28" y="48" width="12" height="5" rx="2" fill="rgba(52,211,153,0.8)" />
-    <rect x="60" y="48" width="10" height="5" rx="2" fill="rgba(255,255,255,0.5)" />
-    <rect x="92" y="48" width="14" height="5" rx="2" fill="rgba(12,182,177,0.8)" />
-    <rect x="24" y="72" width="92" height="36" rx="4" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-    <polyline points="28,100 38,92 48,95 58,86 68,88 78,80 88,82 98,76 108,74 116,72"
-      stroke="rgba(12,182,177,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    <path d="M28,100 38,92 48,95 58,86 68,88 78,80 88,82 98,76 108,74 116,72 116,108 28,108 Z"
-      fill="rgba(12,182,177,0.06)" />
-    <rect x="24" y="114" width="42" height="14" rx="4" fill="rgba(52,211,153,0.12)" stroke="rgba(52,211,153,0.35)" strokeWidth="1" />
-    <circle cx="33" cy="121" r="3" fill="rgba(52,211,153,0.7)" className="pg-status" />
-    <circle cx="108" cy="121" r="5" fill="rgba(12,182,177,0.15)" stroke="rgba(12,182,177,0.4)" strokeWidth="1" />
-    <circle cx="108" cy="121" r="2.5" fill="rgba(12,182,177,0.8)" className="pg-pulse" />
-  </svg>
-)
-
-// ── Step data ────────────────────────────────────────────────────────────────
-
+// ── Steps data ────────────────────────────────────────
 const steps = [
   {
-    num: '01',
-    title: 'Understand',
-    duration: '1–2 sessions',
-    text: 'We map your workflows, bottlenecks, and goals in a structured session. No assumptions. We want to understand how your business actually runs before designing anything.',
-    graphic: <UnderstandGraphic />,
+    num: '01', title: 'Understand', duration: '1–2 sessions',
+    text: 'We map your workflows, bottlenecks, and goals in a structured session. No assumptions — we want to understand how your business actually runs before designing anything.',
+    icon: ICONS.understand,
+    orbits: [-90, 0, 90, 180],       // N E S W cardinal points
   },
   {
-    num: '02',
-    title: 'Design',
-    duration: '~1 week',
+    num: '02', title: 'Design', duration: '~1 week',
     text: 'Fixed scope, fixed timeline, clear success criteria — all agreed before a single line of code is written. This is where most projects fail. We make it the foundation.',
-    graphic: <DesignGraphic />,
+    icon: ICONS.design,
+    orbits: [-45, 45, 135, 225],     // diagonal
   },
   {
-    num: '03',
-    title: 'Build',
-    duration: '2–10 weeks',
+    num: '03', title: 'Build', duration: '2–10 weeks',
     text: 'We build in two-week cycles with regular check-ins. You see working software early. No big reveal at the end. Edge cases get caught before they reach production.',
-    graphic: <BuildGraphic />,
+    icon: ICONS.build,
+    orbits: [-90, -30, 30, 90, 150, 210],  // 6 points
   },
   {
-    num: '04',
-    title: 'Ship & Support',
-    duration: 'Ongoing',
+    num: '04', title: 'Ship & Support', duration: 'Ongoing',
     text: 'We deploy to production and stay on. Real use surfaces things staging never does. We handle them fast. Support and retainers available for teams that want ongoing accountability.',
-    graphic: <ShipGraphic />,
+    icon: ICONS.ship,
+    orbits: [-60, 60, 180],          // 3 points — "live"
   },
 ]
 
-// ── Step row ─────────────────────────────────────────────────────────────────
+// ── Scroll-driven step card ───────────────────────────
+function ProcessStep({ step, index, total, fillRef, sectionRef }) {
+  const zoneRef = useRef(null)
+  const nodeRef = useRef(null)
+  const [nodeInViewRef, nodeActive] = useInView({ threshold: 0.5 })
 
-function ProcessStep({ step, index }) {
-  const [ref, inView] = useInView({ threshold: 0.25 })
+  // Scroll progress for this step's zone (0 = enters viewport, 1 = exits)
+  const { scrollYProgress } = useScroll({
+    target: zoneRef,
+    offset: ['start end', 'end start'],
+  })
+
+  // Card enters: fades + rises from bottom; exits: fades out
+  const opacity = useTransform(scrollYProgress, [0, 0.18, 0.78, 1], [0, 1, 1, 0])
+  const y      = useTransform(scrollYProgress, [0, 0.18], [56, 0])
+  const scale  = useTransform(scrollYProgress, [0, 0.18, 0.78, 1], [0.94, 1, 1, 0.97])
+
+  // Node dot activates when card is in center view
+  const nodeOpacity = useTransform(scrollYProgress, [0.10, 0.22], [0, 1])
+  const nodeBright  = useTransform(scrollYProgress, [0.78, 0.90], [1, 0])
+
   return (
-    <div ref={ref} className="process__step">
-      {/* Node column */}
-      <div className="process__step-node-col">
-        <div className={`process__step-node${inView ? ' process__step-node--active' : ''}`}>
-          <div className="process__step-node-dot" />
-        </div>
-      </div>
+    <div ref={zoneRef} className="process__step-zone">
+      {/* Sticky wrapper — snaps card to viewport center while scrolling through zone */}
+      <div className="process__step-sticky">
 
-      {/* Content column */}
-      <div
-        className={`process__step-content${inView ? ' process__step-content--visible' : ''}`}
-        style={{ transitionDelay: `${index * 0.06}s` }}
-      >
-        <div className="process__step-meta">
-          <span className="process__step-num">{step.num}</span>
-          <span className="process__step-duration">{step.duration}</span>
+        {/* Spine node column */}
+        <div className="process__step-node-col">
+          <motion.div
+            className="process__step-node"
+            style={{ opacity: nodeOpacity }}
+            ref={nodeRef}
+          >
+            <motion.div
+              className="process__step-node-dot"
+              style={{ opacity: nodeBright }}
+            />
+          </motion.div>
         </div>
-        <h3 className="process__step-title">{step.title}</h3>
-        <p className="process__step-text">{step.text}</p>
-        <div className="process__step-visual">{step.graphic}</div>
+
+        {/* Full card — motion controlled */}
+        <motion.div
+          className="process__step-card"
+          style={{ opacity, y, scale }}
+        >
+          {/* Illustration scene */}
+          <div className="process__step-card__scene">
+            <HubScene
+              icon={step.icon}
+              num={step.num}
+              orbitPoints={step.orbits}
+              glow={C}
+            />
+          </div>
+
+          {/* Text overlay */}
+          <div className="process__step-card__overlay">
+            <div className="process__step-meta">
+              <span className="process__step-num">{step.num}</span>
+              <span className="process__step-duration">{step.duration}</span>
+            </div>
+            <h3 className="process__step-title">{step.title}</h3>
+            <p className="process__step-text">{step.text}</p>
+          </div>
+        </motion.div>
+
       </div>
     </div>
   )
 }
 
-// ── Section ──────────────────────────────────────────────────────────────────
-
+// ── Section ───────────────────────────────────────────
 export default function Process() {
   const sectionRef = useRef(null)
-  const fillRef = useRef(null)
+  const fillRef    = useRef(null)
   const [headerRef, headerInView] = useInView()
 
-  // Spine fill — draws down as you scroll through the section
+  // Spine fill — draws down as you scroll through section
   useEffect(() => {
     const handle = () => {
       const section = sectionRef.current
-      const fill = fillRef.current
+      const fill    = fillRef.current
       if (!section || !fill) return
-      const rect = section.getBoundingClientRect()
-      const viewH = window.innerHeight
+      const rect    = section.getBoundingClientRect()
+      const viewH   = window.innerHeight
       const entered = viewH - rect.top
-      const total = rect.height + viewH
-      const progress = Math.max(0, Math.min(1, entered / total))
-      fill.style.height = `${progress * 100}%`
+      const total   = rect.height + viewH
+      const pct     = Math.max(0, Math.min(1, entered / total))
+      fill.style.height = `${pct * 100}%`
     }
     window.addEventListener('scroll', handle, { passive: true })
     handle()
@@ -198,10 +245,8 @@ export default function Process() {
     <section className="process section" id="process" ref={sectionRef}>
       <div className="container">
 
-        <div
-          ref={headerRef}
-          className={`process__header reveal${headerInView ? ' reveal--visible' : ''}`}
-        >
+        <div ref={headerRef}
+          className={`process__header reveal${headerInView ? ' reveal--visible' : ''}`}>
           <div>
             <h2 className="display-heading display-heading--light">How we work</h2>
           </div>
@@ -214,13 +259,20 @@ export default function Process() {
         </div>
 
         <div className="process__timeline">
-          {/* Vertical spine */}
+          {/* Glowing spine */}
           <div className="process__spine" aria-hidden="true">
             <div className="process__spine-fill" ref={fillRef} />
           </div>
 
           {steps.map((step, i) => (
-            <ProcessStep key={step.num} step={step} index={i} />
+            <ProcessStep
+              key={step.num}
+              step={step}
+              index={i}
+              total={steps.length}
+              fillRef={fillRef}
+              sectionRef={sectionRef}
+            />
           ))}
         </div>
 

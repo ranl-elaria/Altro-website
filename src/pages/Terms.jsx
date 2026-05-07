@@ -162,7 +162,7 @@ export default function Terms() {
         </p>
         <address className="legal-address">
           <strong>altro</strong><br />
-          <a href="mailto:hello@altro.build" className="legal-link">hello@altro.build</a>
+          <a href="mailto:altroaiteam@gmail.com" className="legal-link">altroaiteam@gmail.com</a>
         </address>
       </Section>
 

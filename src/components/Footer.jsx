@@ -26,7 +26,7 @@ export default function Footer() {
             <div className="footer__col">
               <span className="footer__col-head">Contact</span>
               <a href="/#contact" className="footer__link">Start a project</a>
-              <a href="mailto:hello@altro.build" className="footer__link">hello@altro.build</a>
+              <a href="mailto:altroaiteam@gmail.com" className="footer__link">altroaiteam@gmail.com</a>
             </div>
             <div className="footer__col">
               <span className="footer__col-head">Legal</span>
