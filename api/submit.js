@@ -75,6 +75,15 @@ export default async function handler(req, res) {
         from: 'altro <onboarding@resend.dev>',
         to: adminEmail,
         subject: `New enquiry from ${esc(name)}${company ? ` (${esc(company)})` : ''}`,
+        text: [
+          `New enquiry from ${name}${company ? ` (${company})` : ''}`,
+          '',
+          `Name:    ${name}`,
+          company ? `Company: ${company}` : null,
+          `Email:   ${email}`,
+          '',
+          `Message:\n${message}`,
+        ].filter(l => l !== null).join('\n'),
         html: `
           <div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;color:#353535;">
             <div style="background:#353535;padding:28px 32px;border-radius:8px 8px 0 0;">
