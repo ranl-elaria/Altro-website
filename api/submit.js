@@ -122,6 +122,15 @@ export default async function handler(req, res) {
                   Reply to ${esc(name)} →
                 </a>
               </div>
+
+              <div style="margin-top:32px;padding-top:24px;border-top:1px solid #e8e8e8;">
+                <p style="margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#888;">Plain text</p>
+                <pre style="margin:0;font-family:'Courier New',monospace;font-size:13px;color:#353535;white-space:pre-wrap;line-height:1.7;">Name:    ${esc(name)}
+${company ? `Company: ${esc(company)}\n` : ''}Email:   ${esc(email)}
+
+Message:
+${esc(message)}</pre>
+              </div>
             </div>
           </div>
         `,
