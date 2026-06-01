@@ -41,6 +41,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({ error: 'Missing server env vars: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY' })
+  }
+
   const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() ?? 'unknown'
   if (isRateLimited(ip)) {
     return res.status(429).json({ error: 'Too many submissions. Please try again later.' })
@@ -65,7 +69,7 @@ export default async function handler(req, res) {
 
   if (dbError) {
     console.error('Supabase insert error:', dbError)
-    return res.status(500).json({ error: 'Failed to save submission.' })
+    return res.status(500).json({ error: `DB error: ${dbError.code} — ${dbError.message}` })
   }
 
   const adminEmail = process.env.ADMIN_EMAIL
