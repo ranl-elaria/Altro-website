@@ -1,4 +1,7 @@
 {
+  "crons": [
+    { "path": "/api/sync-xplace", "schedule": "0 * * * *" }
+  ],
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "headers": [
     {
