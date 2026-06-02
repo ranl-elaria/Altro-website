@@ -42,15 +42,16 @@ function parseProjects(html) {
   const projects = []
   const seen = new Set()
 
-  // Find all links to xplace.com article/project pages
-  const linkRe = /<a\s[^>]*href=["'](https?:\/\/(?:www\.)?xplace\.com\/(?:article|project)\/\d+[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi
+  // Find all links to xplace.com job pages
+  const linkRe = /<a\s[^>]*href=["'](https?:\/\/(?:www\.)?xplace\.com\/job\/\d+[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi
 
   let match
   while ((match = linkRe.exec(html)) !== null) {
     const url = match[1].split('?')[0] // strip query params
     const rawTitle = match[2].replace(/<[^>]+>/g, '').trim()
 
-    if (!rawTitle || rawTitle.length < 3) continue
+    // skip empty, too-short, or URL-as-title (the duplicate URL display links)
+    if (!rawTitle || rawTitle.length < 3 || rawTitle.startsWith('http')) continue
     if (seen.has(url)) continue
     seen.add(url)
 
