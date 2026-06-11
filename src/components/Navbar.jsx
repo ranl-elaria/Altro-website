@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import Logo from './Logo'
+import LangSwitcher from './LangSwitcher'
 import useActiveSection from '../hooks/useActiveSection'
+import { useT } from '../i18n/LanguageContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const active = useActiveSection(['home', 'services', 'process', 'faq', 'contact'])
+  const t = useT()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40)
@@ -26,16 +29,17 @@ export default function Navbar() {
         </a>
 
         <nav className={`navbar__nav${menuOpen ? ' navbar__nav--open' : ''}`}>
-          <a href="#services" className={linkClass('services')} onClick={closeMenu}>Services</a>
-          <a href="#process" className={linkClass('process')} onClick={closeMenu}>Process</a>
-          <a href="#faq" className={linkClass('faq')} onClick={closeMenu}>FAQ</a>
-          <a href="#contact" className="navbar__cta" onClick={closeMenu}>Get in touch</a>
+          <a href="#services" className={linkClass('services')} onClick={closeMenu}>{t('navbar.services')}</a>
+          <a href="#process" className={linkClass('process')} onClick={closeMenu}>{t('navbar.process')}</a>
+          <a href="#faq" className={linkClass('faq')} onClick={closeMenu}>{t('navbar.faq')}</a>
+          <LangSwitcher />
+          <a href="#contact" className="navbar__cta" onClick={closeMenu}>{t('navbar.cta')}</a>
         </nav>
 
         <button
           className="navbar__hamburger"
           onClick={() => setMenuOpen(o => !o)}
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-label={menuOpen ? t('navbar.ariaClose') : t('navbar.ariaOpen')}
           aria-expanded={menuOpen}
         >
           <span style={menuOpen ? { transform: 'rotate(45deg) translate(5px, 5px)' } : {}} />

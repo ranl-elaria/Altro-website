@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useT } from '../i18n/LanguageContext'
 
 const STORAGE_KEY = 'altro_cookie_consent'
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
+  const t = useT()
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -27,27 +29,26 @@ export default function CookieBanner() {
       className="cookie-banner"
       role="dialog"
       aria-live="polite"
-      aria-label="Cookie consent"
+      aria-label={t('cookie.ariaLabel')}
     >
       <p className="cookie-banner__text">
-        We use analytics cookies to understand how visitors use this site and improve
-        the experience. Essential cookies (used for admin login) are always active.{' '}
-        <a href="/privacy#cookies" className="cookie-banner__link">Learn more</a>
+        {t('cookie.text')}{' '}
+        <a href="/privacy#cookies" className="cookie-banner__link">{t('cookie.learnMore')}</a>
       </p>
       <div className="cookie-banner__actions">
         <button
           className="cookie-banner__btn cookie-banner__btn--decline"
           onClick={decline}
-          aria-label="Decline analytics cookies"
+          aria-label={t('cookie.ariaDecline')}
         >
-          Decline
+          {t('cookie.decline')}
         </button>
         <button
           className="cookie-banner__btn cookie-banner__btn--accept"
           onClick={accept}
-          aria-label="Accept all cookies"
+          aria-label={t('cookie.ariaAccept')}
         >
-          Accept
+          {t('cookie.accept')}
         </button>
       </div>
     </div>

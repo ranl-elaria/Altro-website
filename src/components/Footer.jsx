@@ -1,46 +1,49 @@
 import { Link } from 'react-router-dom'
 import Logo from './Logo'
+import { useT } from '../i18n/LanguageContext'
 
 export default function Footer() {
+  const t = useT()
+
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer__top">
           <div className="footer__brand">
             <Logo />
-            <p className="footer__tagline">Custom software for growing teams.</p>
+            <p className="footer__tagline">{t('footer.tagline')}</p>
           </div>
           <div className="footer__cols">
             <div className="footer__col">
-              <span className="footer__col-head">Services</span>
-              <a href="/#services" className="footer__link">Internal Webapps</a>
-              <a href="/#services" className="footer__link">Process Automations</a>
-              <a href="/#services" className="footer__link">AI Agents</a>
+              <span className="footer__col-head">{t('footer.servicesHead')}</span>
+              <a href="/#services" className="footer__link">{t('footer.serviceWebapps')}</a>
+              <a href="/#services" className="footer__link">{t('footer.serviceAutomations')}</a>
+              <a href="/#services" className="footer__link">{t('footer.serviceAgents')}</a>
             </div>
             <div className="footer__col">
-              <span className="footer__col-head">Company</span>
-              <a href="/#process" className="footer__link">How we work</a>
-              <a href="/#faq" className="footer__link">FAQ</a>
-              <a href="/#contact" className="footer__link">Start a project</a>
+              <span className="footer__col-head">{t('footer.companyHead')}</span>
+              <a href="/#process" className="footer__link">{t('footer.companyProcess')}</a>
+              <a href="/#faq" className="footer__link">{t('footer.companyFaq')}</a>
+              <a href="/#contact" className="footer__link">{t('footer.companyStart')}</a>
             </div>
             <div className="footer__col">
-              <span className="footer__col-head">Contact</span>
-              <a href="/#contact" className="footer__link">Start a project</a>
+              <span className="footer__col-head">{t('footer.contactHead')}</span>
+              <a href="/#contact" className="footer__link">{t('footer.contactStart')}</a>
               <a href="mailto:altroaiteam@gmail.com" className="footer__link">altroaiteam@gmail.com</a>
             </div>
             <div className="footer__col">
-              <span className="footer__col-head">Legal</span>
-              <Link to="/privacy" className="footer__link">Privacy Policy</Link>
-              <Link to="/terms" className="footer__link">Terms of Service</Link>
+              <span className="footer__col-head">{t('footer.legalHead')}</span>
+              <Link to="/privacy" className="footer__link">{t('footer.privacy')}</Link>
+              <Link to="/terms" className="footer__link">{t('footer.terms')}</Link>
             </div>
           </div>
         </div>
 
         <div className="footer__bottom">
-          <span className="footer__copy">© 2026 altro. All rights reserved.</span>
+          <span className="footer__copy">{t('footer.copy')}</span>
           <div className="footer__legal-links">
-            <Link to="/privacy" className="footer__legal-link">Privacy Policy</Link>
-            <Link to="/terms" className="footer__legal-link">Terms of Service</Link>
+            <Link to="/privacy" className="footer__legal-link">{t('footer.privacy')}</Link>
+            <Link to="/terms" className="footer__legal-link">{t('footer.terms')}</Link>
           </div>
         </div>
       </div>

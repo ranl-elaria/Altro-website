@@ -1,30 +1,9 @@
 import { useState, useRef, useCallback } from 'react'
-import useInView from '../hooks/useInView'
+import { motion, AnimatePresence } from 'framer-motion'
+import MotionReveal from './MotionReveal'
+import { useT } from '../i18n/LanguageContext'
 
-const faqs = [
-  {
-    q: 'What types of businesses do you work with?',
-    a: "Companies that have outgrown their current tools. Usually 10 to 200 people, across SaaS, logistics, healthcare, and professional services. The common signal is teams spending real time on work that should be automated, or running critical operations through spreadsheets they've duct-taped together.",
-  },
-  {
-    q: 'How long does a typical project take?',
-    a: "Most focused tools and automations ship in 4–6 weeks. A full internal webapp or multi-agent system is typically 8–12 weeks. You get a fixed timeline estimate after discovery, before we write a single line of code, and before you commit to anything.",
-  },
-  {
-    q: "What's the difference between an automation and an AI agent?",
-    a: "Automations follow fixed rules: trigger fires, steps execute, done. Fast and reliable for structured, repeatable work. AI agents handle tasks that require judgment: reading unstructured input, making context-dependent decisions, adapting to variation. Most production systems use both.",
-  },
-  {
-    q: 'Do you offer ongoing support after launch?',
-    a: "Yes. We stay on after shipping for bug fixes and monitoring, and offer ongoing retainers for teams that want continued development or want us accountable for uptime. We can also document and hand off to your own team if that's the goal.",
-  },
-  {
-    q: 'How do we get started?',
-    a: "Send a message using the form below. Describe the problem you're trying to solve, not the solution you think you need. We'll schedule a short call, understand the situation, and tell you honestly whether we're the right fit and what it would take to build.",
-  },
-]
-
-function FAQItem({ item, index, inView }) {
+function FAQItem({ item, index }) {
   const [open, setOpen] = useState(false)
   const itemRef = useRef(null)
 
@@ -42,12 +21,16 @@ function FAQItem({ item, index, inView }) {
   }, [])
 
   return (
-    <div
+    <motion.div
       ref={itemRef}
-      className={`faq__item${open ? ' faq__item--open' : ''}${inView ? ' faq__item--visible' : ''}`}
+      className={`faq__item${open ? ' faq__item--open' : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      style={{ '--faq-glow-op': 0, transitionDelay: inView ? `${index * 0.07}s` : '0s' }}
+      style={{ '--faq-glow-op': 0 }}
+      initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
+      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ type: 'spring', duration: 0.5, bounce: 0, delay: index * 0.06 }}
     >
       <button
         className="faq__question"
@@ -56,42 +39,73 @@ function FAQItem({ item, index, inView }) {
       >
         <span className="faq__num">{String(index + 1).padStart(2, '0')}</span>
         <span className="faq__question-text">{item.q}</span>
-        <span className="faq__chevron" aria-hidden="true">
+        <motion.span
+          className="faq__chevron"
+          aria-hidden="true"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ type: 'spring', duration: 0.4, bounce: 0 }}
+        >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </span>
+        </motion.span>
       </button>
-      <div className="faq__answer" role="region">
-        <p className="faq__answer-inner">{item.a}</p>
-      </div>
-    </div>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            className="faq__answer-fm"
+            key="answer"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: 'spring', duration: 0.45, bounce: 0 }}
+            style={{ overflow: 'hidden', paddingLeft: 20 }}
+          >
+            <p className="faq__answer-inner faq__answer-inner--open">
+              {item.a}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 
 export default function FAQ() {
-  const [ref, inView] = useInView()
+  const t = useT()
+
+  const faqs = [1, 2, 3, 4, 5].map(i => ({
+    q: t(`faq.0${i}.q`),
+    a: t(`faq.0${i}.a`),
+  }))
 
   return (
     <section className="faq section" id="faq">
       <div className="container">
         <div className="faq__layout">
-          <div ref={ref} className={`faq__header reveal${inView ? ' reveal--visible' : ''}`}>
-            <h2 className="display-heading display-heading--dark">Questions<br />we get asked</h2>
-            <p className="body-sub body-sub--dark faq__sub">
-              If your question isn't here, just send us a message. We answer every one.
-            </p>
-            <a href="#contact" className="btn btn--ghost-dark faq__cta">
-              Ask a question
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </a>
-          </div>
+          <MotionReveal delay={0.05}>
+            <div className="faq__header">
+              <h2 className="display-heading display-heading--light">
+                {t('faq.heading').split('\n').map((line, i, arr) => (
+                  <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+                ))}
+              </h2>
+              <p className="body-sub body-sub--light faq__sub">
+                {t('faq.sub')}
+              </p>
+              <a href="#contact" className="btn btn--ghost faq__cta">
+                {t('faq.cta')}
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            </div>
+          </MotionReveal>
 
           <div className="faq__list" role="list">
             {faqs.map((item, i) => (
-              <FAQItem key={item.q} item={item} index={i} inView={inView} />
+              <FAQItem key={i} item={item} index={i} />
             ))}
           </div>
         </div>

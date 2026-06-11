@@ -1,6 +1,8 @@
 import { useRef, useEffect } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import MotionReveal from './MotionReveal'
 import useInView from '../hooks/useInView'
+import { useT } from '../i18n/LanguageContext'
 
 const C = '#0CB6B1' // primary teal
 
@@ -118,32 +120,12 @@ function HubScene({ icon, num, orbitPoints = [], glow = C }) {
   )
 }
 
-// ── Steps data ────────────────────────────────────────
-const steps = [
-  {
-    num: '01', title: 'Understand', duration: '1–2 sessions',
-    text: 'We map your workflows, bottlenecks, and goals in a structured session. No assumptions — we want to understand how your business actually runs before designing anything.',
-    icon: ICONS.understand,
-    orbits: [-90, 0, 90, 180],       // N E S W cardinal points
-  },
-  {
-    num: '02', title: 'Design', duration: '~1 week',
-    text: 'Fixed scope, fixed timeline, clear success criteria — all agreed before a single line of code is written. This is where most projects fail. We make it the foundation.',
-    icon: ICONS.design,
-    orbits: [-45, 45, 135, 225],     // diagonal
-  },
-  {
-    num: '03', title: 'Build', duration: '2–10 weeks',
-    text: 'We build in two-week cycles with regular check-ins. You see working software early. No big reveal at the end. Edge cases get caught before they reach production.',
-    icon: ICONS.build,
-    orbits: [-90, -30, 30, 90, 150, 210],  // 6 points
-  },
-  {
-    num: '04', title: 'Ship & Support', duration: 'Ongoing',
-    text: 'We deploy to production and stay on. Real use surfaces things staging never does. We handle them fast. Support and retainers available for teams that want ongoing accountability.',
-    icon: ICONS.ship,
-    orbits: [-60, 60, 180],          // 3 points — "live"
-  },
+// ── Steps static meta (text added at render time via t()) ────────────────────
+const STEP_META = [
+  { num: '01', icon: ICONS.understand, orbits: [-90, 0, 90, 180] },
+  { num: '02', icon: ICONS.design,     orbits: [-45, 45, 135, 225] },
+  { num: '03', icon: ICONS.build,      orbits: [-90, -30, 30, 90, 150, 210] },
+  { num: '04', icon: ICONS.ship,       orbits: [-60, 60, 180] },
 ]
 
 // ── Scroll-driven step card ───────────────────────────
@@ -221,7 +203,14 @@ function ProcessStep({ step, index, total, fillRef, sectionRef }) {
 export default function Process() {
   const sectionRef = useRef(null)
   const fillRef    = useRef(null)
-  const [headerRef, headerInView] = useInView()
+  const t = useT()
+
+  const steps = STEP_META.map(item => ({
+    ...item,
+    title:    t(`process.${item.num}.title`),
+    duration: t(`process.${item.num}.duration`),
+    text:     t(`process.${item.num}.text`),
+  }))
 
   // Spine fill — draws down as you scroll through section
   useEffect(() => {
@@ -245,18 +234,20 @@ export default function Process() {
     <section className="process section" id="process" ref={sectionRef}>
       <div className="container">
 
-        <div ref={headerRef}
-          className={`process__header reveal${headerInView ? ' reveal--visible' : ''}`}>
-          <div>
-            <h2 className="display-heading display-heading--light">How we work</h2>
+        <MotionReveal>
+          <div className="process__header">
+            <div>
+              <h2 className="display-heading display-heading--light">{t('process.heading')}</h2>
+            </div>
+            <div className="process__header-right">
+              <p className="body-sub body-sub--light">
+                {t('process.sub').split('\n').map((line, i, arr) => (
+                  <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+                ))}
+              </p>
+            </div>
           </div>
-          <div className="process__header-right">
-            <p className="body-sub body-sub--light">
-              Scope is fixed before we build.<br />
-              Four stages, no surprises.
-            </p>
-          </div>
-        </div>
+        </MotionReveal>
 
         <div className="process__timeline">
           {/* Glowing spine */}

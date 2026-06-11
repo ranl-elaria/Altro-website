@@ -21,6 +21,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.4.1",
     "supabase": "^2.92.1",
+    "tinyglobby": "^0.2.17",
     "vite": "^6.3.1"
   }
 }

@@ -3,7 +3,7 @@ import Logo from '../components/Logo'
 
 export default function LegalLayout({ title, lastUpdated, children }) {
   return (
-    <div className="legal-page">
+    <div className="legal-page" dir="ltr" lang="en">
       <a href="#legal-main" className="skip-link">Skip to content</a>
       <header className="legal-header">
         <div className="container legal-header__inner">
