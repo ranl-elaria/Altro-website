@@ -1,63 +1,92 @@
 import { useRef } from 'react'
+import { motion } from 'framer-motion'
 import HeroHub from './HeroHub'
+import WaveMesh from './WaveMesh'
+import { useT } from '../i18n/LanguageContext'
+
+// Jakub recipe: opacity + translateY + blur, spring with no overshoot
+const fadeUp = {
+  hidden: { opacity: 0, y: 18, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { type: 'spring', duration: 0.6, bounce: 0 },
+  },
+}
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.14, delayChildren: 0.05 } },
+}
 
 export default function Hero() {
   const heroRef = useRef(null)
+  const t = useT()
 
   const handleMouseMove = (e) => {
     const el = heroRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top) / rect.height) * 100
-    el.style.setProperty('--mx', `${x}%`)
-    el.style.setProperty('--my', `${y}%`)
+    el.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
+    el.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
   }
 
   return (
     <section className="hero" id="home" ref={heroRef} onMouseMove={handleMouseMove}>
-      <div className="hero__grid" aria-hidden="true" />
+      {/* 3D wave mesh — the primary ambient background */}
+      <WaveMesh />
+
+      {/* Atmospheric depth gradients */}
+      <div className="hero__atmos" aria-hidden="true" />
+
+      {/* Cursor-responsive spotlight */}
       <div className="hero__spotlight" aria-hidden="true" />
-      <div className="hero__blob hero__blob--1" aria-hidden="true" />
-      <div className="hero__blob hero__blob--2" aria-hidden="true" />
-      <div className="hero__blob hero__blob--3" aria-hidden="true" />
 
       <div className="container hero__container">
-        <div className="hero__left">
-          <h1 className="hero__headline">
-            <span className="hero__line">Internal tools</span>
-            <span className="hero__line">
-              your team{' '}
+        <motion.div
+          className="hero__left"
+          variants={stagger}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.h1 className="hero__headline" variants={stagger}>
+            <motion.span className="hero__line" variants={fadeUp}>
+              {t('hero.line1')}
+            </motion.span>
+            <motion.span className="hero__line" variants={fadeUp}>
+              {t('hero.line2a')}{' '}
               <span className="accent hero__accent-wrap">
-                actually
+                {t('hero.line2accent')}
                 <span className="hero__accent-line" aria-hidden="true" />
               </span>
-            </span>
-            <span className="hero__line">uses.</span>
-          </h1>
+            </motion.span>
+            <motion.span className="hero__line" variants={fadeUp}>
+              {t('hero.line3')}
+            </motion.span>
+          </motion.h1>
 
-          <p className="hero__sub">
-            altro builds custom webapps, automations, and AI agents for growing companies.
-            We design around your workflow. Not the other way around.
-          </p>
+          <motion.p className="hero__sub" variants={fadeUp}>
+            {t('hero.sub')}
+          </motion.p>
 
-          <div className="hero__actions">
+          <motion.div className="hero__actions" variants={fadeUp}>
             <a href="#contact" className="btn btn--primary btn--glow">
-              Start a project
+              {t('hero.ctaPrimary')}
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
             <a href="#process" className="btn btn--ghost">
-              How we work
+              {t('hero.ctaSecondary')}
             </a>
-          </div>
+          </motion.div>
 
-          <div className="hero__trust">
+          <motion.div className="hero__trust" variants={fadeUp}>
             <span className="hero__trust-dot" />
-            <span className="hero__trust-text">Working with SaaS, logistics, healthcare, and professional services teams</span>
-          </div>
-        </div>
+            <span className="hero__trust-text">{t('hero.trust')}</span>
+          </motion.div>
+        </motion.div>
 
         <HeroHub />
       </div>
@@ -69,7 +98,7 @@ export default function Hero() {
             <animate attributeName="cy" values="8;14;8" dur="1.8s" repeatCount="indefinite" />
           </circle>
         </svg>
-        <span>Scroll</span>
+        <span>{t('hero.scroll')}</span>
       </div>
     </section>
   )

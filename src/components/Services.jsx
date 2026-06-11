@@ -1,4 +1,6 @@
-import useInView from '../hooks/useInView'
+import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import MotionReveal from './MotionReveal'
+import { useT } from '../i18n/LanguageContext'
 
 const BEAM = {
   webapp: { color: '#0CB6B1', dim: 'rgba(12,182,177,0.10)' },
@@ -10,13 +12,8 @@ function CardBeam({ slug }) {
   const { color, dim } = BEAM[slug] || BEAM.webapp
   const id = `bg-${slug}`
   return (
-    <svg
-      className="svc-card__beam-svg"
-      viewBox="0 0 300 120"
-      fill="none"
-      aria-hidden="true"
-      preserveAspectRatio="none"
-    >
+    <svg className="svc-card__beam-svg" viewBox="0 0 300 120" fill="none"
+      aria-hidden="true" preserveAspectRatio="none">
       <defs>
         <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stopColor={color} stopOpacity="0" />
@@ -24,14 +21,12 @@ function CardBeam({ slug }) {
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      {/* Beam path 1 */}
       <path d="M-20,28 Q110,6 320,58" stroke={dim} strokeWidth="0.8" />
       <path d="M-20,28 Q110,6 320,58"
         stroke={`url(#${id})`} strokeWidth="1.6"
         strokeDasharray="90 230" strokeDashoffset="0">
         <animate attributeName="stroke-dashoffset" from="0" to="-320" dur="3.2s" repeatCount="indefinite" />
       </path>
-      {/* Beam path 2 */}
       <path d="M-20,78 Q80,48 320,88" stroke={dim} strokeWidth="0.8" />
       <path d="M-20,78 Q80,48 320,88"
         stroke={`url(#${id})`} strokeWidth="1.2"
@@ -42,7 +37,7 @@ function CardBeam({ slug }) {
   )
 }
 
-// ── Inline visuals (compact SVG, ~160×110 viewBox) ──────────────────────────
+// ── Inline visuals ───────────────────────────────────────────────────────────
 
 function WebappVisual() {
   const bars = [38, 55, 44, 68, 52, 82, 64, 90, 58, 76, 85, 92]
@@ -141,7 +136,6 @@ function AutomationVisual() {
 }
 
 function AgentVisual() {
-  // Tool nodes with proper SVG icons (consistent with Hero node style)
   const tools = [
     {
       label: 'Slack', color: '#9B73D0', delay: 0,
@@ -189,15 +183,11 @@ function AgentVisual() {
             <stop offset="100%" stopColor="#D97706" stopOpacity="0.15" />
           </radialGradient>
         </defs>
-
         <circle cx={cx} cy={cy} r={56} fill="url(#agentHubGlow)" />
-
         {nodes.map((n, i) => (
-          <line key={`e${i}`}
-            x1={cx} y1={cy} x2={n.x} y2={n.y}
+          <line key={`e${i}`} x1={cx} y1={cy} x2={n.x} y2={n.y}
             stroke="rgba(245,158,11,0.18)" strokeWidth="1.2" strokeDasharray="4 5" />
         ))}
-
         {nodes.map((n, i) => (
           <circle key={`p${i}`} r="2.8" fill={n.color}
             style={{ filter: `drop-shadow(0 0 4px ${n.color}cc)` }}>
@@ -209,7 +199,6 @@ function AgentVisual() {
             />
           </circle>
         ))}
-
         <circle cx={cx} cy={cy} r={28}
           fill="none" stroke="rgba(245,158,11,0.20)" strokeWidth="1.2"
           className="svc-visual__hub-ring" />
@@ -217,14 +206,12 @@ function AgentVisual() {
           fill="url(#agentHubFill)" stroke="rgba(245,158,11,0.55)" strokeWidth="1.5" />
         <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
           className="svc-visual__hub-label">AI</text>
-
         {nodes.map((n, i) => (
           <g key={`n${i}`} className="svc-visual__agent-node-g" style={{ '--d': `${i * 0.08}s` }}>
             <circle cx={n.x} cy={n.y} r={17}
               fill="rgba(11,13,26,0.75)" stroke={`${n.color}55`} strokeWidth="1.2" />
             <circle cx={n.x} cy={n.y} r={17}
               fill="none" stroke={`${n.color}22`} strokeWidth="5" />
-            {/* SVG icon centered on node */}
             <g transform={`translate(${n.x - 8}, ${n.y - 8})`}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
                 stroke={n.color} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
@@ -238,48 +225,37 @@ function AgentVisual() {
   )
 }
 
-// ── Service data ─────────────────────────────────────────────────────────────
-
-const services = [
-  {
-    num: '01',
-    slug: 'webapp',
-    title: 'Custom Internal Webapps',
-    text: "Your workflow, built into software. No SaaS seats, no workarounds. You describe how your team actually works — we build around it.",
-    tags: ['Dashboards', 'Admin Portals', 'Internal CRMs'],
-    visual: <WebappVisual />,
-  },
-  {
-    num: '02',
-    slug: 'auto',
-    title: 'Process Automations',
-    text: "The gap between your tools is full of manual steps that shouldn't exist. Triggers, transforms, and integrations that run reliably in the background.",
-    tags: ['API Integrations', 'Scheduled Jobs', 'Data Pipelines'],
-    visual: <AutomationVisual />,
-  },
-  {
-    num: '03',
-    slug: 'agent',
-    title: 'AI Agents',
-    text: "Some tasks need judgment, not just rules. We build agents that read context, make decisions, and act — handling work that doesn't fit a simple if-then.",
-    tags: ['LLM Workflows', 'Auto-Reporting', 'Smart Routing'],
-    visual: <AgentVisual />,
-  },
+// ── Service meta ─────────────────────────────────────────────────────────────
+const SERVICE_META = [
+  { num: '01', slug: 'webapp', visual: <WebappVisual /> },
+  { num: '02', slug: 'auto',   visual: <AutomationVisual /> },
+  { num: '03', slug: 'agent',  visual: <AgentVisual /> },
 ]
 
-// ── Component ────────────────────────────────────────────────────────────────
-
+// ── Card with hover tilt ──────────────────────────────────────────────────────
 function ServiceCard({ svc, index }) {
-  const [ref, inView] = useInView()
+  const mx = useMotionValue(0)
+  const my = useMotionValue(0)
+  const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [4, -4]), { stiffness: 220, damping: 22 })
+  const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-4, 4]), { stiffness: 220, damping: 22 })
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    mx.set((e.clientX - rect.left) / rect.width - 0.5)
+    my.set((e.clientY - rect.top) / rect.height - 0.5)
+  }
+  const handleMouseLeave = () => { mx.set(0); my.set(0) }
+
   return (
-    <div
-      ref={ref}
-      className={[
-        'svc-card',
-        `svc-card--${svc.slug}`,
-        inView ? 'svc-card--visible' : '',
-      ].filter(Boolean).join(' ')}
-      style={{ transitionDelay: `${index * 0.1}s` }}
+    <motion.div
+      className={`svc-card svc-card--${svc.slug} svc-card--visible`}
+      style={{ rotateX, rotateY, transformPerspective: 900 }}
+      initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ type: 'spring', duration: 0.55, bounce: 0, delay: index * 0.1 }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="svc-card__top">
         <div className="svc-card__top-rings" aria-hidden="true">
@@ -299,30 +275,39 @@ function ServiceCard({ svc, index }) {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 export default function Services() {
-  const [ref, inView] = useInView()
+  const t = useT()
+
+  const services = SERVICE_META.map(item => ({
+    ...item,
+    title: t(`services.${item.num}.title`),
+    text:  t(`services.${item.num}.text`),
+    tags:  [
+      t(`services.${item.num}.tag1`),
+      t(`services.${item.num}.tag2`),
+      t(`services.${item.num}.tag3`),
+    ],
+  }))
 
   return (
     <section className="services section" id="services">
       <div className="container">
-        <div
-          ref={ref}
-          className={`services__header reveal${inView ? ' reveal--visible' : ''}`}
-        >
-          <div>
-            <h2 className="display-heading display-heading--light">What we build</h2>
+        <MotionReveal>
+          <div className="services__header">
+            <div>
+              <h2 className="display-heading display-heading--light">{t('services.heading')}</h2>
+            </div>
+            <div className="services__header-right">
+              <p className="body-sub body-sub--light">
+                {t('services.sub')}
+              </p>
+            </div>
           </div>
-          <div className="services__header-right">
-            <p className="body-sub body-sub--light">
-              Three categories. Most engagements touch more than one.
-              All of it designed around how your team actually operates.
-            </p>
-          </div>
-        </div>
+        </MotionReveal>
 
         <div className="services__grid">
           {services.map((svc, i) => (

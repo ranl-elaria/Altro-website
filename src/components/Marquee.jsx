@@ -1,15 +1,8 @@
-const items = [
-  'Custom Internal Tools',
-  '12+ Projects Shipped',
-  'AI Agents',
-  'Ship in 4–12 Weeks',
-  'Process Automations',
-  '100% Custom Built',
-  'Internal Webapps',
-  'No Scope Creep',
-]
+import { useT } from '../i18n/LanguageContext'
 
 export default function Marquee() {
+  const t = useT()
+  const items = t('marquee.items')
   const repeated = [...items, ...items]
 
   return (

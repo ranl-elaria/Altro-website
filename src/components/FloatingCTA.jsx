@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useT } from '../i18n/LanguageContext'
 
 export default function FloatingCTA() {
   const [visible, setVisible] = useState(false)
+  const t = useT()
 
   useEffect(() => {
     const check = () => {
@@ -18,7 +20,7 @@ export default function FloatingCTA() {
 
   return (
     <a href="#contact" className={`floating-cta${visible ? ' floating-cta--visible' : ''}`}>
-      <span>Start a project</span>
+      <span>{t('floatingCta.text')}</span>
       <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
         <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>

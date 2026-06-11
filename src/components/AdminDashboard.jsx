@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import Logo from './Logo'
+import AdminAnalytics from './AdminAnalytics'
 
 function fmt(iso) {
   return new Date(iso).toLocaleDateString('en-GB', {
@@ -216,6 +217,12 @@ export default function AdminDashboard() {
           {projects.length > 0 && (
             <span className="admin-tab__count">{projects.length}</span>
           )}
+        </button>
+        <button
+          className={`admin-tab${activeTab === 'analytics' ? ' admin-tab--active' : ''}`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          Analytics
         </button>
       </div>
 
@@ -553,6 +560,11 @@ export default function AdminDashboard() {
                 </div>
               )}
             </>
+          )}
+
+          {/* ── Analytics tab ── */}
+          {activeTab === 'analytics' && (
+            <AdminAnalytics submissions={submissions} />
           )}
 
         </main>

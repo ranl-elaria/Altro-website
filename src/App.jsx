@@ -1,10 +1,12 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { LanguageProvider, useT } from './i18n/LanguageContext'
 import Grain from './components/Grain'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
 import Challenges from './components/Challenges'
+import StatBar from './components/StatBar'
 import Services from './components/Services'
 import Outcomes from './components/Outcomes'
 import Process from './components/Process'
@@ -21,9 +23,10 @@ const TermsPage    = lazy(() => import('./pages/Terms'))
 const NotFoundPage = lazy(() => import('./pages/NotFound'))
 
 function Site() {
+  const t = useT()
   return (
     <>
-      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
       <Grain />
       <Navbar />
       <FloatingCTA />
@@ -31,6 +34,7 @@ function Site() {
         <Hero />
         <Marquee />
         <Challenges />
+        <StatBar />
         <Services />
         {/* <Outcomes /> */}
         <Process />
@@ -48,6 +52,7 @@ const legalFallback = <div className="legal-loading" aria-busy="true">Loading…
 
 export default function App() {
   return (
+    <LanguageProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Site />} />
@@ -73,5 +78,6 @@ export default function App() {
         />
       </Routes>
     </BrowserRouter>
+    </LanguageProvider>
   )
 }

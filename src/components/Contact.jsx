@@ -1,5 +1,8 @@
 import { useState, useRef } from 'react'
+import { motion } from 'framer-motion'
+import MotionReveal from './MotionReveal'
 import useSpeechRecognition from '../hooks/useSpeechRecognition'
+import { useT } from '../i18n/LanguageContext'
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', company: '', email: '', message: '' })
@@ -7,6 +10,7 @@ export default function Contact() {
   const [errorMsg, setErrorMsg] = useState('')
   const baseTextRef = useRef('')
   const { isListening, supported, start, stop } = useSpeechRecognition()
+  const t = useT()
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
 
@@ -36,13 +40,13 @@ export default function Contact() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setErrorMsg(data.error ?? 'Something went wrong. Please try again.')
+        setErrorMsg(data.error ?? t('contact.errorDefault'))
         setStatus('error')
       } else {
         setStatus('success')
       }
     } catch {
-      setErrorMsg('Network error. Please check your connection and try again.')
+      setErrorMsg(t('contact.errorNetwork'))
       setStatus('error')
     }
   }
@@ -55,15 +59,15 @@ export default function Contact() {
 
         <div className="container contact__container">
           <div className="contact__layout">
-            <div className="contact__header">
+            <MotionReveal className="contact__header">
               <h2 className="display-heading display-heading--light">
-                Ready to build something different?
+                {t('contact.heading')}
               </h2>
               <p className="body-sub body-sub--light contact__sub">
-                Tell us what you're working on and we'll get back to you within one business day.
+                {t('contact.sub')}
               </p>
 
-              {/* Decorative orbital rings — comet style */}
+              {/* Decorative orbital rings */}
               <div className="contact__orb" aria-hidden="true">
                 <svg width="180" height="180" viewBox="-90 -90 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <defs>
@@ -110,9 +114,15 @@ export default function Contact() {
                   <circle cx="0" cy="0" r="5" fill="#0CB6B1" opacity="0.9" />
                 </svg>
               </div>
-            </div>
+          </MotionReveal>
 
-            <div className="contact__form-card">
+            <motion.div
+              className="contact__form-card"
+              initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ type: 'spring', duration: 0.6, bounce: 0, delay: 0.1 }}
+            >
             {status === 'success' ? (
               <div className="contact__success">
                 <div className="contact__success-icon">
@@ -120,21 +130,21 @@ export default function Contact() {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <h3>Message sent</h3>
-                <p>Thanks for reaching out. We'll be in touch within one business day.</p>
+                <h3>{t('contact.successTitle')}</h3>
+                <p>{t('contact.successBody')}</p>
               </div>
             ) : (
               <form className="contact__form" onSubmit={handleSubmit} noValidate>
                 <div className="form-row">
                   <div className="form-field">
-                    <label className="form-label" htmlFor="name">Name</label>
+                    <label className="form-label" htmlFor="name">{t('contact.labelName')}</label>
                     <div className="form-input-wrap">
                       <input
                         id="name"
                         name="name"
                         type="text"
                         className="form-input"
-                        placeholder="Your name"
+                        placeholder={t('contact.placeholderName')}
                         value={form.name}
                         onChange={handleChange}
                         required
@@ -142,14 +152,14 @@ export default function Contact() {
                     </div>
                   </div>
                   <div className="form-field">
-                    <label className="form-label" htmlFor="company">Company</label>
+                    <label className="form-label" htmlFor="company">{t('contact.labelCompany')}</label>
                     <div className="form-input-wrap">
                       <input
                         id="company"
                         name="company"
                         type="text"
                         className="form-input"
-                        placeholder="Your company"
+                        placeholder={t('contact.placeholderCompany')}
                         value={form.company}
                         onChange={handleChange}
                       />
@@ -158,14 +168,14 @@ export default function Contact() {
                 </div>
 
                 <div className="form-field">
-                  <label className="form-label" htmlFor="email">Email</label>
+                  <label className="form-label" htmlFor="email">{t('contact.labelEmail')}</label>
                   <div className="form-input-wrap">
                     <input
                       id="email"
                       name="email"
                       type="email"
                       className="form-input"
-                      placeholder="you@company.com"
+                      placeholder={t('contact.placeholderEmail')}
                       value={form.email}
                       onChange={handleChange}
                       required
@@ -175,10 +185,10 @@ export default function Contact() {
 
                 <div className="form-field">
                   <label className="form-label" htmlFor="message">
-                    What are you working on?
+                    {t('contact.labelMessage')}
                     {supported && (
                       <span className="form-label__hint">
-                        {isListening ? '● Recording…' : '· or use voice'}
+                        {isListening ? t('contact.voiceRecording') : t('contact.voiceHint')}
                       </span>
                     )}
                   </label>
@@ -187,7 +197,7 @@ export default function Contact() {
                       id="message"
                       name="message"
                       className={`form-textarea${isListening ? ' form-textarea--listening' : ''}`}
-                      placeholder="Tell us about your project or the problem you're trying to solve..."
+                      placeholder={t('contact.placeholderMessage')}
                       value={form.message}
                       onChange={handleChange}
                       required
@@ -197,8 +207,8 @@ export default function Contact() {
                         type="button"
                         className={`mic-btn${isListening ? ' mic-btn--active' : ''}`}
                         onClick={handleMicToggle}
-                        title={isListening ? 'Stop recording' : 'Dictate your message'}
-                        aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                        title={isListening ? t('contact.micStop') : t('contact.micStart')}
+                        aria-label={isListening ? t('contact.micAriaStop') : t('contact.micAriaStart')}
                       >
                         {isListening ? (
                           /* Stop icon */
@@ -229,9 +239,9 @@ export default function Contact() {
                     className="btn btn--primary"
                     disabled={status === 'loading'}
                   >
-                    {status === 'loading' ? 'Sending…' : (
+                    {status === 'loading' ? t('contact.submitting') : (
                       <>
-                        Send message
+                        {t('contact.submit')}
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="22" y1="2" x2="11" y2="13" />
                           <polygon points="22 2 15 22 11 13 2 9 22 2" />
@@ -242,9 +252,9 @@ export default function Contact() {
                 </div>
               </form>
             )}
-            </div>
+            </motion.div>
 
-            {/* Trust badges — separate grid item so CSS can place them below form on mobile */}
+            {/* Trust badges */}
             <div className="contact__details">
               <div className="contact__detail">
                 <span className="contact__detail-icon">
@@ -252,7 +262,7 @@ export default function Contact() {
                     <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.5 12 19.79 19.79 0 011.21 3.28 2 2 0 013.22 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
                   </svg>
                 </span>
-                Response within one business day
+                {t('contact.detail1')}
               </div>
               <div className="contact__detail">
                 <span className="contact__detail-icon">
@@ -260,7 +270,7 @@ export default function Contact() {
                     <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                   </svg>
                 </span>
-                No sales pitch. Just a genuine conversation.
+                {t('contact.detail2')}
               </div>
               <div className="contact__detail">
                 <span className="contact__detail-icon">
@@ -268,7 +278,7 @@ export default function Contact() {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </span>
-                Free discovery call, no commitment needed
+                {t('contact.detail3')}
               </div>
             </div>
           </div>
