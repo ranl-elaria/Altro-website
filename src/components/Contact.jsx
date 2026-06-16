@@ -1,37 +1,21 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import MotionReveal from './MotionReveal'
-import useSpeechRecognition from '../hooks/useSpeechRecognition'
 import { useT } from '../i18n/LanguageContext'
+import FadeIn from './FadeIn'
+import ContactButton from './ContactButton'
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', company: '', email: '', message: '' })
-  const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'success' | 'error'
+  const [form, setForm] = useState({ name: '', email: '', company: '', phone: '', message: '' })
+  const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const baseTextRef = useRef('')
-  const { isListening, supported, start, stop } = useSpeechRecognition()
   const t = useT()
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
-
-  const handleMicToggle = () => {
-    if (isListening) {
-      stop()
-      return
-    }
-    baseTextRef.current = form.message.trimEnd()
-    start((transcript) => {
-      const base = baseTextRef.current
-      const sep = base && !base.endsWith(' ') ? ' ' : ''
-      setForm(f => ({ ...f, message: base + sep + transcript }))
-    })
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('loading')
     setErrorMsg('')
-    if (isListening) stop()
     try {
       const res = await fetch('/api/submit', {
         method: 'POST',
@@ -44,6 +28,7 @@ export default function Contact() {
         setStatus('error')
       } else {
         setStatus('success')
+        setForm({ name: '', email: '', company: '', phone: '', message: '' })
       }
     } catch {
       setErrorMsg(t('contact.errorNetwork'))
@@ -52,238 +37,134 @@ export default function Contact() {
   }
 
   return (
-    <>
-      <section className="contact section" id="contact">
-        {/* Atmospheric background */}
-        <div className="contact__bg" aria-hidden="true" />
+    <section id="contact" className="bg-[#0C0C0C] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
+      <div className="max-w-2xl mx-auto">
+        <FadeIn delay={0} duration={0.8} y={40}>
+          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)' }}>
+            {t('contact.heading')}
+          </h2>
+        </FadeIn>
 
-        <div className="container contact__container">
-          <div className="contact__layout">
-            <MotionReveal className="contact__header">
-              <h2 className="display-heading display-heading--light">
-                {t('contact.heading')}
-              </h2>
-              <p className="body-sub body-sub--light contact__sub">
-                {t('contact.sub')}
-              </p>
+        <FadeIn delay={0.2} duration={0.8} y={20}>
+          <p className="text-[#D7E2EA] font-light leading-relaxed text-center mb-12 sm:mb-16 opacity-80" style={{ fontSize: 'clamp(0.9rem, 1.6vw, 1.1rem)' }}>
+            {t('contact.sub')}
+          </p>
+        </FadeIn>
 
-              {/* Decorative orbital rings */}
-              <div className="contact__orb" aria-hidden="true">
-                <svg width="180" height="180" viewBox="-90 -90 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <defs>
-                    <radialGradient id="orbCore" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#0CB6B1" stopOpacity="0.9" />
-                      <stop offset="50%" stopColor="#0CB6B1" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#0CB6B1" stopOpacity="0" />
-                    </radialGradient>
-                    <linearGradient id="comet1" gradientUnits="userSpaceOnUse" x1="-35" y1="0" x2="35" y2="0">
-                      <stop offset="0%" stopColor="#0CB6B1" stopOpacity="0" />
-                      <stop offset="55%" stopColor="#0CB6B1" stopOpacity="0.85" />
-                      <stop offset="100%" stopColor="#0CB6B1" stopOpacity="0.15" />
-                    </linearGradient>
-                    <linearGradient id="comet2" gradientUnits="userSpaceOnUse" x1="-55" y1="0" x2="55" y2="0">
-                      <stop offset="0%" stopColor="#3C6E71" stopOpacity="0" />
-                      <stop offset="55%" stopColor="#3C6E71" stopOpacity="0.7" />
-                      <stop offset="100%" stopColor="#3C6E71" stopOpacity="0.1" />
-                    </linearGradient>
-                    <linearGradient id="comet3" gradientUnits="userSpaceOnUse" x1="-80" y1="0" x2="80" y2="0">
-                      <stop offset="0%" stopColor="#0CB6B1" stopOpacity="0" />
-                      <stop offset="55%" stopColor="#0CB6B1" stopOpacity="0.5" />
-                      <stop offset="100%" stopColor="#0CB6B1" stopOpacity="0.1" />
-                    </linearGradient>
-                  </defs>
-                  {/* Base rings */}
-                  <circle cx="0" cy="0" r="35" stroke="rgba(60,110,113,0.22)" strokeWidth="1" />
-                  <circle cx="0" cy="0" r="55" stroke="rgba(60,110,113,0.15)" strokeWidth="1" />
-                  <circle cx="0" cy="0" r="80" stroke="rgba(60,110,113,0.09)" strokeWidth="1" />
-                  {/* Comet arcs */}
-                  <circle cx="0" cy="0" r="35" stroke="url(#comet1)" strokeWidth="1.8"
-                    strokeDasharray="88 132" strokeDashoffset="0">
-                    <animate attributeName="stroke-dashoffset" from="0" to="-220" dur="4s" repeatCount="indefinite" />
-                  </circle>
-                  <circle cx="0" cy="0" r="55" stroke="url(#comet2)" strokeWidth="1.5"
-                    strokeDasharray="138 207" strokeDashoffset="0">
-                    <animate attributeName="stroke-dashoffset" from="0" to="345" dur="7s" repeatCount="indefinite" />
-                  </circle>
-                  <circle cx="0" cy="0" r="80" stroke="url(#comet3)" strokeWidth="1.2"
-                    strokeDasharray="150 352" strokeDashoffset="0">
-                    <animate attributeName="stroke-dashoffset" from="0" to="-503" dur="11s" repeatCount="indefinite" />
-                  </circle>
-                  {/* Core */}
-                  <circle cx="0" cy="0" r="14" fill="url(#orbCore)" />
-                  <circle cx="0" cy="0" r="5" fill="#0CB6B1" opacity="0.9" />
-                </svg>
-              </div>
-          </MotionReveal>
-
-            <motion.div
-              className="contact__form-card"
-              initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
-              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ type: 'spring', duration: 0.6, bounce: 0, delay: 0.1 }}
-            >
-            {status === 'success' ? (
-              <div className="contact__success">
-                <div className="contact__success-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <h3>{t('contact.successTitle')}</h3>
-                <p>{t('contact.successBody')}</p>
-              </div>
-            ) : (
-              <form className="contact__form" onSubmit={handleSubmit} noValidate>
-                <div className="form-row">
-                  <div className="form-field">
-                    <label className="form-label" htmlFor="name">{t('contact.labelName')}</label>
-                    <div className="form-input-wrap">
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        className="form-input"
-                        placeholder={t('contact.placeholderName')}
-                        value={form.name}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="form-field">
-                    <label className="form-label" htmlFor="company">{t('contact.labelCompany')}</label>
-                    <div className="form-input-wrap">
-                      <input
-                        id="company"
-                        name="company"
-                        type="text"
-                        className="form-input"
-                        placeholder={t('contact.placeholderCompany')}
-                        value={form.company}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="form-field">
-                  <label className="form-label" htmlFor="email">{t('contact.labelEmail')}</label>
-                  <div className="form-input-wrap">
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      className="form-input"
-                      placeholder={t('contact.placeholderEmail')}
-                      value={form.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-field">
-                  <label className="form-label" htmlFor="message">
-                    {t('contact.labelMessage')}
-                    {supported && (
-                      <span className="form-label__hint">
-                        {isListening ? t('contact.voiceRecording') : t('contact.voiceHint')}
-                      </span>
-                    )}
-                  </label>
-                  <div className="form-textarea-wrap">
-                    <textarea
-                      id="message"
-                      name="message"
-                      className={`form-textarea${isListening ? ' form-textarea--listening' : ''}`}
-                      placeholder={t('contact.placeholderMessage')}
-                      value={form.message}
-                      onChange={handleChange}
-                      required
-                    />
-                    {supported && (
-                      <button
-                        type="button"
-                        className={`mic-btn${isListening ? ' mic-btn--active' : ''}`}
-                        onClick={handleMicToggle}
-                        title={isListening ? t('contact.micStop') : t('contact.micStart')}
-                        aria-label={isListening ? t('contact.micAriaStop') : t('contact.micAriaStart')}
-                      >
-                        {isListening ? (
-                          /* Stop icon */
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="5" y="5" width="14" height="14" rx="3" />
-                          </svg>
-                        ) : (
-                          /* Mic icon */
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                            <line x1="12" y1="19" x2="12" y2="23" />
-                            <line x1="8" y1="23" x2="16" y2="23" />
-                          </svg>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {status === 'error' && (
-                  <p className="contact__form-error">{errorMsg}</p>
-                )}
-
-                <div className="form-submit">
-                  <button
-                    type="submit"
-                    className="btn btn--primary"
-                    disabled={status === 'loading'}
-                  >
-                    {status === 'loading' ? t('contact.submitting') : (
-                      <>
-                        {t('contact.submit')}
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="22" y1="2" x2="11" y2="13" />
-                          <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                        </svg>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-            </motion.div>
-
-            {/* Trust badges */}
-            <div className="contact__details">
-              <div className="contact__detail">
-                <span className="contact__detail-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014.5 12 19.79 19.79 0 011.21 3.28 2 2 0 013.22 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-                  </svg>
-                </span>
-                {t('contact.detail1')}
-              </div>
-              <div className="contact__detail">
-                <span className="contact__detail-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                  </svg>
-                </span>
-                {t('contact.detail2')}
-              </div>
-              <div className="contact__detail">
-                <span className="contact__detail-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </span>
-                {t('contact.detail3')}
-              </div>
+        <FadeIn delay={0.4} duration={0.8} y={30}>
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            {/* Name */}
+            <div>
+              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+                {t('contact.labelName')}
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder={t('contact.placeholderName')}
+                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+                required
+              />
             </div>
-          </div>
-        </div>
-      </section>
-    </>
+
+            {/* Email */}
+            <div>
+              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+                {t('contact.labelEmail')}
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder={t('contact.placeholderEmail')}
+                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+                required
+              />
+            </div>
+
+            {/* Company Website */}
+            <div>
+              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+                {t('contact.labelCompany')}
+              </label>
+              <input
+                type="url"
+                name="company"
+                value={form.company}
+                onChange={handleChange}
+                placeholder={t('contact.placeholderCompany')}
+                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+              />
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+                {t('contact.labelPhone')}
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder={t('contact.placeholderPhone')}
+                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+              />
+            </div>
+
+            {/* Message */}
+            <div>
+              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+                {t('contact.labelMessage')}
+              </label>
+              <textarea
+                name="message"
+                value={form.message}
+                onChange={handleChange}
+                placeholder={t('contact.placeholderMessage')}
+                rows="5"
+                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors resize-none"
+                required
+              />
+            </div>
+
+            {/* Error message */}
+            {status === 'error' && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/20 border border-red-500/50 rounded-lg px-4 py-3 text-red-300 text-sm"
+              >
+                {errorMsg}
+              </motion.div>
+            )}
+
+            {/* Success message */}
+            {status === 'success' && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-green-500/20 border border-green-500/50 rounded-lg px-4 py-3 text-green-300 text-sm"
+              >
+                {t('contact.successTitle')} — {t('contact.successBody')}
+              </motion.div>
+            )}
+
+            {/* Submit button */}
+            <div className="flex flex-col gap-2 pt-4">
+              <ContactButton type="submit" disabled={status === 'loading'}>
+                {status === 'loading' ? t('contact.submitting') : t('contact.submit')}
+              </ContactButton>
+              <p className="text-[#D7E2EA] text-xs sm:text-sm font-light opacity-70 text-center">
+                {t('contact.ctaHint')}
+              </p>
+            </div>
+          </form>
+        </FadeIn>
+      </div>
+    </section>
   )
 }

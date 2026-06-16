@@ -10,7 +10,12 @@
   --teal-border: rgba(12, 182, 177, 0.22);
   --teal-glow:   rgba(12, 182, 177, 0.06);
 
-  --font:      'Inter Variable', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* Glass panel system */
+  --glass-bg:     rgba(20, 24, 48, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur:   blur(20px);
+
+  --font:      'Kanit', 'Inter Variable', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
   --nav-height:  72px;
@@ -24,11 +29,11 @@
    RESET
    ============================================= */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; }
+html { scroll-behavior: smooth; font-size: 16px; background: #0C0C0C; }
 body {
   font-family: var(--font);
   font-feature-settings: "cv01", "ss03";
-  background: #0B0D1A;
+  background: #0C0C0C;
   color: #EDEAE3;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -38,6 +43,19 @@ img, svg { display: block; }
 a { color: inherit; text-decoration: none; }
 button { font-family: var(--font); cursor: pointer; border: none; background: none; }
 input, textarea, select { font-family: var(--font); }
+
+/* Root background styling */
+#root {
+  background: #0C0C0C;
+}
+
+/* Hero heading gradient text */
+.hero-heading {
+  background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 /* =============================================
    GRAIN
@@ -54,10 +72,46 @@ input, textarea, select { font-family: var(--font); }
 }
 
 /* =============================================
+   VIDEO BACKGROUND
+   ============================================= */
+.video-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.video-bg__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.video-bg__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 24, 48, 0.38);
+}
+
+/* Page content sits above the fixed video */
+.page {
+  position: relative;
+  z-index: 1;
+}
+
+/* =============================================
+   GLASS UTILITY
+   ============================================= */
+.section-glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+/* =============================================
    LAYOUT UTILITIES
    ============================================= */
 .container { max-width: var(--container); margin: 0 auto; padding: 0 36px; }
-.section    { padding: var(--section-pad) 0; }
+.section    { padding: var(--section-pad) 0; position: relative; z-index: 1; }
 
 
 /* Scroll reveal */
@@ -186,14 +240,14 @@ input, textarea, select { font-family: var(--font); }
   top: 0; left: 0; right: 0;
   z-index: 100;
   height: var(--nav-height);
-  background: rgba(11,13,26,0.55);
+  background: rgba(20, 24, 48, 0.55);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
   backdrop-filter: blur(16px) saturate(1.4);
   transition: background 0.35s var(--ease), backdrop-filter 0.35s, box-shadow 0.35s;
 }
 
 .navbar--scrolled {
-  background: rgba(11, 13, 26, 0.94);
+  background: rgba(20, 24, 48, 0.94);
   -webkit-backdrop-filter: blur(24px) saturate(1.8);
   backdrop-filter: blur(24px) saturate(1.8);
   box-shadow: 0 1px 0 rgba(255,255,255,0.07);
@@ -271,12 +325,24 @@ input, textarea, select { font-family: var(--font); }
 .hero {
   position: relative;
   min-height: 100vh;
-  background: #0B0D1A;
+  background: transparent;
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
   padding-top: var(--nav-height);
+  z-index: 1;
+}
+
+/* Dark vignette so hero text stays readable over raw video */
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to right, rgba(8,10,22,0.72) 0%, rgba(8,10,22,0.20) 60%, transparent 100%),
+    linear-gradient(to top,   rgba(8,10,22,0.55) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Atmospheric depth gradients — layered over the wave mesh */
@@ -286,7 +352,7 @@ input, textarea, select { font-family: var(--font); }
     radial-gradient(ellipse 55% 70% at -5% 50%,  rgba(12,182,177,0.10) 0%, transparent 65%),
     radial-gradient(ellipse 50% 60% at 108% 4%,  rgba(28,55,120,0.32)  0%, transparent 55%),
     radial-gradient(ellipse 35% 45% at 50%  100%, rgba(12,182,177,0.04) 0%, transparent 60%);
-  pointer-events: none; z-index: 1;
+  pointer-events: none; z-index: 2;
 }
 
 /* Cursor spotlight */
@@ -302,14 +368,37 @@ input, textarea, select { font-family: var(--font); }
 .hero__container {
   position: relative; z-index: 3;
   display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
-  gap: 40px;
+  grid-template-columns: 3fr 2fr;
+  gap: 48px;
   align-items: center;
   padding-top: 72px;
   padding-bottom: 56px;
 }
 
-.hero__left { display: flex; flex-direction: column; align-items: flex-start; }
+.hero__left  { display: flex; flex-direction: column; align-items: flex-start; }
+.hero__right { display: flex; flex-direction: column; align-items: flex-start; gap: 36px; }
+
+/* RTL: mirror columns */
+[dir="rtl"] .hero__container { direction: rtl; }
+[dir="rtl"] .hero__left  { align-items: flex-end; text-align: right; }
+[dir="rtl"] .hero__right { align-items: flex-end; }
+
+/* Hero logo (large, right column) */
+.hero__logo-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+[dir="rtl"] .hero__logo-hero { align-items: flex-end; }
+
+.hero__logo-wordmark {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: #EDEAE3;
+  line-height: 1;
+}
 
 .hero__eyebrow {
   display: inline-flex; align-items: center; gap: 10px;
@@ -921,28 +1010,30 @@ input, textarea, select { font-family: var(--font); }
    ============================================= */
 .marquee {
   overflow: hidden;
-  background: #0B0D1A;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 14px 0;
+  background: #0C0C0C;
+  border-top: 1px solid rgba(215,226,234,0.1);
+  border-bottom: 1px solid rgba(215,226,234,0.1);
+  padding: 20px 0;
 }
 .marquee__track { display: flex; width: max-content; animation: marquee-scroll 40s linear infinite; }
 @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .marquee__item {
-  display: inline-flex; align-items: center; gap: 22px;
-  padding: 0 22px;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.11em;
-  text-transform: uppercase; color: rgba(237,234,227,0.52);
-  white-space: nowrap; transition: color 0.2s;
+  display: inline-flex; align-items: center; gap: 28px;
+  padding: 0 28px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #D7E2EA;
+  white-space: nowrap; transition: color 0.2s; font-family: 'Kanit', sans-serif;
 }
-.marquee__item:hover { color: rgba(237,234,227,0.82); }
-.marquee__dot { width: 3px; height: 3px; border-radius: 50%; background: var(--teal); flex-shrink: 0; opacity: 0.5; }
+.marquee__item:hover { color: #FFFFFF; }
+.marquee__dot { width: 4px; height: 4px; border-radius: 50%; background: #BBCCD7; flex-shrink: 0; opacity: 0.6; }
 
 /* =============================================
    STAT BAR (animated counters)
    ============================================= */
 .stat-bar {
-  background: #0D1020;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border-top: 1px solid rgba(255,255,255,0.06);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   padding: 56px 0;
@@ -996,7 +1087,9 @@ input, textarea, select { font-family: var(--font); }
    CHALLENGES (dark — Option C)
    ============================================= */
 .challenges {
-  background: #0D0F1E;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: var(--section-pad) 0;
 }
 .challenges__header {
@@ -1013,12 +1106,14 @@ input, textarea, select { font-family: var(--font); }
 /* ── Challenge card — full-card illustration with text overlay ── */
 .challenge-card {
   position: relative;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.09);
   border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
   min-height: 440px;
-  background: rgba(11,13,26,0.55);
+  background: rgba(255,255,255,0.04);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   opacity: 0; transform: translateY(28px);
   transition:
     opacity var(--duration) var(--ease),
@@ -1030,7 +1125,7 @@ input, textarea, select { font-family: var(--font); }
 .challenge-card--visible:hover {
   transform: translateY(-5px);
   border-color: var(--cc-border);
-  box-shadow: 0 24px 64px rgba(0,0,0,0.50), 0 0 60px var(--cc-glow);
+  box-shadow: 0 0 0 1px var(--teal-border), 0 24px 64px rgba(0,0,0,0.50), 0 8px 32px rgba(12,182,177,0.12), 0 0 60px var(--cc-glow);
 }
 
 /* Scene fills the full card */
@@ -1090,7 +1185,7 @@ input, textarea, select { font-family: var(--font); }
    ============================================= */
 .integrations {
   background: #FFFFFF;
-  padding: 80px 0;
+  padding: var(--section-pad) 0;
   border-top: 1px solid rgba(0,0,0,0.07);
   border-bottom: 1px solid rgba(0,0,0,0.07);
 }
@@ -1121,7 +1216,9 @@ input, textarea, select { font-family: var(--font); }
    SERVICES  (dark — 3-column horizontal cards)
    ============================================= */
 .services {
-  background: #0d1f35;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: var(--section-pad) 0;
 }
 .services::before {
@@ -1144,7 +1241,9 @@ input, textarea, select { font-family: var(--font); }
 /* Card shell */
 .svc-card {
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.09);
   border-radius: 18px;
   overflow: hidden;
   display: flex;
@@ -1165,7 +1264,7 @@ input, textarea, select { font-family: var(--font); }
   box-shadow: 0 20px 60px rgba(0,0,0,0.45);
 }
 .svc-card--webapp.svc-card--visible:hover {
-  box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 40px rgba(12,182,177,0.12);
+  box-shadow: 0 0 0 1px var(--teal-border), 0 20px 60px rgba(0,0,0,0.45), 0 8px 32px rgba(12,182,177,0.12);
   border-color: rgba(12,182,177,0.20);
 }
 .svc-card--auto.svc-card--visible:hover {
@@ -1623,8 +1722,10 @@ input, textarea, select { font-family: var(--font); }
    ============================================= */
 
 .process {
-  background: #071816;
-  padding: var(--section-pad) 0 calc(var(--section-pad) + 32px);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  padding: var(--section-pad) 0;
 }
 .process::before {
   content: '';
@@ -1719,9 +1820,11 @@ input, textarea, select { font-family: var(--font); }
   position: relative;
   min-height: 360px;
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.09);
   overflow: hidden;
-  background: rgba(11,13,26,0.55);
+  background: rgba(255,255,255,0.04);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   will-change: transform, opacity;
 }
 .process__step-card::before {
@@ -1807,7 +1910,7 @@ input, textarea, select { font-family: var(--font); }
    ============================================= */
 .testimonials {
   background: #FFFFFF;
-  padding: var(--section-pad) 0 calc(var(--section-pad) + 8px);
+  padding: var(--section-pad) 0;
   position: relative; overflow: hidden;
 }
 .testimonials::before {
@@ -1894,7 +1997,9 @@ input, textarea, select { font-family: var(--font); }
    FAQ (dark)
    ============================================= */
 .faq {
-  background: #0B0D1A;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: var(--section-pad) 0;
   position: relative;
   overflow: hidden;
@@ -2004,7 +2109,9 @@ input, textarea, select { font-family: var(--font); }
    CONTACT (dark)
    ============================================= */
 .contact {
-  background: #0C0F1D;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: var(--section-pad) 0;
   position: relative;
   overflow: hidden;
@@ -2150,7 +2257,9 @@ input, textarea, select { font-family: var(--font); }
    FOOTER
    ============================================= */
 .footer {
-  background: #152b3d;
+  background: rgba(20, 24, 48, 0.85);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border-top: 1px solid rgba(255,255,255,0.08);
   padding: 56px 0 32px;
 }
@@ -2290,7 +2399,7 @@ input, textarea, select { font-family: var(--font); }
    ============================================= */
 .legal-page {
   min-height: 100vh;
-  background: #0D1220;
+  background: #141830;
   color: #EDEAE3;
   font-family: 'Inter', sans-serif;
   display: flex;
@@ -2301,7 +2410,7 @@ input, textarea, select { font-family: var(--font); }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0D1220;
+  background: #141830;
   color: rgba(237,234,227,0.4);
   font-size: 14px;
 }
@@ -2314,7 +2423,7 @@ input, textarea, select { font-family: var(--font); }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0B0D1A;
+  background: #141830;
   padding: 40px 24px;
   text-align: center;
 }
@@ -2506,42 +2615,67 @@ input, textarea, select { font-family: var(--font); }
 }
 
 /* =============================================
-   STACKING SECTIONS
-   Placed last so these rules override each section's
-   own `position: relative` declarations above.
+   FLOATING CARD SECTIONS
+   Hero is full-bleed over the video.
+   All other sections are glass cards floating
+   over the video with generous scroll gaps.
    ============================================= */
 
-/* Hero — first card, no rounded top needed */
+/* --card-gap controls scroll breathing room between cards */
+:root { --card-gap: clamp(80px, 8vw, 120px); }
+
+/* Hero — full-bleed, transparent, video shows directly behind */
 .hero {
-  position: sticky;
-  top: 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  min-height: 100vh;
+  overflow: hidden;
   z-index: 1;
 }
 
-/* Marquee — stacks on top of hero */
-.marquee {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.28);
+/* Shared card token — all non-hero cards use these */
+.card-float {
+  max-width: min(1200px, 92vw);
+  margin: 0 auto var(--card-gap);
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
 }
 
-/* All content sections */
+/* Apply card token to each element class */
+.marquee  { max-width: min(1200px, 92vw); margin: var(--card-gap) auto var(--card-gap); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 16px 64px rgba(0,0,0,0.55); overflow: hidden; }
+.stat-bar { max-width: min(1200px, 92vw); margin: 0 auto var(--card-gap); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 16px 64px rgba(0,0,0,0.55); overflow: hidden; }
+
+/* All content sections (.challenges, .services, .process, .faq, .contact) */
 .section {
-  position: sticky;
-  top: 0;
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.28);
+  position: relative;
+  z-index: 1;
+  max-width: min(1200px, 92vw);
+  margin: 0 auto var(--card-gap);
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
 }
 
-.challenges { z-index: 3; position: relative; }
-.services   { z-index: 4; }
-.outcomes   { z-index: 5; }
-/* Process uses natural scroll — timeline spine draws on scroll */
-.process    { z-index: 6; position: relative; }
-.faq        { z-index: 7; }
-.contact    { z-index: 8; }
+/* Process sticky children need overflow visible */
+.process { overflow: visible; }
+
+/* Footer card */
+.footer {
+  max-width: min(1200px, 92vw);
+  margin: 0 auto var(--card-gap);
+  border-radius: 24px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
 
 /* =============================================
    RESPONSIVE

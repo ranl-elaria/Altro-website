@@ -1,69 +1,40 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import MotionReveal from './MotionReveal'
 import { useT } from '../i18n/LanguageContext'
+import FadeIn from './FadeIn'
 
-function FAQItem({ item, index }) {
-  const [open, setOpen] = useState(false)
-  const itemRef = useRef(null)
-
-  const handleMouseMove = useCallback((e) => {
-    const el = itemRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    el.style.setProperty('--faq-x', `${e.clientX - rect.left}px`)
-    el.style.setProperty('--faq-y', `${e.clientY - rect.top}px`)
-    el.style.setProperty('--faq-glow-op', '1')
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    if (itemRef.current) itemRef.current.style.setProperty('--faq-glow-op', '0')
-  }, [])
-
+function FAQItem({ q, a, idx, open, onToggle }) {
   return (
     <motion.div
-      ref={itemRef}
-      className={`faq__item${open ? ' faq__item--open' : ''}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ '--faq-glow-op': 0 }}
-      initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
-      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ type: 'spring', duration: 0.5, bounce: 0, delay: index * 0.06 }}
+      className="border-b border-[rgba(211,226,234,0.2)] py-6 sm:py-8"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: idx * 0.1 }}
+      viewport={{ once: true, margin: '50px' }}
     >
       <button
-        className="faq__question"
-        onClick={() => setOpen(o => !o)}
-        aria-expanded={open}
+        onClick={() => onToggle(idx)}
+        className="w-full text-left flex justify-between items-start gap-4 hover:opacity-70 transition-opacity"
       >
-        <span className="faq__num">{String(index + 1).padStart(2, '0')}</span>
-        <span className="faq__question-text">{item.q}</span>
-        <motion.span
-          className="faq__chevron"
-          aria-hidden="true"
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ type: 'spring', duration: 0.4, bounce: 0 }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M3.5 5.25L7 8.75L10.5 5.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </motion.span>
+        <h3 className="text-[#D7E2EA] font-medium leading-relaxed flex-1" style={{ fontSize: 'clamp(0.95rem, 1.8vw, 1.3rem)' }}>
+          {q}
+        </h3>
+        <span className="text-[#D7E2EA] text-xl sm:text-2xl flex-shrink-0 pt-0.5">
+          {open ? '−' : '+'}
+        </span>
       </button>
 
-      <AnimatePresence initial={false}>
+      <AnimatePresence>
         {open && (
           <motion.div
-            className="faq__answer-fm"
-            key="answer"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: 'spring', duration: 0.45, bounce: 0 }}
-            style={{ overflow: 'hidden', paddingLeft: 20 }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
           >
-            <p className="faq__answer-inner faq__answer-inner--open">
-              {item.a}
+            <p className="text-[#D7E2EA] font-light leading-relaxed opacity-70 mt-4" style={{ fontSize: 'clamp(0.85rem, 1.4vw, 1rem)' }}>
+              {a}
             </p>
           </motion.div>
         )}
@@ -74,40 +45,35 @@ function FAQItem({ item, index }) {
 
 export default function FAQ() {
   const t = useT()
+  const [openIdx, setOpenIdx] = useState(null)
 
-  const faqs = [1, 2, 3, 4, 5].map(i => ({
-    q: t(`faq.0${i}.q`),
-    a: t(`faq.0${i}.a`),
-  }))
+  const faqs = [
+    { q: t('faq.01.q'), a: t('faq.01.a') },
+    { q: t('faq.02.q'), a: t('faq.02.a') },
+    { q: t('faq.03.q'), a: t('faq.03.a') },
+    { q: t('faq.04.q'), a: t('faq.04.a') },
+  ]
 
   return (
-    <section className="faq section" id="faq">
-      <div className="container">
-        <div className="faq__layout">
-          <MotionReveal delay={0.05}>
-            <div className="faq__header">
-              <h2 className="display-heading display-heading--light">
-                {t('faq.heading').split('\n').map((line, i, arr) => (
-                  <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
-                ))}
-              </h2>
-              <p className="body-sub body-sub--light faq__sub">
-                {t('faq.sub')}
-              </p>
-              <a href="#contact" className="btn btn--ghost faq__cta">
-                {t('faq.cta')}
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </a>
-            </div>
-          </MotionReveal>
+    <section className="bg-[#0C0C0C] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
+      <div className="max-w-4xl mx-auto">
+        <FadeIn delay={0} duration={0.8} y={40}>
+          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-16 sm:mb-20 md:mb-28" style={{ fontSize: 'clamp(2rem, 10vw, 120px)' }}>
+            {t('faq.heading')}
+          </h2>
+        </FadeIn>
 
-          <div className="faq__list" role="list">
-            {faqs.map((item, i) => (
-              <FAQItem key={i} item={item} index={i} />
-            ))}
-          </div>
+        <div>
+          {faqs.map((faq, idx) => (
+            <FAQItem
+              key={idx}
+              q={faq.q}
+              a={faq.a}
+              idx={idx}
+              open={openIdx === idx}
+              onToggle={setOpenIdx}
+            />
+          ))}
         </div>
       </div>
     </section>

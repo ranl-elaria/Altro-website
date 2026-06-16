@@ -1,17 +1,13 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { LanguageProvider, useT } from './i18n/LanguageContext'
-import Grain from './components/Grain'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
 import Challenges from './components/Challenges'
-import StatBar from './components/StatBar'
 import Services from './components/Services'
-import Outcomes from './components/Outcomes'
-import Process from './components/Process'
 import FAQ from './components/FAQ'
-import Testimonials from './components/Testimonials'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import FloatingCTA from './components/FloatingCTA'
@@ -22,29 +18,43 @@ const PrivacyPage  = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsPage    = lazy(() => import('./pages/Terms'))
 const NotFoundPage = lazy(() => import('./pages/NotFound'))
 
+const revealVariants = {
+  hidden: { opacity: 0, y: 48 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+}
+
+function Reveal({ children }) {
+  return (
+    <motion.div
+      variants={revealVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-80px' }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 function Site() {
   const t = useT()
+
   return (
-    <>
+    <div className="page">
       <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
-      <Grain />
       <Navbar />
       <FloatingCTA />
       <main id="main-content">
         <Hero />
-        <Marquee />
-        <Challenges />
-        <StatBar />
-        <Services />
-        {/* <Outcomes /> */}
-        <Process />
-        {/* <Testimonials /> */}
-        <FAQ />
-        <Contact />
+        <Reveal><Marquee /></Reveal>
+        <Reveal><Services /></Reveal>
+        <Reveal><Challenges /></Reveal>
+        <Reveal><FAQ /></Reveal>
+        <Reveal><Contact /></Reveal>
       </main>
       <Footer />
       <CookieBanner />
-    </>
+    </div>
   )
 }
 
