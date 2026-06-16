@@ -14,12 +14,12 @@ function FAQItem({ q, a, idx, open, onToggle }) {
     >
       <button
         onClick={() => onToggle(idx)}
-        className="w-full text-left flex justify-between items-start gap-4 hover:opacity-70 transition-opacity"
+        className="w-full text-start flex justify-between items-start gap-4 hover:opacity-70 transition-opacity"
       >
-        <h3 className="text-[#D7E2EA] font-medium leading-relaxed flex-1" style={{ fontSize: 'clamp(0.95rem, 1.8vw, 1.3rem)' }}>
+        <h3 className="text-[#D7E2EA] font-medium leading-snug flex-1" style={{ fontSize: 'clamp(0.9rem, 1.6vw, 1.2rem)' }}>
           {q}
         </h3>
-        <span className="text-[#D7E2EA] text-xl sm:text-2xl flex-shrink-0 pt-0.5">
+        <span className="text-[#D7E2EA] text-xl sm:text-2xl flex-shrink-0 pt-0.5 order-last">
           {open ? '−' : '+'}
         </span>
       </button>
@@ -58,7 +58,7 @@ export default function FAQ() {
     <section className="bg-[#0C0C0C] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
       <div className="max-w-4xl mx-auto">
         <FadeIn delay={0} duration={0.8} y={40}>
-          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-16 sm:mb-20 md:mb-28" style={{ fontSize: 'clamp(2rem, 10vw, 120px)' }}>
+          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-12 sm:mb-20 md:mb-28" style={{ fontSize: 'clamp(2rem, 8vw, 100px)' }}>
             {t('faq.heading')}
           </h2>
         </FadeIn>
