@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'motion/react'
 import MotionReveal from './MotionReveal'
 import useInView from '../hooks/useInView'
 import { useT } from '../i18n/LanguageContext'

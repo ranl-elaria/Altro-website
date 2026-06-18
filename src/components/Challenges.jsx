@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { useT } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
 
@@ -8,42 +8,37 @@ const TOTAL_CARDS = 3
 function PainCard({ point, idx, containerRef }) {
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ['start start', 'end end'],
+    offset: ['start center', 'end center'],
   })
 
-  const targetScale = 1 - (TOTAL_CARDS - 1 - idx) * 0.05
+  // Scale down as next card arrives (1 → 0.95)
   const rangeStart = idx / TOTAL_CARDS
   const rangeEnd = (idx + 1) / TOTAL_CARDS
-  const scale = useTransform(scrollYProgress, [rangeStart, rangeEnd], [targetScale, 1])
+  const scale = useTransform(scrollYProgress, [rangeStart, rangeEnd], [1, 0.95])
 
   return (
     <motion.div
       style={{
         scale,
         position: 'sticky',
-        top: '5rem',
-        zIndex: TOTAL_CARDS - idx,
-        marginTop: idx === 0 ? 0 : '-3rem',
+        top: '80px',
+        zIndex: idx,
+        marginTop: idx === 0 ? 0 : '-2rem',
+        willChange: 'transform',
       }}
       className="h-[60vh] sm:h-[72vh]"
     >
-      <div className="h-full bg-[#111111] border-2 border-[#D7E2EA]/40 rounded-[32px] sm:rounded-[48px] md:rounded-[60px] p-5 sm:p-8 md:p-10 flex flex-col justify-between">
+      <div className="h-full bg-surface border-2 rounded-[32px] sm:rounded-[48px] md:rounded-[60px] p-5 sm:p-8 md:p-10 flex flex-col justify-between" style={{ borderColor: 'var(--color-border-default)' }}>
         <div>
-          <div
-            className="text-[#D7E2EA] font-black leading-none mb-3 sm:mb-4"
-            style={{ fontSize: 'clamp(2rem, 6vw, 80px)' }}
-          >
-            {point.number}
-          </div>
           <h3
-            className="text-[#D7E2EA] font-medium uppercase leading-snug"
+            className="text-secondary font-medium uppercase leading-snug"
             style={{ fontSize: 'clamp(0.9rem, 2vw, 1.5rem)' }}
           >
             {point.title}
           </h3>
         </div>
         <p
-          className="text-[#D7E2EA] font-light leading-relaxed opacity-70"
+          className="text-secondary font-light leading-relaxed opacity-70"
           style={{ fontSize: 'clamp(0.8rem, 1.4vw, 1rem)' }}
         >
           {point.text}
@@ -66,13 +61,14 @@ export default function Challenges() {
   return (
     <section
       ref={containerRef}
-      className="bg-[#0C0C0C] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 relative z-10"
+      className="px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 relative z-10"
+      style={{ backgroundColor: 'var(--color-bg-dark)' }}
     >
       <div className="max-w-5xl mx-auto">
         <FadeIn delay={0} duration={0.8} y={40}>
           <h2
             className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-16 sm:mb-20 md:mb-28"
-            style={{ fontSize: 'clamp(2rem, 8vw, 100px)' }}
+            style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance' }}
           >
             {t('designed.heading')}
           </h2>

@@ -1,60 +1,165 @@
-import { useT } from '../i18n/LanguageContext'
-import FadeIn from './FadeIn'
+import { useT, useLanguage } from '../i18n/LanguageContext'
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'motion/react'
+
+function ServiceSlide({ service, index, scrollProgress, lang, totalServices }) {
+  const isHe = lang === 'he'
+
+  // Each service occupies 1/3 of the scroll progress
+  const slideStart = (index / totalServices)
+  const slideActive = ((index + 1) / totalServices) * 0.8  // fully visible phase
+  const slideEnd = ((index + 1) / totalServices)
+
+  // X position: slide in from opposite side based on RTL
+  // LTR: enters from right (120%), exits to left (-120%)
+  // RTL: enters from left (-120%), exits to right (120%)
+  const xDirection = isHe ? -1 : 1
+
+  const x = useTransform(scrollProgress,
+    [slideStart - 0.08, slideStart, slideActive, slideEnd],
+    [120 * xDirection, 0, 0, -120 * xDirection]
+  )
+
+  const opacity = useTransform(scrollProgress,
+    [slideStart - 0.08, slideStart, slideActive, slideEnd],
+    [0, 1, 1, 0]
+  )
+
+  return (
+    <motion.div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        x,
+        opacity,
+        willChange: 'transform, opacity'
+      }}
+      className="flex flex-col sm:flex-row items-start gap-6 sm:gap-12 p-6 sm:p-12 md:p-16"
+    >
+      {/* GIF */}
+      {service.gif && (
+        <motion.img
+          src={service.gif}
+          alt=""
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="w-full sm:w-[35%] h-auto rounded-2xl flex-shrink-0"
+        />
+      )}
+
+      {/* Text content */}
+      <div className="flex-1 flex flex-col justify-center">
+        <h2
+          className="uppercase font-black leading-tight mb-4 sm:mb-6"
+          style={{
+            fontSize: 'clamp(1.75rem, 5vw, 3rem)',
+            color: 'var(--color-accent)',
+            textWrap: 'balance'
+          }}
+        >
+          {service.title}
+        </h2>
+        <p
+          className="leading-relaxed opacity-80"
+          style={{
+            fontSize: 'clamp(0.95rem, 2vw, 1.125rem)',
+            color: 'var(--color-text-primary)',
+            maxWidth: '600px'
+          }}
+        >
+          {service.text}
+        </p>
+      </div>
+    </motion.div>
+  )
+}
 
 export default function Services() {
   const t = useT()
+  const { lang } = useLanguage()
+  const outerRef = useRef(null)
+
+  const { scrollYProgress } = useScroll({
+    target: outerRef,
+    offset: ['start start', 'end end']
+  })
 
   const services = [
-    { number: '01', title: t('services.01.title'), text: t('services.01.text') },
-    { number: '02', title: t('services.02.title'), text: t('services.02.text') },
-    { number: '03', title: t('services.03.title'), text: t('services.03.text') },
+    {
+      title: t('services.01.title'),
+      text: t('services.01.text'),
+      gif: '/Webapps-gif.gif'
+    },
+    {
+      title: t('services.02.title'),
+      text: t('services.02.text'),
+      gif: '/AI animated avatar chatbot.gif'
+    },
+    {
+      title: t('services.03.title'),
+      text: t('services.03.text'),
+      gif: '/integrations-gif.gif'
+    },
   ]
 
   return (
-    <section className="bg-[#FFFFFF] px-5 sm:px-8 md:px-10 py-16 sm:py-24 md:py-32 rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px]">
-      <div className="max-w-5xl mx-auto">
-        <FadeIn delay={0} duration={0.8} y={40}>
-          <h2
-            className="text-[#0C0C0C] font-black uppercase tracking-tight leading-none text-center mb-12 sm:mb-20 md:mb-28"
-            style={{ fontSize: 'clamp(1.75rem, 8vw, 100px)' }}
-          >
-            {t('services.heading')}
-          </h2>
-        </FadeIn>
+    <section
+      ref={outerRef}
+      style={{
+        backgroundColor: 'var(--color-bg-dark)',
+        height: '300vh'
+      }}
+    >
+      {/* Sticky carousel viewport */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          overflow: 'hidden',
+          backgroundColor: 'var(--color-bg-dark)',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {/* Section heading */}
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+          style={{
+            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+            color: 'var(--color-accent)',
+            fontWeight: 900,
+            textTransform: 'uppercase',
+            padding: '2rem 1rem',
+            textAlign: 'center',
+            letterSpacing: '0.05em',
+            textWrap: 'balance'
+          }}
+        >
+          {t('services.heading')}
+        </motion.h2>
 
-        <div>
+        {/* Slide stage */}
+        <div
+          style={{
+            flex: 1,
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
           {services.map((service, idx) => (
-            <FadeIn key={idx} delay={idx * 0.1} duration={0.8} y={30}>
-              <div
-                className={`flex items-start gap-4 sm:gap-8 md:gap-14 py-7 sm:py-10 md:py-12 ${
-                  idx < services.length - 1 ? 'border-b border-[rgba(12,12,12,0.15)]' : ''
-                }`}
-              >
-                {/* Number — fixed width so text column stays stable */}
-                <div
-                  className="text-[#0C0C0C] font-black leading-none flex-shrink-0 w-[3rem] sm:w-[6rem] md:w-[8rem]"
-                  style={{ fontSize: 'clamp(2rem, 6vw, 90px)' }}
-                >
-                  {service.number}
-                </div>
-
-                {/* Text */}
-                <div className="flex-1 pt-1 sm:pt-2">
-                  <h3
-                    className="text-[#0C0C0C] font-semibold uppercase mb-2 sm:mb-3 leading-snug"
-                    style={{ fontSize: 'clamp(0.9rem, 1.8vw, 1.6rem)' }}
-                  >
-                    {service.title}
-                  </h3>
-                  <p
-                    className="text-[#0C0C0C] font-light leading-relaxed opacity-60"
-                    style={{ fontSize: 'clamp(0.8rem, 1.3vw, 1rem)' }}
-                  >
-                    {service.text}
-                  </p>
-                </div>
-              </div>
-            </FadeIn>
+            <ServiceSlide
+              key={idx}
+              service={service}
+              index={idx}
+              scrollProgress={scrollYProgress}
+              lang={lang}
+              totalServices={services.length}
+            />
           ))}
         </div>
       </div>

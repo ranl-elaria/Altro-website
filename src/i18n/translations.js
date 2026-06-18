@@ -16,6 +16,7 @@ export const TRANSLATIONS = {
     'navbar.skipToMain': 'Skip to main content',
 
     // hero
+    'hero.badge': 'Enterprise Solutions',
     'hero.heading': 'Custom web systems and AI agents built specifically for your operations.',
     'hero.subtitle': 'We design and build tailored software, powerful automations, and code integrations that connect all your systems into one smooth, autonomous network. No compromises on off-the-shelf products. No code that breaks.',
     'hero.cta': "Let's Chatbot",
@@ -43,7 +44,7 @@ export const TRANSLATIONS = {
     'designed.03.text': 'When the same operational process is handled differently every time or by different employees. We codify your business logic into a structured system with automated rules that run flawlessly every single time.',
 
     // services
-    'services.heading': 'Core Expertise',
+    'services.heading': 'What We Build',
     'services.01.title': 'Custom Web Systems',
     'services.01.text': 'We build management systems (Internal Tools), dashboards and core software tailored 100% to your unique business logic. No generic platform limits, no compromises.',
     'services.02.title': 'AI Agents & Workflow Automation',
@@ -151,6 +152,7 @@ export const TRANSLATIONS = {
     'navbar.skipToMain': 'דלג לתוכן הראשי',
 
     // hero
+    'hero.badge': 'פתרונות ארגוניים',
     'hero.heading': 'מערכות ווב וסוכני AI שנבנים במיוחד עבור האופרציה שלכם.',
     'hero.subtitle': 'אנחנו מתכננים ומפתחים תוכנה מותאמת אישית, אוטומציות חזקות ואינטגרציות קוד שמחברות את כל המערכות שלכם לרשת אחת חלקה ואוטונומית. בלי פשרות של מוצרי מדף, בלי קוד שמתפרק.',
     'hero.cta': 'Let\'s Chatbot',
@@ -178,7 +180,7 @@ export const TRANSLATIONS = {
     'designed.03.text': 'כשאותו תהליך בעסק מתבצע אחרת בכל פעם או על ידי כל עובד, כי אין תשתית אחת שמכתיבה את זרימת העבודה. אנחנו הופכים את שיטות העבודה שלכם למערכת מובנית וחוקים אוטומטיים שרצים תמיד אותו הדבר.',
 
     // services
-    'services.heading': 'התשתית הטכנולוגית שלכם',
+    'services.heading': 'מה אנחנו בונים',
     'services.01.title': 'מערכות ווב מותאמות אישית',
     'services.01.text': 'אנחנו בונים מערכות ניהול (Internal Tools), דשבורדים ותוכנות ליבה שמתאימות ב-100% לחוקים העסקיים שלכם. בלי להתפשר על מגבלות של מוצרי מדף גנריים.',
     'services.02.title': 'סוכני AI ואוטומציות תהליכים',

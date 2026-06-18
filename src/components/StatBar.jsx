@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
+import { motion, useInView, useMotionValue, useTransform, animate } from 'motion/react'
 import { useT } from '../i18n/LanguageContext'
 
 const STATS = [

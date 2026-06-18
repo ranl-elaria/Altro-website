@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { useT } from '../i18n/LanguageContext'
+import { motion } from 'motion/react'
+import { useLanguage } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
 import ContactButton from './ContactButton'
 
@@ -8,7 +8,8 @@ export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', company: '', phone: '', message: '' })
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const t = useT()
+  const { t, lang } = useLanguage()
+  const isHe = lang === 'he'
 
   const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
 
@@ -37,16 +38,16 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="bg-[#0C0C0C] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
-      <div className="max-w-2xl mx-auto">
+    <section id="contact" className="px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32" style={{ backgroundColor: 'var(--color-bg-dark)' }}>
+      <div className={`max-w-5xl mx-auto ${!isHe ? 'ml-auto' : 'mr-auto'} w-full sm:w-4/5 md:w-3/5`}>
         <FadeIn delay={0} duration={0.8} y={40}>
-          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)' }}>
+          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance' }}>
             {t('contact.heading')}
           </h2>
         </FadeIn>
 
         <FadeIn delay={0.2} duration={0.8} y={20}>
-          <p className="text-[#D7E2EA] font-light leading-relaxed text-center mb-12 sm:mb-16 opacity-80" style={{ fontSize: 'clamp(0.9rem, 1.6vw, 1.1rem)' }}>
+          <p className="text-secondary font-light leading-relaxed text-center mb-12 sm:mb-16 opacity-80" style={{ fontSize: 'clamp(0.9rem, 1.6vw, 1.1rem)' }}>
             {t('contact.sub')}
           </p>
         </FadeIn>
@@ -55,8 +56,8 @@ export default function Contact() {
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Name */}
             <div>
-              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
-                {t('contact.labelName')}
+              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+                {t('contact.labelName')} <span className="text-xs opacity-70 font-normal">(required)</span>
               </label>
               <input
                 type="text"
@@ -64,15 +65,15 @@ export default function Contact() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder={t('contact.placeholderName')}
-                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
                 required
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
-                {t('contact.labelEmail')}
+              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+                {t('contact.labelEmail')} <span className="text-xs opacity-70 font-normal">(required)</span>
               </label>
               <input
                 type="email"
@@ -80,14 +81,14 @@ export default function Contact() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder={t('contact.placeholderEmail')}
-                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
                 required
               />
             </div>
 
             {/* Company Website */}
             <div>
-              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelCompany')}
               </label>
               <input
@@ -96,13 +97,13 @@ export default function Contact() {
                 value={form.company}
                 onChange={handleChange}
                 placeholder={t('contact.placeholderCompany')}
-                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
               />
             </div>
 
             {/* Phone */}
             <div>
-              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelPhone')}
               </label>
               <input
@@ -111,13 +112,13 @@ export default function Contact() {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder={t('contact.placeholderPhone')}
-                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors"
+                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
               />
             </div>
 
             {/* Message */}
             <div>
-              <label className="block text-[#D7E2EA] font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelMessage')}
               </label>
               <textarea
@@ -158,7 +159,7 @@ export default function Contact() {
               <ContactButton type="submit" disabled={status === 'loading'}>
                 {status === 'loading' ? t('contact.submitting') : t('contact.submit')}
               </ContactButton>
-              <p className="text-[#D7E2EA] text-xs sm:text-sm font-light opacity-70 text-center">
+              <p className="text-secondary text-xs sm:text-sm font-light opacity-70 text-center">
                 {t('contact.ctaHint')}
               </p>
             </div>

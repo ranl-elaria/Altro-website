@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { supabase } from '../lib/supabase'
 import Logo from './Logo'
 import AdminAnalytics from './AdminAnalytics'

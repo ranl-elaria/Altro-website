@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 export default function FadeIn({ children, delay = 0, duration = 0.7, x = 0, y = 30 }) {
   return (

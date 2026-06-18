@@ -4,20 +4,58 @@
    TOKENS
    ============================================= */
 :root {
-  --teal:        #0CB6B1;
-  --teal-bright: #0DCFCA;
-  --teal-dim:    rgba(12, 182, 177, 0.10);
-  --teal-border: rgba(12, 182, 177, 0.22);
-  --teal-glow:   rgba(12, 182, 177, 0.06);
+  /* ── Semantic Color Tokens ── */
 
-  /* Glass panel system */
-  --glass-bg:     rgba(20, 24, 48, 0.72);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur:   blur(20px);
+  /* Brand Accent */
+  --color-accent:        #0CB6B1;
+  --color-accent-bright: #0DCFCA;
+  --color-accent-dim:    rgba(12, 182, 177, 0.10);
+  --color-accent-border: rgba(12, 182, 177, 0.22);
+  --color-accent-glow:   rgba(12, 182, 177, 0.06);
 
+  /* Backgrounds */
+  --color-bg-dark:      #0C0C0C;
+  --color-bg-surface:   #111111;
+  --color-bg-elevated:  #1a1a1a;
+  --color-bg-white:     #FFFFFF;
+
+  /* Text Colors */
+  --color-text-primary:   #EDEAE3;
+  --color-text-secondary: #D7E2EA;
+  --color-text-tertiary:  #A0A6B0;
+  --color-text-muted:     #8A8F98;
+
+  /* Borders */
+  --color-border-default: rgba(215, 226, 234, 0.22);
+  --color-border-subtle:  rgba(215, 226, 234, 0.10);
+  --color-border-strong:  #D7E2EA;
+
+  /* Form Elements */
+  --color-form-bg:       #1a1a1a;
+  --color-form-border:   rgba(215, 226, 234, 0.20);
+  --color-form-focus:    rgba(215, 226, 234, 0.60);
+  --color-form-text:     #D7E2EA;
+  --color-form-placeholder: rgba(215, 226, 234, 0.80);
+
+  /* Glass/Panel System */
+  --color-glass-bg:      rgba(20, 24, 48, 0.72);
+  --color-glass-border:  rgba(255, 255, 255, 0.08);
+
+  /* Legacy tokens (for backwards compatibility) */
+  --teal:        var(--color-accent);
+  --teal-bright: var(--color-accent-bright);
+  --teal-dim:    var(--color-accent-dim);
+  --teal-border: var(--color-accent-border);
+  --teal-glow:   var(--color-accent-glow);
+  --glass-bg:    var(--color-glass-bg);
+  --glass-border: var(--color-glass-border);
+  --glass-blur:  blur(20px);
+
+  /* Typography */
   --font:      'Kanit', 'Inter Variable', 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 
+  /* Layout */
   --nav-height:  72px;
   --section-pad: 120px;
   --container:   1200px;
@@ -26,15 +64,33 @@
 }
 
 /* =============================================
+   COLOR UTILITIES
+   ============================================= */
+.bg-dark      { background-color: var(--color-bg-dark); }
+.bg-surface   { background-color: var(--color-bg-surface); }
+.bg-elevated  { background-color: var(--color-bg-elevated); }
+.bg-white     { background-color: var(--color-bg-white); }
+.bg-glass     { background-color: var(--color-glass-bg); }
+
+.text-primary   { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-tertiary  { color: var(--color-text-tertiary); }
+.text-muted     { color: var(--color-text-muted); }
+
+.border-default { border-color: var(--color-border-default); }
+.border-subtle  { border-color: var(--color-border-subtle); }
+.border-strong  { border-color: var(--color-border-strong); }
+
+/* =============================================
    RESET
    ============================================= */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; background: #0C0C0C; }
+html { scroll-behavior: smooth; font-size: 16px; background: var(--color-bg-dark); }
 body {
   font-family: var(--font);
   font-feature-settings: "cv01", "ss03";
-  background: #0C0C0C;
-  color: #EDEAE3;
+  background: var(--color-bg-dark);
+  color: var(--color-text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
@@ -51,10 +107,24 @@ input, textarea, select { font-family: var(--font); }
 
 /* Hero heading gradient text */
 .hero-heading {
-  background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #EDEAE3;
+}
+
+/* =============================================
+   FORM ELEMENTS
+   ============================================= */
+input, textarea, select {
+  background-color: var(--color-form-bg);
+  color: var(--color-form-text);
+  border-color: var(--color-form-border);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-form-placeholder);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-form-focus);
 }
 
 /* =============================================
@@ -103,8 +173,6 @@ input, textarea, select { font-family: var(--font); }
    ============================================= */
 .section-glass {
   background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
 }
 
 /* =============================================
@@ -2916,6 +2984,19 @@ input, textarea, select { font-family: var(--font); }
 /* FAQ question padding: swap sides */
 [dir="rtl"] .faq__question { padding: 26px 20px 26px 0; text-align: right; }
 [dir="rtl"] .faq__answer { padding-left: 0; padding-right: 20px; }
+
+/* =============================================
+   REDUCED MOTION SUPPORT
+   ============================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .marquee__track { animation: none; }
+  [style*="animation"] { animation: none !important; }
+}
 @media (max-width: 768px) {
   [dir="rtl"] .faq__question { padding: 20px 16px 20px 0; }
   [dir="rtl"] .faq__answer { padding-right: 16px; }

@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useRef } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { motion } from 'motion/react'
+import { motion, useScroll, useMotionValueEvent } from 'motion/react'
 import { LanguageProvider, useT } from './i18n/LanguageContext'
+import VideoBackground from './components/VideoBackground'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
@@ -38,23 +39,36 @@ function Reveal({ children }) {
 
 function Site() {
   const t = useT()
+  const videoRef = useRef(null)
+  const { scrollYProgress } = useScroll()
+
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    const vid = videoRef.current
+    if (!vid?.duration) return
+    const time = v * vid.duration
+    if (vid.fastSeek) vid.fastSeek(time)
+    else vid.currentTime = time
+  })
 
   return (
-    <div className="page">
-      <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
-      <Navbar />
-      <FloatingCTA />
-      <main id="main-content">
-        <Hero />
-        <Reveal><Marquee /></Reveal>
-        <Reveal><Services /></Reveal>
+    <>
+      <VideoBackground ref={videoRef} />
+      <div className="page">
+        <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
+        <Navbar />
+        <FloatingCTA />
+        <main id="main-content">
+          <Hero />
+          <Reveal><Marquee /></Reveal>
+          <Reveal><Services /></Reveal>
         <Reveal><Challenges /></Reveal>
         <Reveal><FAQ /></Reveal>
         <Reveal><Contact /></Reveal>
       </main>
       <Footer />
       <CookieBanner />
-    </div>
+      </div>
+    </>
   )
 }
 

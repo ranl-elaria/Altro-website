@@ -1,5 +1,9 @@
-export default function ContactButton({ children = 'Contact Me', onClick, type = 'button', disabled = false, size = 'md' }) {
-  const sizeClass = size === 'lg'
+export default function ContactButton({ children = 'Contact Me', onClick, type = 'button', disabled = false, size = 'md', centered = false }) {
+  const sizeClass = size === '2xl'
+    ? 'px-16 py-6 sm:px-20 sm:py-7 text-lg sm:text-xl md:text-2xl'
+    : size === 'xl'
+    ? 'px-12 py-5 sm:px-16 sm:py-6 text-base sm:text-lg md:text-xl'
+    : size === 'lg'
     ? 'px-10 py-4 sm:px-14 sm:py-5 text-sm sm:text-base md:text-lg'
     : 'px-8 py-3 sm:px-10 sm:py-3.5 md:px-12 md:py-4 text-xs sm:text-sm md:text-base'
 
@@ -9,22 +13,27 @@ export default function ContactButton({ children = 'Contact Me', onClick, type =
       onClick={onClick}
       disabled={disabled}
       className={`
-        rounded-full ${sizeClass}
-        font-medium uppercase tracking-widest
+        rounded-2xl ${sizeClass}
+        font-bold uppercase tracking-wider
         text-white
         relative
-        transition-all duration-200
-        hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+        transition-all duration-400
+        hover:scale-110 hover:-translate-y-1
+        active:scale-95 active:translate-y-0
+        focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-[#14B8A6]/50
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 disabled:active:translate-y-0
+        overflow-hidden group
       `}
       style={{
-        background: 'linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%)',
+        background: '#14B8A6',
         boxShadow: `
-          0px 4px 12px rgba(181, 1, 167, 0.35),
-          inset 4px 4px 12px #7721B1,
-          inset -2px -2px 0px white
+          0px 20px 50px rgba(20, 184, 166, 0.5),
+          0px 8px 20px rgba(20, 184, 166, 0.35),
+          0px 2px 8px rgba(20, 184, 166, 0.25),
+          inset 2px 2px 4px rgba(255, 255, 255, 0.25),
+          inset -2px -2px 4px rgba(0, 0, 0, 0.15)
         `,
-        outline: '2px solid white',
-        outlineOffset: '-3px',
+        outline: 'none',
       }}
     >
       {children}
