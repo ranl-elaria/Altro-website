@@ -94,7 +94,7 @@ export default function Challenges() {
         {/* CTA Section */}
         <FadeIn delay={0.2} duration={0.8} y={40}>
           <div className="mt-20 sm:mt-24 md:mt-32 text-center">
-            <p className="text-secondary mb-6 font-light opacity-70 mb-8">
+            <p className="text-gray-700 mb-8 font-light text-lg">
               Let's solve your operational challenges
             </p>
             <ContactCTA label="Get started" variant="primary" />

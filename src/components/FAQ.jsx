@@ -80,7 +80,7 @@ export default function FAQ() {
         {/* CTA Section */}
         <FadeIn delay={0.2} duration={0.8} y={40}>
           <div className="mt-16 sm:mt-20 md:mt-28 text-center">
-            <p className="text-secondary mb-8 font-light opacity-70">
+            <p className="text-gray-300 mb-8 font-light text-lg">
               Still have questions? Let's talk about your project.
             </p>
             <ContactCTA label="Schedule a call" variant="primary" />

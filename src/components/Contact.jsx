@@ -62,7 +62,7 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
         )}
 
         {isModal && (
-          <h2 className="font-black uppercase tracking-tight leading-none text-center mb-8 text-gray-900" style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>
+          <h2 className="font-black uppercase tracking-tight leading-none text-center mb-10 text-white" style={{ fontSize: 'clamp(1.3rem, 3vw, 1.8rem)', color: '#0CB6B1' }}>
             {t('contact.heading')}
           </h2>
         )}
@@ -71,8 +71,8 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Name */}
             <div>
-              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
-                {t('contact.labelName')} <span className="text-xs opacity-70 font-normal">(required)</span>
+              <label className={`block font-medium mb-2 text-sm sm:text-base uppercase tracking-wide ${isModal ? 'text-gray-200' : 'text-secondary'}`}>
+                {t('contact.labelName')} <span className={`text-xs opacity-70 font-normal ${isModal ? 'text-gray-400' : ''}`}>(required)</span>
               </label>
               <div className="form-input-wrap">
                 <input
@@ -89,8 +89,8 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
 
             {/* Email */}
             <div>
-              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
-                {t('contact.labelEmail')} <span className="text-xs opacity-70 font-normal">(required)</span>
+              <label className={`block font-medium mb-2 text-sm sm:text-base uppercase tracking-wide ${isModal ? 'text-gray-200' : 'text-secondary'}`}>
+                {t('contact.labelEmail')} <span className={`text-xs opacity-70 font-normal ${isModal ? 'text-gray-400' : ''}`}>(required)</span>
               </label>
               <div className="form-input-wrap">
                 <input
@@ -107,7 +107,7 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
 
             {/* Company Website */}
             <div>
-              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+              <label className={`block font-medium mb-2 text-sm sm:text-base uppercase tracking-wide ${isModal ? 'text-gray-200' : 'text-secondary'}`}>
                 {t('contact.labelCompany')}
               </label>
               <div className="form-input-wrap">
@@ -124,7 +124,7 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
 
             {/* Phone */}
             <div>
-              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+              <label className={`block font-medium mb-2 text-sm sm:text-base uppercase tracking-wide ${isModal ? 'text-gray-200' : 'text-secondary'}`}>
                 {t('contact.labelPhone')}
               </label>
               <div className="form-input-wrap">
@@ -141,7 +141,7 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
 
             {/* Message */}
             <div>
-              <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
+              <label className={`block font-medium mb-2 text-sm sm:text-base uppercase tracking-wide ${isModal ? 'text-gray-200' : 'text-secondary'}`}>
                 {t('contact.labelMessage')}
               </label>
               <div className="form-input-wrap">

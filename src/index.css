@@ -2229,23 +2229,24 @@ input:focus, textarea:focus, select:focus {
 .form-input-wrap {
   border-radius: 999px;
   transition: box-shadow 0.25s;
+  padding: 1px;
 }
 .form-input-wrap:focus-within {
-  box-shadow: 0 0 0 3px rgba(12,182,177,0.18);
+  box-shadow: 0 0 0 3px rgba(12,182,177,0.25);
 }
 .form-input,
 .form-textarea {
-  background: rgba(255,255,255,0.055);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 12px; padding: 13px 18px; font-size: 15px; color: #EDEAE3;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px; padding: 13px 18px; font-size: 15px; color: #E5E7EB;
   transition: border-color 0.25s, background 0.25s, box-shadow 0.25s; outline: none; width: 100%;
 }
 .form-input { border-radius: 999px; }
-.form-input::placeholder, .form-textarea::placeholder { color: rgba(237,234,227,0.35); }
+.form-input::placeholder, .form-textarea::placeholder { color: rgba(229,231,235,0.5); }
 .form-input:focus, .form-textarea:focus {
-  border-color: rgba(12,182,177,0.5);
-  background: rgba(12,182,177,0.06);
-  box-shadow: 0 0 0 3px rgba(12,182,177,0.1);
+  border-color: rgba(12,182,177,0.6);
+  background: rgba(12,182,177,0.1);
+  box-shadow: 0 0 0 3px rgba(12,182,177,0.15);
 }
 .form-textarea {
   resize: vertical;
