@@ -55,7 +55,7 @@ export default function FAQ() {
   ]
 
   return (
-    <section className="bg-[#0C0C0C] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
+    <section className="section--dark px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 relative z-20 -mt-10 sm:-mt-12 md:-mt-14">
       <div className="max-w-4xl mx-auto">
         <FadeIn delay={0} duration={0.8} y={40}>
           <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-12 sm:mb-20 md:mb-28" style={{ fontSize: 'clamp(2rem, 8vw, 100px)' }}>

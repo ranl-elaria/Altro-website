@@ -60,8 +60,7 @@ export default function Hero() {
   return (
     <section
       id="home"
-      className="min-h-screen px-8 sm:px-12 md:px-24 lg:px-40 pt-24 pb-16 sm:pt-28 sm:pb-20 overflow-x-clip"
-      style={{ backgroundColor: 'var(--color-bg-dark)' }}
+      className="section--dark min-h-screen px-8 sm:px-12 md:px-24 lg:px-40 pt-24 pb-16 sm:pt-28 sm:pb-20 overflow-x-clip"
     >
       <div className="max-w-7xl mx-auto min-h-[calc(100vh-112px)] flex flex-col justify-center">
 

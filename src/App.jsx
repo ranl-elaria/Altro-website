@@ -1,8 +1,7 @@
-import { lazy, Suspense, useRef } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { motion, useScroll, useMotionValueEvent } from 'motion/react'
-import { LanguageProvider, useT } from './i18n/LanguageContext'
-import VideoBackground from './components/VideoBackground'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { motion } from 'motion/react'
+import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
@@ -37,23 +36,24 @@ function Reveal({ children }) {
   )
 }
 
+function LocaleLayout() {
+  const { switchLang } = useLanguage()
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    const isHebrew = pathname.startsWith('/he')
+    const langFromUrl = isHebrew ? 'he' : 'en'
+    switchLang(langFromUrl)
+  }, [pathname, switchLang])
+
+  return <Site />
+}
+
 function Site() {
   const t = useT()
-  const videoRef = useRef(null)
-  const { scrollYProgress } = useScroll()
-
-  useMotionValueEvent(scrollYProgress, 'change', (v) => {
-    const vid = videoRef.current
-    if (!vid?.duration) return
-    const time = v * vid.duration
-    if (vid.fastSeek) vid.fastSeek(time)
-    else vid.currentTime = time
-  })
 
   return (
-    <>
-      <VideoBackground ref={videoRef} />
-      <div className="page">
+    <div className="page">
         <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
         <Navbar />
         <FloatingCTA />
@@ -67,8 +67,7 @@ function Site() {
       </main>
       <Footer />
       <CookieBanner />
-      </div>
-    </>
+    </div>
   )
 }
 
@@ -79,7 +78,10 @@ export default function App() {
     <LanguageProvider>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Site />} />
+        <Route element={<LocaleLayout />}>
+          <Route index path="/" />
+          <Route path="/he/*" />
+        </Route>
         <Route
           path="/admin"
           element={

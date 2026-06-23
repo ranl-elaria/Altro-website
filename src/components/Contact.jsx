@@ -38,8 +38,8 @@ export default function Contact() {
   }
 
   return (
-    <section id="contact" className="px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32" style={{ backgroundColor: 'var(--color-bg-dark)' }}>
-      <div className={`max-w-5xl mx-auto ${!isHe ? 'ml-auto' : 'mr-auto'} w-full sm:w-4/5 md:w-3/5`}>
+    <section id="contact" className="section--light px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
+      <div className="max-w-5xl mx-auto w-full sm:w-4/5 md:w-3/5">
         <FadeIn delay={0} duration={0.8} y={40}>
           <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance' }}>
             {t('contact.heading')}
@@ -59,15 +59,17 @@ export default function Contact() {
               <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelName')} <span className="text-xs opacity-70 font-normal">(required)</span>
               </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder={t('contact.placeholderName')}
-                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
-                required
-              />
+              <div className="form-input-wrap">
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder={t('contact.placeholderName')}
+                  className="form-input w-full"
+                  required
+                />
+              </div>
             </div>
 
             {/* Email */}
@@ -75,15 +77,17 @@ export default function Contact() {
               <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelEmail')} <span className="text-xs opacity-70 font-normal">(required)</span>
               </label>
-              <input
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder={t('contact.placeholderEmail')}
-                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
-                required
-              />
+              <div className="form-input-wrap">
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder={t('contact.placeholderEmail')}
+                  className="form-input w-full"
+                  required
+                />
+              </div>
             </div>
 
             {/* Company Website */}
@@ -91,14 +95,16 @@ export default function Contact() {
               <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelCompany')}
               </label>
-              <input
-                type="url"
-                name="company"
-                value={form.company}
-                onChange={handleChange}
-                placeholder={t('contact.placeholderCompany')}
-                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
-              />
+              <div className="form-input-wrap">
+                <input
+                  type="url"
+                  name="company"
+                  value={form.company}
+                  onChange={handleChange}
+                  placeholder={t('contact.placeholderCompany')}
+                  className="form-input w-full"
+                />
+              </div>
             </div>
 
             {/* Phone */}
@@ -106,14 +112,16 @@ export default function Contact() {
               <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelPhone')}
               </label>
-              <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder={t('contact.placeholderPhone')}
-                className="w-full border rounded-lg px-4 py-3 font-light transition-colors focus:outline-none"
-              />
+              <div className="form-input-wrap">
+                <input
+                  type="tel"
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder={t('contact.placeholderPhone')}
+                  className="form-input w-full"
+                />
+              </div>
             </div>
 
             {/* Message */}
@@ -121,15 +129,17 @@ export default function Contact() {
               <label className="block text-secondary font-medium mb-2 text-sm sm:text-base uppercase tracking-wide">
                 {t('contact.labelMessage')}
               </label>
-              <textarea
-                name="message"
-                value={form.message}
-                onChange={handleChange}
-                placeholder={t('contact.placeholderMessage')}
-                rows="5"
-                className="w-full bg-[#1a1a1a] border border-[#D7E2EA]/20 rounded-lg px-4 py-3 text-[#D7E2EA] placeholder-[#D7E2EA]/40 font-light focus:outline-none focus:border-[#D7E2EA]/60 transition-colors resize-none"
-                required
-              />
+              <div className="form-input-wrap">
+                <textarea
+                  name="message"
+                  value={form.message}
+                  onChange={handleChange}
+                  placeholder={t('contact.placeholderMessage')}
+                  rows="5"
+                  className="form-textarea w-full"
+                  required
+                />
+              </div>
             </div>
 
             {/* Error message */}

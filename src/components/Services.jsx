@@ -4,24 +4,19 @@ import { motion, useScroll, useTransform } from 'motion/react'
 
 function ServiceSlide({ service, index, scrollProgress, lang, totalServices }) {
   const isHe = lang === 'he'
+  const slideStart = Math.max(0, index / totalServices)
+  const slideMid = (index + 0.5) / totalServices
+  const slideEnd = Math.min(1, (index + 1) / totalServices)
 
-  // Each service occupies 1/3 of the scroll progress
-  const slideStart = (index / totalServices)
-  const slideActive = ((index + 1) / totalServices) * 0.8  // fully visible phase
-  const slideEnd = ((index + 1) / totalServices)
-
-  // X position: slide in from opposite side based on RTL
-  // LTR: enters from right (120%), exits to left (-120%)
-  // RTL: enters from left (-120%), exits to right (120%)
-  const xDirection = isHe ? -1 : 1
-
-  const x = useTransform(scrollProgress,
-    [slideStart - 0.08, slideStart, slideActive, slideEnd],
-    [120 * xDirection, 0, 0, -120 * xDirection]
+  // Y parallax: slides move up as you scroll
+  const yParallax = useTransform(scrollProgress,
+    [slideStart, slideEnd],
+    [50, -50]
   )
 
+  // Opacity: fade in/out smoothly
   const opacity = useTransform(scrollProgress,
-    [slideStart - 0.08, slideStart, slideActive, slideEnd],
+    [Math.max(0, slideStart - 0.05), slideStart + 0.05, slideEnd - 0.05, Math.min(1, slideEnd + 0.05)],
     [0, 1, 1, 0]
   )
 
@@ -30,22 +25,33 @@ function ServiceSlide({ service, index, scrollProgress, lang, totalServices }) {
       style={{
         position: 'absolute',
         inset: 0,
-        x,
         opacity,
+        y: yParallax,
+        zIndex: totalServices - index,
+        backgroundColor: 'transparent',
         willChange: 'transform, opacity'
       }}
-      className="flex flex-col sm:flex-row items-start gap-6 sm:gap-12 p-6 sm:p-12 md:p-16"
+      className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 p-6 sm:p-12 md:p-16 h-full"
     >
-      {/* GIF */}
+      {/* Video */}
       {service.gif && (
-        <motion.img
-          src={service.gif}
-          alt=""
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="w-full sm:w-[35%] h-auto rounded-2xl flex-shrink-0"
-        />
+        <div
+          className="w-full sm:w-[40%] flex-shrink-0"
+          style={{ backgroundColor: 'transparent' }}
+        >
+          <video
+            src={service.gif}
+            className="w-full h-auto rounded-2xl"
+            autoPlay
+            muted
+            loop
+            playsInline
+            style={{
+              display: 'block',
+              backgroundColor: 'transparent'
+            }}
+          />
+        </div>
       )}
 
       {/* Text content */}
@@ -89,26 +95,26 @@ export default function Services() {
     {
       title: t('services.01.title'),
       text: t('services.01.text'),
-      gif: '/Webapps-gif.gif'
+      gif: '/webapps.mp4'
     },
     {
       title: t('services.02.title'),
       text: t('services.02.text'),
-      gif: '/AI animated avatar chatbot.gif'
+      gif: '/ai agent.mp4'
     },
     {
       title: t('services.03.title'),
       text: t('services.03.text'),
-      gif: '/integrations-gif.gif'
+      gif: '/sysftems.mp4'
     },
   ]
 
   return (
     <section
       ref={outerRef}
+      className="section--dark"
       style={{
-        backgroundColor: 'var(--color-bg-dark)',
-        height: '300vh'
+        height: '500vh'
       }}
     >
       {/* Sticky carousel viewport */}
@@ -123,32 +129,15 @@ export default function Services() {
           flexDirection: 'column'
         }}
       >
-        {/* Section heading */}
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          style={{
-            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-            color: 'var(--color-accent)',
-            fontWeight: 900,
-            textTransform: 'uppercase',
-            padding: '2rem 1rem',
-            textAlign: 'center',
-            letterSpacing: '0.05em',
-            textWrap: 'balance'
-          }}
-        >
-          {t('services.heading')}
-        </motion.h2>
-
-        {/* Slide stage */}
+        {/* Slide stage - takes full height */}
         <div
           style={{
             flex: 1,
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
           }}
         >
           {services.map((service, idx) => (

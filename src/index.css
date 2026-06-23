@@ -85,11 +85,11 @@
    RESET
    ============================================= */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; background: var(--color-bg-dark); }
+html { scroll-behavior: smooth; font-size: 16px; background: #F8F7F5; }
 body {
   font-family: var(--font);
   font-feature-settings: "cv01", "ss03";
-  background: var(--color-bg-dark);
+  background: #F8F7F5;
   color: var(--color-text-primary);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -102,7 +102,7 @@ input, textarea, select { font-family: var(--font); }
 
 /* Root background styling */
 #root {
-  background: #0C0C0C;
+  background: #F8F7F5;
 }
 
 /* Hero heading gradient text */
@@ -141,28 +141,6 @@ input:focus, textarea:focus, select:focus {
   background-size: 200px 200px;
 }
 
-/* =============================================
-   VIDEO BACKGROUND
-   ============================================= */
-.video-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-.video-bg__video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.video-bg__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(20, 24, 48, 0.38);
-}
-
-/* Page content sits above the fixed video */
 .page {
   position: relative;
   z-index: 1;
@@ -235,6 +213,10 @@ input:focus, textarea:focus, select:focus {
 /* Dark variants (navy sections) */
 .display-heading--light { color: #EDEAE3; }
 .body-sub--light        { color: rgba(237, 234, 227, 0.70); }
+
+/* Section background alternation */
+.section--light { background-color: #F8F7F5; }
+.section--dark  { background-color: #0C0C0C; }
 
 /* =============================================
    BUTTONS
@@ -1078,10 +1060,12 @@ input:focus, textarea:focus, select:focus {
    ============================================= */
 .marquee {
   overflow: hidden;
-  background: #0C0C0C;
-  border-top: 1px solid rgba(215,226,234,0.1);
-  border-bottom: 1px solid rgba(215,226,234,0.1);
+  border-top: 1px solid rgba(0,0,0,0.1);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
   padding: 20px 0;
+}
+.marquee.section--light {
+  background: #F8F7F5;
 }
 .marquee__track { display: flex; width: max-content; animation: marquee-scroll 40s linear infinite; }
 @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -1089,11 +1073,11 @@ input:focus, textarea:focus, select:focus {
   display: inline-flex; align-items: center; gap: 28px;
   padding: 0 28px;
   font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
-  text-transform: uppercase; color: #D7E2EA;
+  text-transform: uppercase; color: #0B0D1A;
   white-space: nowrap; transition: color 0.2s; font-family: 'Kanit', sans-serif;
 }
-.marquee__item:hover { color: #FFFFFF; }
-.marquee__dot { width: 4px; height: 4px; border-radius: 50%; background: #BBCCD7; flex-shrink: 0; opacity: 0.6; }
+.marquee__item:hover { color: #0C0C0C; }
+.marquee__dot { width: 4px; height: 4px; border-radius: 50%; background: #8A8F98; flex-shrink: 0; opacity: 0.6; }
 
 /* =============================================
    STAT BAR (animated counters)
@@ -2162,7 +2146,7 @@ input:focus, textarea:focus, select:focus {
 .faq__answer {
   display: grid; grid-template-rows: 0fr;
   transition: grid-template-rows 0.42s var(--ease);
-  padding-left: 20px;
+  padding-inline-start: 20px;
 }
 .faq__item--open .faq__answer { grid-template-rows: 1fr; }
 .faq__answer-inner {
@@ -2717,7 +2701,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Apply card token to each element class */
-.marquee  { max-width: min(1200px, 92vw); margin: var(--card-gap) auto var(--card-gap); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 16px 64px rgba(0,0,0,0.55); overflow: hidden; }
+.marquee  { max-width: 100%; margin-inline: 0; border-radius: 0; border: none; box-shadow: none; overflow: hidden; }
 .stat-bar { max-width: min(1200px, 92vw); margin: 0 auto var(--card-gap); border-radius: 24px; border: 1px solid var(--glass-border); box-shadow: 0 16px 64px rgba(0,0,0,0.55); overflow: hidden; }
 
 /* All content sections (.challenges, .services, .process, .faq, .contact) */
@@ -2895,11 +2879,11 @@ input:focus, textarea:focus, select:focus {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding-left: 18px;
-  border-left: 1px solid rgba(255,255,255,0.12);
+  padding-inline-start: 18px;
+  border-inline-start: 1px solid rgba(255,255,255,0.12);
 }
 .navbar--scrolled .lang-switcher {
-  border-left-color: rgba(0,0,0,0.10);
+  border-inline-start-color: rgba(0,0,0,0.10);
 }
 .lang-switcher__btn {
   font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
@@ -2925,7 +2909,7 @@ input:focus, textarea:focus, select:focus {
 @media (max-width: 768px) {
   .lang-switcher {
     padding: 10px 24px;
-    border-left: none;
+    border-inline-start: none;
     width: 100%;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     justify-content: flex-start;
@@ -2949,23 +2933,6 @@ input:focus, textarea:focus, select:focus {
 /* Skip link */
 [dir="rtl"] .skip-link { left: auto; right: 16px; }
 
-/* Navbar lang-switcher border: flip to right side */
-[dir="rtl"] .lang-switcher {
-  padding-left: 0;
-  border-left: none;
-  padding-right: 18px;
-  border-right: 1px solid rgba(255,255,255,0.12);
-}
-[dir="rtl"] .navbar--scrolled .lang-switcher {
-  border-right-color: rgba(0,0,0,0.10);
-}
-@media (max-width: 768px) {
-  [dir="rtl"] .lang-switcher {
-    border-right: none;
-    padding-right: 24px;
-    justify-content: flex-end;
-  }
-}
 
 /* Process spine: move from left to right */
 [dir="rtl"] .process__spine { left: auto; right: 19px; }
@@ -2983,7 +2950,6 @@ input:focus, textarea:focus, select:focus {
 
 /* FAQ question padding: swap sides */
 [dir="rtl"] .faq__question { padding: 26px 20px 26px 0; text-align: right; }
-[dir="rtl"] .faq__answer { padding-left: 0; padding-right: 20px; }
 
 /* =============================================
    REDUCED MOTION SUPPORT

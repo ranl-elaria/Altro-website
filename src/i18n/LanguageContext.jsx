@@ -10,6 +10,21 @@ function syncHtml(lang) {
   document.documentElement.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr')
 }
 
+function updateDocumentMeta(lang) {
+  const t = (key) => TRANSLATIONS[lang]?.[key] ?? key
+  const title = t('meta.title')
+  const description = t('meta.description')
+  const url = lang === 'he' ? 'https://altro.build/he/' : 'https://altro.build/'
+
+  document.title = title
+  document.querySelector('meta[name="description"]')?.setAttribute('content', description)
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content', title)
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content', description)
+  document.querySelector('meta[property="og:url"]')?.setAttribute('content', url)
+  document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title)
+  document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description)
+}
+
 const LanguageContext = createContext(null)
 
 export function LanguageProvider({ children }) {
@@ -17,9 +32,11 @@ export function LanguageProvider({ children }) {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved && SUPPORTED.includes(saved)) {
       syncHtml(saved)
+      updateDocumentMeta(saved)
       return saved
     }
     syncHtml(DEFAULT)
+    updateDocumentMeta(DEFAULT)
     return DEFAULT
   })
 
@@ -45,6 +62,7 @@ export function LanguageProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, newLang)
     setLang(newLang)
     syncHtml(newLang)
+    updateDocumentMeta(newLang)
   }, [])
 
   const t = useCallback(
