@@ -76,8 +76,8 @@ const legalFallback = <div className="legal-loading" aria-busy="true">Loading…
 export default function App() {
   return (
     <LanguageProvider>
-    <ContactModalProvider>
     <BrowserRouter>
+    <ContactModalProvider>
       <Routes>
         <Route element={<LocaleLayout />}>
           <Route index path="/" />
@@ -105,8 +105,8 @@ export default function App() {
         />
       </Routes>
       <ContactModal />
-    </BrowserRouter>
     </ContactModalProvider>
+    </BrowserRouter>
     </LanguageProvider>
   )
 }

@@ -43,7 +43,8 @@ export default function ContactModal() {
 
           {/* Modal content */}
           <motion.div
-            className="relative bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] rounded-[32px] sm:rounded-[48px] w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-800/50"
+            className="relative bg-[#111111] rounded-[32px] sm:rounded-[48px] w-full max-w-2xl max-h-[90vh] overflow-y-auto border"
+            style={{ borderColor: 'rgba(215,226,234,0.15)' }}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -52,10 +53,13 @@ export default function ContactModal() {
             {/* Close button */}
             <button
               onClick={handleClose}
-              className="absolute top-5 right-5 sm:top-8 sm:right-8 z-10 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-700 transition-colors"
+              className="absolute top-5 right-5 sm:top-8 sm:right-8 z-10 w-10 h-10 flex items-center justify-center rounded-full transition-colors"
+              style={{ color: '#D7E2EA', backgroundColor: 'rgba(215,226,234,0.05)' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.05)'}
               aria-label="Close modal"
             >
-              <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -64,7 +68,7 @@ export default function ContactModal() {
             <AnimatePresence>
               {showSuccess && (
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] rounded-[32px] sm:rounded-[48px] flex flex-col items-center justify-center z-20"
+                  className="absolute inset-0 bg-[#111111] rounded-[32px] sm:rounded-[48px] flex flex-col items-center justify-center z-20"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -95,8 +99,8 @@ export default function ContactModal() {
                     transition={{ duration: 0.4, delay: 0.2 }}
                     className="text-center px-6"
                   >
-                    <h3 className="text-2xl font-black text-white mb-2">Message sent</h3>
-                    <p className="text-gray-400 text-sm">
+                    <h3 className="text-2xl font-black mb-2" style={{ color: '#0CB6B1' }}>Message sent</h3>
+                    <p className="text-sm" style={{ color: '#D7E2EA' }}>
                       Thanks for reaching out. We'll be in touch within one business day.
                     </p>
                   </motion.div>
