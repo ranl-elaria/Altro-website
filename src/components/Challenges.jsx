@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import { useT } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
+import ContactCTA from './ContactCTA'
 import SpreadsheetIllustration from './illustrations/SpreadsheetIllustration'
 import DisconnectedSystemsIllustration from './illustrations/DisconnectedSystemsIllustration'
 import FlowchartIllustration from './illustrations/FlowchartIllustration'
@@ -89,6 +90,16 @@ export default function Challenges() {
             <PainCard key={idx} point={point} idx={idx} containerRef={containerRef} illustration={point.illustration} />
           ))}
         </div>
+
+        {/* CTA Section */}
+        <FadeIn delay={0.2} duration={0.8} y={40}>
+          <div className="mt-20 sm:mt-24 md:mt-32 text-center">
+            <p className="text-secondary mb-6 font-light opacity-70 mb-8">
+              Let's solve your operational challenges
+            </p>
+            <ContactCTA label="Get started" variant="primary" />
+          </div>
+        </FadeIn>
       </div>
     </section>
   )

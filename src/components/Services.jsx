@@ -1,6 +1,7 @@
 import { useT, useLanguage } from '../i18n/LanguageContext'
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'motion/react'
+import ContactCTA from './ContactCTA'
 
 function ServiceSlide({ service, index, scrollProgress, lang, totalServices }) {
   const isHe = lang === 'he'
@@ -151,6 +152,14 @@ export default function Services() {
             />
           ))}
         </div>
+      </div>
+
+      {/* CTA Section */}
+      <div className="px-5 sm:px-8 md:px-10 py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center">
+        <p className="text-secondary text-center mb-6 font-light opacity-70">
+          Ready to build custom systems that scale?
+        </p>
+        <ContactCTA label="Start a project" variant="primary" />
       </div>
     </section>
   )

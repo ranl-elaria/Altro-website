@@ -2,13 +2,14 @@ import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
+import { ContactModalProvider } from './context/ContactModalContext'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
 import Challenges from './components/Challenges'
 import Services from './components/Services'
 import FAQ from './components/FAQ'
-import Contact from './components/Contact'
+import ContactModal from './components/ContactModal'
 import Footer from './components/Footer'
 import FloatingCTA from './components/FloatingCTA'
 import CookieBanner from './components/CookieBanner'
@@ -63,7 +64,6 @@ function Site() {
           <Reveal><Services /></Reveal>
         <Reveal><Challenges /></Reveal>
         <Reveal><FAQ /></Reveal>
-        <Reveal><Contact /></Reveal>
       </main>
       <Footer />
       <CookieBanner />
@@ -76,6 +76,7 @@ const legalFallback = <div className="legal-loading" aria-busy="true">Loading…
 export default function App() {
   return (
     <LanguageProvider>
+    <ContactModalProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<LocaleLayout />}>
@@ -103,7 +104,9 @@ export default function App() {
           element={<Suspense fallback={legalFallback}><NotFoundPage /></Suspense>}
         />
       </Routes>
+      <ContactModal />
     </BrowserRouter>
+    </ContactModalProvider>
     </LanguageProvider>
   )
 }

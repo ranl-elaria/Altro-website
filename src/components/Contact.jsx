@@ -4,7 +4,7 @@ import { useLanguage } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
 import ContactButton from './ContactButton'
 
-export default function Contact() {
+export default function Contact({ isModal = false, onSubmitSuccess }) {
   const [form, setForm] = useState({ name: '', email: '', company: '', phone: '', message: '' })
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
@@ -30,6 +30,7 @@ export default function Contact() {
       } else {
         setStatus('success')
         setForm({ name: '', email: '', company: '', phone: '', message: '' })
+        if (onSubmitSuccess) onSubmitSuccess()
       }
     } catch {
       setErrorMsg(t('contact.errorNetwork'))
@@ -37,22 +38,36 @@ export default function Contact() {
     }
   }
 
+  const containerClass = isModal
+    ? 'px-6 sm:px-10 py-10 sm:py-12 w-full'
+    : 'px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32'
+
   return (
-    <section id="contact" className="section--light px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32">
-      <div className="max-w-5xl mx-auto w-full sm:w-4/5 md:w-3/5">
-        <FadeIn delay={0} duration={0.8} y={40}>
-          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance' }}>
+    <div id="contact" className={isModal ? undefined : 'section--light'} style={isModal ? { background: '#ffffff' } : undefined}>
+      <div className={`${containerClass} ${isModal ? '' : 'max-w-5xl mx-auto w-full sm:w-4/5 md:w-3/5'}`}>
+        {!isModal && (
+          <>
+            <FadeIn delay={0} duration={0.8} y={40}>
+              <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance' }}>
+                {t('contact.heading')}
+              </h2>
+            </FadeIn>
+
+            <FadeIn delay={0.2} duration={0.8} y={20}>
+              <p className="text-secondary font-light leading-relaxed text-center mb-12 sm:mb-16 opacity-80" style={{ fontSize: 'clamp(0.9rem, 1.6vw, 1.1rem)' }}>
+                {t('contact.sub')}
+              </p>
+            </FadeIn>
+          </>
+        )}
+
+        {isModal && (
+          <h2 className="font-black uppercase tracking-tight leading-none text-center mb-8 text-gray-900" style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)' }}>
             {t('contact.heading')}
           </h2>
-        </FadeIn>
+        )}
 
-        <FadeIn delay={0.2} duration={0.8} y={20}>
-          <p className="text-secondary font-light leading-relaxed text-center mb-12 sm:mb-16 opacity-80" style={{ fontSize: 'clamp(0.9rem, 1.6vw, 1.1rem)' }}>
-            {t('contact.sub')}
-          </p>
-        </FadeIn>
-
-        <FadeIn delay={0.4} duration={0.8} y={30}>
+        <FadeIn delay={isModal ? 0 : 0.4} duration={0.8} y={30}>
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Name */}
             <div>
@@ -176,6 +191,6 @@ export default function Contact() {
           </form>
         </FadeIn>
       </div>
-    </section>
+    </div>
   )
 }

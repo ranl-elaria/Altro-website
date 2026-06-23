@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useT } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
+import ContactCTA from './ContactCTA'
 
 function FAQItem({ q, a, idx, open, onToggle }) {
   return (
@@ -75,6 +76,16 @@ export default function FAQ() {
             />
           ))}
         </div>
+
+        {/* CTA Section */}
+        <FadeIn delay={0.2} duration={0.8} y={40}>
+          <div className="mt-16 sm:mt-20 md:mt-28 text-center">
+            <p className="text-secondary mb-8 font-light opacity-70">
+              Still have questions? Let's talk about your project.
+            </p>
+            <ContactCTA label="Schedule a call" variant="primary" />
+          </div>
+        </FadeIn>
       </div>
     </section>
   )
