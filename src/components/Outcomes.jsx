@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import useInView from '../hooks/useInView'
+import { useContactModal } from '../context/ContactModalContext'
 
 function useCounter(target, duration = 1600, active = false) {
   const [count, setCount] = useState(0)
@@ -138,6 +139,7 @@ function OutcomeCard({ item, index, active }) {
 
 export default function Outcomes() {
   const [ref, inView] = useInView({ threshold: 0.15 })
+  const { openModal } = useContactModal()
 
   return (
     <section className="outcomes section" id="outcomes">
@@ -155,12 +157,12 @@ export default function Outcomes() {
               Real numbers from live deployments. Teams move faster,
               errors go away, and manual work stops compounding.
             </p>
-            <a href="#contact" className="btn btn--primary outcomes__cta">
+            <button onClick={openModal} className="btn btn--primary outcomes__cta" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', color: 'inherit' }}>
               Start a project
               <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            </a>
+            </button>
           </div>
 
           <div className="outcomes__grid">

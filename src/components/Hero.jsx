@@ -91,7 +91,7 @@ export default function Hero() {
 
           <FadeIn delay={0.5} duration={0.8} y={20}>
             <div className="flex flex-col items-start gap-2">
-              <ContactButton size="lg" onClick={scrollToContact}>
+              <ContactButton size="lg" onClick={openModal}>
                 {t('hero.cta')}
               </ContactButton>
               <p className="text-secondary text-xs font-light opacity-50" style={{ textAlign: 'start' }}>
