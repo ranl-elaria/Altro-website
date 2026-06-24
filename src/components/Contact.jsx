@@ -43,7 +43,7 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
     : 'px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32'
 
   return (
-    <div id="contact" className={isModal ? undefined : 'section--light'} style={isModal ? { background: '#ffffff' } : undefined}>
+    <div id="contact" className={isModal ? undefined : 'section--light'}>
       <div className={`${containerClass} ${isModal ? '' : 'max-w-5xl mx-auto w-full sm:w-4/5 md:w-3/5'}`}>
         {!isModal && (
           <>
@@ -62,7 +62,7 @@ export default function Contact({ isModal = false, onSubmitSuccess }) {
         )}
 
         {isModal && (
-          <h2 className="font-black uppercase tracking-tight leading-none text-center mb-10" style={{ fontSize: 'clamp(1.3rem, 3vw, 1.8rem)', color: '#0CB6B1' }}>
+          <h2 className="font-black uppercase tracking-tight leading-none text-center mb-10 text-accent" style={{ fontSize: 'clamp(1.3rem, 3vw, 1.8rem)' }}>
             {t('contact.heading')}
           </h2>
         )}

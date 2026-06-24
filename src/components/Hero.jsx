@@ -2,7 +2,6 @@ import { useLanguage } from '../i18n/LanguageContext'
 import { useContactModal } from '../context/ContactModalContext'
 import FadeIn from './FadeIn'
 import ContactButton from './ContactButton'
-import TypingEffect from './TypingEffect'
 
 export default function Hero() {
   const { t } = useLanguage()
@@ -25,9 +24,14 @@ export default function Hero() {
         </h1>
       </FadeIn>
 
-      <div style={{ textAlign: 'start' }}>
-        <TypingEffect text={t('hero.subtitle')} delay={0.35} duration={0.04} />
-      </div>
+      <FadeIn delay={0.35} duration={0.8} y={20}>
+        <p
+          className="text-secondary font-light leading-relaxed opacity-75"
+          style={{ fontSize: 'clamp(0.9rem, 1.4vw, 1.05rem)', textAlign: 'start', maxWidth: '520px' }}
+        >
+          {t('hero.subtitle')}
+        </p>
+      </FadeIn>
     </div>
   )
 
@@ -85,9 +89,14 @@ export default function Hero() {
             </h1>
           </FadeIn>
 
-          <div style={{ textAlign: 'start' }}>
-            <TypingEffect text={t('hero.subtitle')} delay={0.35} duration={0.04} />
-          </div>
+          <FadeIn delay={0.35} duration={0.8} y={20}>
+            <p
+              className="text-secondary font-light leading-relaxed opacity-75"
+              style={{ fontSize: 'clamp(0.875rem, 1.3vw, 1rem)', textAlign: 'start', maxWidth: '480px' }}
+            >
+              {t('hero.subtitle')}
+            </p>
+          </FadeIn>
 
           <FadeIn delay={0.5} duration={0.8} y={20}>
             <div className="flex flex-col items-start gap-2">

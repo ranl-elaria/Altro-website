@@ -43,8 +43,7 @@ export default function ContactModal() {
 
           {/* Modal content */}
           <motion.div
-            className="relative bg-[#111111] rounded-[32px] sm:rounded-[48px] w-full max-w-2xl max-h-[90vh] overflow-y-auto border"
-            style={{ borderColor: 'rgba(215,226,234,0.15)' }}
+            className="relative bg-surface rounded-[32px] sm:rounded-[48px] w-full max-w-2xl max-h-[90vh] overflow-y-auto border-default"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -53,8 +52,8 @@ export default function ContactModal() {
             {/* Close button */}
             <button
               onClick={handleClose}
-              className="absolute top-5 right-5 sm:top-8 sm:right-8 z-10 w-10 h-10 flex items-center justify-center rounded-full transition-colors"
-              style={{ color: '#D7E2EA', backgroundColor: 'rgba(215,226,234,0.05)' }}
+              className="absolute top-5 right-5 sm:top-8 sm:right-8 z-10 w-10 h-10 flex items-center justify-center rounded-full transition-colors text-secondary hover:bg-opacity-10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+              style={{ backgroundColor: 'rgba(215,226,234,0.05)' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.1)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.05)'}
               aria-label="Close modal"
@@ -68,7 +67,7 @@ export default function ContactModal() {
             <AnimatePresence>
               {showSuccess && (
                 <motion.div
-                  className="absolute inset-0 bg-[#111111] rounded-[32px] sm:rounded-[48px] flex flex-col items-center justify-center z-20"
+                  className="absolute inset-0 bg-surface rounded-[32px] sm:rounded-[48px] flex flex-col items-center justify-center z-20"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -99,8 +98,8 @@ export default function ContactModal() {
                     transition={{ duration: 0.4, delay: 0.2 }}
                     className="text-center px-6"
                   >
-                    <h3 className="text-2xl font-black mb-2" style={{ color: '#0CB6B1' }}>Message sent</h3>
-                    <p className="text-sm" style={{ color: '#D7E2EA' }}>
+                    <h3 className="text-2xl font-black mb-2 text-accent">Message sent</h3>
+                    <p className="text-sm text-secondary">
                       Thanks for reaching out. We'll be in touch within one business day.
                     </p>
                   </motion.div>

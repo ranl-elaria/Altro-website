@@ -59,7 +59,7 @@ export default function FAQ() {
     <section className="section--dark px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 relative z-20 -mt-10 sm:-mt-12 md:-mt-14">
       <div className="max-w-4xl mx-auto">
         <FadeIn delay={0} duration={0.8} y={40}>
-          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-12 sm:mb-20 md:mb-28" style={{ fontSize: 'clamp(2rem, 8vw, 100px)' }}>
+          <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-12 sm:mb-20 md:mb-28" style={{ fontSize: 'clamp(2rem, 6vw, 72px)' }}>
             {t('faq.heading')}
           </h2>
         </FadeIn>
@@ -81,9 +81,9 @@ export default function FAQ() {
         <FadeIn delay={0.2} duration={0.8} y={40}>
           <div className="mt-16 sm:mt-20 md:mt-28 text-center">
             <p className="text-gray-300 mb-8 font-light text-lg">
-              Still have questions? Let's talk about your project.
+              Still have questions? We'll answer them honestly.
             </p>
-            <ContactCTA label="Schedule a call" variant="primary" />
+            <ContactCTA label="Start a free call" variant="primary" />
           </div>
         </FadeIn>
       </div>

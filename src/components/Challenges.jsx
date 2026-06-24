@@ -32,7 +32,7 @@ function PainCard({ point, idx, containerRef, illustration }) {
       }}
       className="min-h-[52vh] sm:min-h-[62vh]"
     >
-      <div className="h-full bg-surface border-2 rounded-[32px] sm:rounded-[48px] md:rounded-[60px] p-5 sm:p-8 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center" style={{ borderColor: 'var(--color-border-default)' }}>
+      <div className="h-full bg-surface border-2 border-default rounded-[32px] sm:rounded-[48px] md:rounded-[60px] p-5 sm:p-8 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         {/* Text column */}
         <div>
           <h3
@@ -79,7 +79,7 @@ export default function Challenges() {
         <FadeIn delay={0} duration={0.8} y={40}>
           <h2
             className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-16 sm:mb-20 md:mb-28"
-            style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance' }}
+            style={{ fontSize: 'clamp(2rem, 6vw, 72px)', textWrap: 'balance' }}
           >
             {t('designed.heading')}
           </h2>
@@ -94,10 +94,10 @@ export default function Challenges() {
         {/* CTA Section */}
         <FadeIn delay={0.2} duration={0.8} y={40}>
           <div className="mt-20 sm:mt-24 md:mt-32 text-center">
-            <p className="text-gray-700 mb-8 font-light text-lg">
-              Let's solve your operational challenges
+            <p className="text-tertiary mb-8 font-light text-lg">
+              Sound like your business? Let's talk.
             </p>
-            <ContactCTA label="Get started" variant="primary" />
+            <ContactCTA label="Tell us what's slowing you down" variant="primary" />
           </div>
         </FadeIn>
       </div>

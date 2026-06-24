@@ -237,7 +237,7 @@ export default function Process() {
         <MotionReveal>
           <div className="process__header">
             <div>
-              <h2 className="display-heading display-heading--light">{t('process.heading')}</h2>
+              <h2 className="section-heading">{t('process.heading')}</h2>
             </div>
             <div className="process__header-right">
               <p className="body-sub body-sub--light">

@@ -157,9 +157,9 @@ export default function Services() {
       {/* CTA Section */}
       <div className="px-5 sm:px-8 md:px-10 py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center bg-gradient-to-b from-[#0C0C0C] to-[#1a1a1a]">
         <p className="text-gray-300 text-center mb-8 font-light text-lg">
-          Ready to build custom systems that scale?
+          Sound familiar? Let's figure out what to build first.
         </p>
-        <ContactCTA label="Start a project" variant="primary" />
+        <ContactCTA label="Tell us about your challenge" variant="primary" />
       </div>
     </section>
   )

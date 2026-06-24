@@ -8,6 +8,9 @@ import Hero from './components/Hero'
 import Marquee from './components/Marquee'
 import Challenges from './components/Challenges'
 import Services from './components/Services'
+import Outcomes from './components/Outcomes'
+import Testimonials from './components/Testimonials'
+import Process from './components/Process'
 import FAQ from './components/FAQ'
 import ContactModal from './components/ContactModal'
 import Footer from './components/Footer'
@@ -61,9 +64,12 @@ function Site() {
         <main id="main-content">
           <Hero />
           <Reveal><Marquee /></Reveal>
+          <Reveal><Challenges /></Reveal>
           <Reveal><Services /></Reveal>
-        <Reveal><Challenges /></Reveal>
-        <Reveal><FAQ /></Reveal>
+          <Reveal><Outcomes /></Reveal>
+          {/* <Testimonials /> */}
+          <Reveal><Process /></Reveal>
+          <Reveal><FAQ /></Reveal>
       </main>
       <Footer />
       <CookieBanner />

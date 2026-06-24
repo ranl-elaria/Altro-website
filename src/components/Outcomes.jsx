@@ -150,7 +150,7 @@ export default function Outcomes() {
           className={`outcomes__layout reveal${inView ? ' reveal--visible' : ''}`}
         >
           <div className="outcomes__left">
-            <h2 className="display-heading display-heading--dark outcomes__heading">
+            <h2 className="section-heading outcomes__heading">
               Results from<br />the last<br />12 months
             </h2>
             <p className="body-sub body-sub--dark outcomes__sub">

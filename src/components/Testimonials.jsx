@@ -98,11 +98,11 @@ export default function Testimonials() {
     <section className="testimonials section" id="testimonials">
       <div className="container">
         <div ref={ref} className={`testimonials__header reveal${inView ? ' reveal--visible' : ''}`}>
-          <h2 className="display-heading display-heading--dark">
+          <h2 className="display-heading display-heading--accent">
             From teams<br />we've shipped with
           </h2>
           <p className="body-sub body-sub--dark testimonials__sub">
-            Unsolicited. Unedited. From the people who use what we built.
+            Real feedback. From the people who use what we built every day.
           </p>
         </div>
       </div>
@@ -112,6 +112,12 @@ export default function Testimonials() {
         <div className="testimonials__fade testimonials__fade--r" aria-hidden="true" />
 
         <div className="testimonials__row testimonials__row--fwd">
+          {row.map((item, i) => (
+            <TestimonialCard key={i} item={item} />
+          ))}
+        </div>
+
+        <div className="testimonials__row testimonials__row--rev" aria-hidden="true">
           {row.map((item, i) => (
             <TestimonialCard key={i} item={item} />
           ))}
