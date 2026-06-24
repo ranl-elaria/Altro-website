@@ -2310,9 +2310,7 @@ input:focus, textarea:focus, select:focus {
    FOOTER
    ============================================= */
 .footer {
-  background: rgba(20, 24, 48, 0.85);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  background: #0C0C0C;
   border-top: 1px solid rgba(255,255,255,0.08);
   padding: 56px 0 32px;
 }

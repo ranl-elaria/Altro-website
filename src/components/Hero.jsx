@@ -1,14 +1,12 @@
 import { useLanguage } from '../i18n/LanguageContext'
+import { useContactModal } from '../context/ContactModalContext'
 import FadeIn from './FadeIn'
 import ContactButton from './ContactButton'
 import TypingEffect from './TypingEffect'
 
 export default function Hero() {
   const { t } = useLanguage()
-
-  const scrollToContact = () => {
-    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const { openModal } = useContactModal()
 
   /* ── Reusable blocks ──────────────────────────── */
 
@@ -46,7 +44,7 @@ export default function Hero() {
 
       <FadeIn delay={0.5} duration={0.8} y={20}>
         <div className="flex flex-col items-center gap-4">
-          <ContactButton size="2xl" onClick={scrollToContact}>
+          <ContactButton size="2xl" onClick={openModal}>
             {t('hero.cta')}
           </ContactButton>
           <p className="text-secondary text-sm sm:text-base font-light opacity-60 text-center max-w-xs sm:max-w-sm">

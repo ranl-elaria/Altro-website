@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import Logo from './Logo'
 import { useT } from '../i18n/LanguageContext'
+import { useContactModal } from '../context/ContactModalContext'
 
 export default function Footer() {
   const t = useT()
+  const { openModal } = useContactModal()
 
   return (
     <footer className="footer">
@@ -24,11 +26,11 @@ export default function Footer() {
               <span className="footer__col-head">{t('footer.companyHead')}</span>
               <a href="/#process" className="footer__link">{t('footer.companyProcess')}</a>
               <a href="/#faq" className="footer__link">{t('footer.companyFaq')}</a>
-              <a href="/#contact" className="footer__link">{t('footer.companyStart')}</a>
+              <button onClick={openModal} className="footer__link" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', textAlign: 'inherit' }}>{t('footer.companyStart')}</button>
             </div>
             <div className="footer__col">
               <span className="footer__col-head">{t('footer.contactHead')}</span>
-              <a href="/#contact" className="footer__link">{t('footer.contactStart')}</a>
+              <button onClick={openModal} className="footer__link" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', textAlign: 'inherit' }}>{t('footer.contactStart')}</button>
               <a href="mailto:altroaiteam@gmail.com" className="footer__link">altroaiteam@gmail.com</a>
             </div>
             <div className="footer__col">
