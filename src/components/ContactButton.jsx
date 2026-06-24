@@ -20,16 +20,16 @@ export default function ContactButton({ children = 'Contact Me', onClick, type =
         transition-all duration-400
         hover:scale-110 hover:-translate-y-1
         active:scale-95 active:translate-y-0
-        focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-[#14B8A6]/50
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent
         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:active:scale-100 disabled:active:translate-y-0
         overflow-hidden group
       `}
       style={{
-        background: '#14B8A6',
+        background: 'var(--color-accent)',
         boxShadow: `
-          0px 20px 50px rgba(20, 184, 166, 0.5),
-          0px 8px 20px rgba(20, 184, 166, 0.35),
-          0px 2px 8px rgba(20, 184, 166, 0.25),
+          0px 20px 50px rgb(12 182 177 / 0.5),
+          0px 8px 20px rgb(12 182 177 / 0.35),
+          0px 2px 8px rgb(12 182 177 / 0.25),
           inset 2px 2px 4px rgba(255, 255, 255, 0.25),
           inset -2px -2px 4px rgba(0, 0, 0, 0.15)
         `,
