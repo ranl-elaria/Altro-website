@@ -1814,48 +1814,28 @@ input:focus, textarea:focus, select:focus {
 .outcome-card {
   background: #FFFFFF;
   border: var(--card-border-light);
+  border-top: 2px solid var(--color-accent-border);
   border-radius: var(--card-radius);
   padding: var(--card-padding);
   display: flex; flex-direction: column; gap: 6px;
   box-shadow: var(--card-shadow-soft);
-  transition: all 0.3s ease;
+  transition: box-shadow 0.3s ease, border-top-color 0.3s ease;
   position: relative; overflow: hidden;
 }
 .outcome-card:hover {
-  background: #FFFFFF;
   box-shadow: var(--card-shadow-med);
-  border-color: var(--color-accent);
+  border-top-color: var(--color-accent);
 }
-.outcome-card::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-  height: 2px; background: linear-gradient(90deg, var(--teal), transparent);
-  opacity: 0; transition: opacity 0.3s;
-}
-.outcome-card:hover::after { opacity: 0.7; }
-
-.outcome-card::before {
-  content: ''; position: absolute; top: -40px; left: -40px;
-  width: 180px; height: 180px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(12,182,177,0.06) 0%, transparent 70%);
-  opacity: 0; transition: opacity 0.4s; pointer-events: none;
-}
-.outcome-card:hover::before { opacity: 1; }
 
 .outcome-card__icon {
   width: 32px; height: 32px; border-radius: 8px;
   background: rgba(12,182,177,0.1); border: 1px solid rgba(12,182,177,0.2);
   display: flex; align-items: center; justify-content: center;
-  color: var(--teal); margin-bottom: 10px;
+  color: var(--color-accent); margin-bottom: 10px;
   transition: background 0.25s, border-color 0.25s;
 }
 .outcome-card:hover .outcome-card__icon {
-  background: rgba(12,182,177,0.16); border-color: rgba(12,182,177,0.3);
-}
-.outcome-card--b .outcome-card__icon {
-  background: rgba(11,13,26,0.06); border-color: rgba(11,13,26,0.1); color: #0B0D1A;
-}
-.outcome-card--b:hover .outcome-card__icon {
-  background: rgba(11,13,26,0.1); border-color: rgba(11,13,26,0.16);
+  background: rgba(12,182,177,0.18); border-color: rgba(12,182,177,0.35);
 }
 
 .outcome-card__num {
@@ -1864,38 +1844,8 @@ input:focus, textarea:focus, select:focus {
   font-weight: 700; letter-spacing: -0.04em; line-height: 1;
   color: #0B0D1A;
 }
-.outcome-card--b .outcome-card__num {
-  color: var(--teal);
-}
 .outcome-card__label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(11,13,26,0.32); margin-bottom: 4px; }
 .outcome-card__desc  { font-size: 13px; color: rgba(11,13,26,0.5); line-height: 1.68; }
-
-/* Sparkline */
-.outcome-card__spark {
-  position: absolute; right: 0; bottom: 0;
-  width: 108px; height: 44px;
-  opacity: 0.35;
-  transition: opacity 0.5s;
-}
-.outcome-card__spark--active { opacity: 0.7; }
-.outcome-card__spark-area {
-  fill: url(#sparkGrad);
-}
-.outcome-card__spark-line {
-  fill: none;
-  stroke: var(--teal);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-  transition: stroke-dashoffset 1.2s var(--ease);
-}
-.outcome-card__spark--active .outcome-card__spark-line {
-  stroke-dashoffset: 0;
-}
-.outcome-card--b .outcome-card__spark-line { stroke: #EDEAE3; }
-/* SVG gradient defined inline since CSS can't target SVG defs cross-origin */
 
 /* =============================================
    PROCESS (dark — vertical timeline, scroll-progress spine)

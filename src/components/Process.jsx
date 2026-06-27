@@ -150,7 +150,7 @@ function ProcessStep({ step, index, total, fillRef, sectionRef }) {
   const nodeBright  = useTransform(scrollYProgress, [0.78, 0.90], [1, 0])
 
   return (
-    <div ref={zoneRef} className="process__step-zone">
+    <li ref={zoneRef} className="process__step-zone" style={{ listStyle: 'none' }}>
       {/* Sticky wrapper — snaps card to viewport center while scrolling through zone */}
       <div className="process__step-sticky">
 
@@ -195,7 +195,7 @@ function ProcessStep({ step, index, total, fillRef, sectionRef }) {
         </motion.div>
 
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -249,22 +249,24 @@ export default function Process() {
           </div>
         </MotionReveal>
 
-        <div className="process__timeline">
+        <div className="process__timeline" style={{ position: 'relative' }}>
           {/* Glowing spine */}
           <div className="process__spine" aria-hidden="true">
             <div className="process__spine-fill" ref={fillRef} />
           </div>
 
-          {steps.map((step, i) => (
-            <ProcessStep
-              key={step.num}
-              step={step}
-              index={i}
-              total={steps.length}
-              fillRef={fillRef}
-              sectionRef={sectionRef}
-            />
-          ))}
+          <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {steps.map((step, i) => (
+              <ProcessStep
+                key={step.num}
+                step={step}
+                index={i}
+                total={steps.length}
+                fillRef={fillRef}
+                sectionRef={sectionRef}
+              />
+            ))}
+          </ol>
         </div>
 
       </div>

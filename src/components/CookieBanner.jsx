@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useT } from '../i18n/LanguageContext'
 
 const STORAGE_KEY = 'altro_cookie_consent'
+const ANALYTICS_KEY = 'altro_analytics_consent'
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
@@ -14,11 +15,16 @@ export default function CookieBanner() {
 
   const accept = () => {
     localStorage.setItem(STORAGE_KEY, 'accepted')
+    localStorage.setItem(ANALYTICS_KEY, 'granted')
+    if (typeof window !== 'undefined' && typeof window.__altroLoadAnalytics === 'function') {
+      window.__altroLoadAnalytics()
+    }
     setVisible(false)
   }
 
   const decline = () => {
     localStorage.setItem(STORAGE_KEY, 'declined')
+    localStorage.setItem(ANALYTICS_KEY, 'denied')
     setVisible(false)
   }
 

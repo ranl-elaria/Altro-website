@@ -55,6 +55,7 @@ export const TRANSLATIONS = {
     'services.02.text': 'We identify the manual steps your team does over and over, and replace them with automated processes that run in the background. AI where it helps, reliable code where it counts.',
     'services.03.title': 'Connect All Your Tools into One Picture',
     'services.03.text': 'We connect your CRM, billing software, databases, and any other tools you use so data flows between them automatically. One source of truth. No copy-pasting.',
+    'services.cta': 'Sound familiar? Let\'s figure out what to build first.',
 
     // process
     'process.heading': 'How we work',
@@ -82,6 +83,8 @@ export const TRANSLATIONS = {
     'faq.03.a': 'Generic software is built for everyone, which means it fits nobody perfectly. Your team ends up working around its limitations. We build exactly what you need and nothing you don\'t — so it actually gets used.',
     'faq.04.q': 'Will we be dependent on you forever?',
     'faq.04.a': 'You own everything we build: the code, the system, the data. We\'re happy to stay on for support, but the moment we\'re done you could hand it to any developer in the world. No black boxes, ever.',
+    'faq.cta': 'Still have questions? We\'ll answer them honestly.',
+    'faq.ctaLabel': 'Start a free call',
 
     // contact
     'contact.heading': 'Tell us what\'s broken.',
@@ -120,6 +123,49 @@ export const TRANSLATIONS = {
     'footer.privacy': 'Privacy Policy',
     'footer.terms': 'Terms of Service',
     'footer.copy': '© 2026 altro. All rights reserved.',
+
+    // outcomes
+    'outcomes.heading.line1': 'Results from',
+    'outcomes.heading.line2': 'the last',
+    'outcomes.heading.line3': '12 months',
+    'outcomes.sub': 'Real numbers from live deployments. Teams move faster, errors go away, and manual work stops compounding.',
+    'outcomes.cta': 'Start a project',
+    'outcomes.01.label': 'Workflow speed',
+    'outcomes.01.desc': 'Teams report 10× faster cycle times once manual steps are automated.',
+    'outcomes.02.label': 'Typical delivery',
+    'outcomes.02.desc': 'Most focused tools and automations ship within a single four-week sprint.',
+    'outcomes.03.label': 'Custom built',
+    'outcomes.03.desc': 'Nothing off the shelf. Every solution is designed around your exact workflow.',
+    'outcomes.04.label': 'Response time',
+    'outcomes.04.desc': 'Questions, bugs, and change requests — all answered within one business day.',
+
+    // heroHub
+    'heroHub.portal.label': 'Client Portal',
+    'heroHub.portal.sub': 'secure & custom',
+    'heroHub.dashboard.label': 'Live Dashboard',
+    'heroHub.dashboard.sub': 'see everything',
+    'heroHub.tools.label': 'Team Tools',
+    'heroHub.tools.sub': 'built your way',
+    'heroHub.invoices.label': 'Send Invoices',
+    'heroHub.invoices.sub': 'automatically',
+    'heroHub.alerts.label': 'Alert Your Team',
+    'heroHub.alerts.sub': 'when it matters',
+    'heroHub.onboard.label': 'Onboard Clients',
+    'heroHub.onboard.sub': 'without the hassle',
+    'heroHub.platform': 'your platform',
+    'heroHub.zoneWebapps': 'Custom Web Apps',
+    'heroHub.zoneAutomations': 'Automations',
+
+    // services
+    'services.ctaButton': 'Tell us about your challenge',
+
+    // contact required label
+    'contact.required': '(required)',
+
+    // common a11y
+    'a11y.langSelector': 'Language selector',
+    'a11y.backHome': 'Back to altro home',
+    'a11y.closeModal': 'Close modal',
 
     // floatingCTA
     'floatingCta.text': 'Start a project',
@@ -163,8 +209,8 @@ export const TRANSLATIONS = {
     'hero.badge': 'פתרונות ארגוניים',
     'hero.heading': 'מערכות ווב וסוכני ⁨AI⁩ שנבנים במיוחד עבור האופרציה שלכם.',
     'hero.subtitle': 'אנחנו מתכננים ומפתחים תוכנה מותאמת אישית, אוטומציות חזקות ואינטגרציות קוד שמחברות את כל המערכות שלכם לרשת אחת חלקה ואוטונומית. בלי פשרות של מוצרי מדף, בלי קוד שמתפרק.',
-    'hero.cta': 'Let\'s Chatbot',
-    'hero.ctaHint': '*(מודים באשמה, יצאנו קצת גיקים)',
+    'hero.cta': 'בואו נדבר על מה שתוקע אתכם',
+    'hero.ctaHint': 'שיחה ראשונה חינם. ללא התחייבות.',
 
     // marquee
     'marquee.items': [
@@ -179,13 +225,13 @@ export const TRANSLATIONS = {
     ],
 
     // designed for (pain points)
-    'designed.heading': 'למי זה מתאים?',
-    'designed.01.title': 'תפעול ידני וצווארי בקבוק',
-    'designed.01.text': 'כשהצוות שורף שעות על העתקת נתונים, סנכרון ידני ואקסלים מורכבים שנוטות להישבר. אנחנו מחליפים את השחיקה הזו באוטומציה חכמה ותהליכים יציבים.',
-    'designed.02.title': 'מערכות מנותקות ומידע אבוד',
-    'designed.02.text': 'כשהעסק משתמש בהמון כלים מצוינים (⁨CRM⁩, פיננסים, ניהול) אבל המידע תקוע ביניהם. אנחנו בונים את ה-⁨APIs⁩ שמחברים את הכל לרשת מסונכרנת אחת.',
-    'designed.03.title': 'חוסר אחידות ותהליכים מבוזרים',
-    'designed.03.text': 'כשאותו תהליך בעסק מתבצע אחרת בכל פעם או על ידי כל עובד, כי אין תשתית אחת שמכתיבה את זרימת העבודה. אנחנו הופכים את שיטות העבודה שלכם למערכת מובנית וחוקים אוטומטיים שרצים תמיד אותו הדבר.',
+    'designed.heading': 'נשמע מוכר?',
+    'designed.01.title': 'הצוות שלכם עושה ידנית את אותם דברים שוב ושוב',
+    'designed.01.text': 'הזנת נתונים, העתקה בין כלים, הוצאת אותם דוחות כל שבוע. זה עובד עד שזה נשבר. אנחנו מחליפים את השגרה הזו בתהליכים אוטומטיים שרצים לבד.',
+    'designed.02.title': 'הכלים שלכם לא מדברים אחד עם השני',
+    'designed.02.text': 'אתם משתמשים ב-⁨CRM⁩, מערכת חיוב, אקסל ושלושה ערוצי סלאק. אף אחד מהם לא מסונכרן. אנחנו מחברים הכל כדי שהמידע יזרום אוטומטית לאן שצריך.',
+    'designed.03.title': 'כל אחד עושה את זה אחרת',
+    'designed.03.text': 'כשהתהליך חי בראש של מישהו ולא במערכת, דברים נשברים כשהוא לא שם. אנחנו בונים מערכות שהופכות את הדרך הנכונה לדרך היחידה.',
 
     // services
     'services.heading': 'מה אנחנו בונים',
@@ -195,6 +241,7 @@ export const TRANSLATIONS = {
     'services.02.text': 'אנחנו הופכים משימות ידניות ושוחקות לתהליכים אוטונומיים לחלוטין. מפיתוח סוכני ⁨AI⁩ חכמים שמקבלים החלטות, ועד לאוטומציות קוד יציבות שמנהלות את הדאטא ברקע.',
     'services.03.title': 'ארכיטקטורת מידע ואינטגרציות',
     'services.03.text': 'אנחנו בונים את ה"צנרת" הטכנולוגית של העסק. מחברים את כל הכלים שלכם (⁨CRM⁩, פיננסים, מערכות פנים) דרך ⁨APIs⁩ מאובטחים, ומייצרים מקור מידע אחד, אמין ומסונכרן.',
+    'services.cta': 'זה קורה גם אצלכם? בואו נבין מה צריך להיבנות.',
 
     // process
     'process.heading': 'איך אנחנו עובדים',
@@ -222,6 +269,8 @@ export const TRANSLATIONS = {
     'faq.03.a': 'רוב העסקים מנצלים אחוז קטן מאוד מתוכנות המדף שלהם, ונאלצים להתפשר על השאר. אנחנו מאמינים במערכות רזות וחכמות: כל כפתור, שדה ואוטומציה במערכת שלנו נבנים במיוחד עבור זרימת העבודה שלכם.',
     'faq.04.q': 'אנחנו נהיה תלויים בכם לתמיד?',
     'faq.04.a': 'הכל שלכם. אנחנו בונים בצורה נקייה וסטנדרטית בלי "קופסאות שחורות". אנחנו כן מציעים ליווי ותחזוקה למי שרוצה ראש שקט, אבל השליטה והבעלות תמיד נשארות בידיים שלכם.',
+    'faq.cta': 'עוד יש שאלות? אנחנו נענה בכנות.',
+    'faq.ctaLabel': 'התחילו שיחה חינם',
 
     // contact
     'contact.heading': 'בואו נראה איך הפתרון שלכם הולך להיראות.',
@@ -236,8 +285,8 @@ export const TRANSLATIONS = {
     'contact.placeholderPhone': 'נייד / וואטסאפ (מבטיחים לא להספים)',
     'contact.labelMessage': 'תארו את האתגר',
     'contact.placeholderMessage': 'מה התהליך הידני או המערכת המנותקת שהכי תוקעים אתכם כרגע?',
-    'contact.submit': "Let's Connectit",
-    'contact.ctaHint': '*(אמרנו לכם שאנחנו גיקים, לא השתנינו מאז ראש העמוד)',
+    'contact.submit': 'שלחו',
+    'contact.ctaHint': 'נחזור אליכם תוך יום עסקים אחד.',
     'contact.submitting': 'שולח...',
     'contact.successTitle': 'ההודעה נשלחה',
     'contact.successBody': 'תודה שפניתם אלינו. נחזור אליכם תוך יום עסקים אחד.',
@@ -245,11 +294,11 @@ export const TRANSLATIONS = {
     'contact.errorNetwork': 'שגיאת רשת. אנא בדקו את החיבור ונסו שוב.',
 
     // footer
-    'footer.tagline': 'תוכנה מותאמת לצוותים צומחים.',
+    'footer.tagline': 'נבנה בישראל. נשלח לצוותים בעולם.',
     'footer.servicesHead': 'שירותים',
     'footer.serviceWebapps': 'אפליקציות ווב פנימיות',
     'footer.serviceAutomations': 'אוטומציות תהליכים',
-    'footer.serviceAgents': 'סוכני AI',
+    'footer.serviceAgents': 'סוכני ⁨AI⁩',
     'footer.companyHead': 'חברה',
     'footer.companyProcess': 'איך אנחנו עובדים',
     'footer.companyFaq': 'שאלות נפוצות',
@@ -260,6 +309,49 @@ export const TRANSLATIONS = {
     'footer.privacy': 'מדיניות פרטיות',
     'footer.terms': 'תנאי שירות',
     'footer.copy': '© 2026 altro. כל הזכויות שמורות.',
+
+    // outcomes
+    'outcomes.heading.line1': 'תוצאות',
+    'outcomes.heading.line2': 'מ-12 החודשים',
+    'outcomes.heading.line3': 'האחרונים',
+    'outcomes.sub': 'מספרים אמיתיים ממערכות חיות. צוותים זזים מהר יותר, שגיאות נעלמות, ועבודה ידנית מפסיקה להצטבר.',
+    'outcomes.cta': 'התחילו פרויקט',
+    'outcomes.01.label': 'מהירות תהליכים',
+    'outcomes.01.desc': 'צוותים מדווחים על מחזורי עבודה מהירים פי 10 לאחר שצעדים ידניים הופכים אוטומטיים.',
+    'outcomes.02.label': 'זמן אספקה אופייני',
+    'outcomes.02.desc': 'רוב הכלים והאוטומציות הממוקדים מסופקים תוך ספרינט בודד של ארבעה שבועות.',
+    'outcomes.03.label': 'בנייה בהתאמה',
+    'outcomes.03.desc': 'שום דבר לא מהמדף. כל פתרון מתוכנן סביב זרימת העבודה המדויקת שלכם.',
+    'outcomes.04.label': 'זמן תגובה',
+    'outcomes.04.desc': 'שאלות, באגים ובקשות לשינוי — כולם נענים תוך יום עסקים אחד.',
+
+    // heroHub
+    'heroHub.portal.label': 'פורטל לקוחות',
+    'heroHub.portal.sub': 'מאובטח ומותאם',
+    'heroHub.dashboard.label': 'דשבורד חי',
+    'heroHub.dashboard.sub': 'רואים הכל',
+    'heroHub.tools.label': 'כלי צוות',
+    'heroHub.tools.sub': 'בנויים בדרך שלכם',
+    'heroHub.invoices.label': 'שליחת חשבוניות',
+    'heroHub.invoices.sub': 'אוטומטית',
+    'heroHub.alerts.label': 'התראות לצוות',
+    'heroHub.alerts.sub': 'בדיוק כשצריך',
+    'heroHub.onboard.label': 'קליטת לקוחות',
+    'heroHub.onboard.sub': 'בלי כאב ראש',
+    'heroHub.platform': 'הפלטפורמה שלכם',
+    'heroHub.zoneWebapps': 'מערכות ווב מותאמות',
+    'heroHub.zoneAutomations': 'אוטומציות',
+
+    // services
+    'services.ctaButton': 'ספרו לנו על האתגר',
+
+    // contact required label
+    'contact.required': '(חובה)',
+
+    // common a11y
+    'a11y.langSelector': 'בחירת שפה',
+    'a11y.backHome': 'חזרה לדף הבית של altro',
+    'a11y.closeModal': 'סגירת חלון',
 
     // floatingCTA
     'floatingCta.text': 'התחילו פרויקט',

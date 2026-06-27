@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom'
-import { useLanguage } from '../i18n/LanguageContext'
+import { useLanguage, useT } from '../i18n/LanguageContext'
 
 export default function LangSwitcher() {
   const { lang } = useLanguage()
+  const t = useT()
   const navigate = useNavigate()
 
   const handleLangChange = (newLang) => {
@@ -10,7 +11,7 @@ export default function LangSwitcher() {
   }
 
   return (
-    <div className="lang-switcher" role="group" aria-label="Language selector">
+    <div className="lang-switcher" role="group" aria-label={t('a11y.langSelector')}>
       <button
         className={`lang-switcher__btn${lang === 'en' ? ' lang-switcher__btn--active' : ''}`}
         onClick={() => handleLangChange('en')}

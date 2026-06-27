@@ -101,12 +101,12 @@ export default function Services() {
     {
       title: t('services.02.title'),
       text: t('services.02.text'),
-      gif: '/ai agent.mp4'
+      gif: '/ai-agent.mp4'
     },
     {
       title: t('services.03.title'),
       text: t('services.03.text'),
-      gif: '/sysftems.mp4'
+      gif: '/systems.mp4'
     },
   ]
 
@@ -155,11 +155,16 @@ export default function Services() {
       </div>
 
       {/* CTA Section */}
-      <div className="px-5 sm:px-8 md:px-10 py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center bg-gradient-to-b from-[#0C0C0C] to-[#1a1a1a]">
-        <p className="text-gray-300 text-center mb-8 font-light text-lg">
-          Sound familiar? Let's figure out what to build first.
+      <div
+        className="px-5 sm:px-8 md:px-10 py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center"
+        style={{
+          backgroundImage: 'linear-gradient(to bottom, var(--color-bg-dark), var(--color-bg-elevated))'
+        }}
+      >
+        <p className="text-secondary text-center mb-8 font-light text-lg">
+          {t('services.cta')}
         </p>
-        <ContactCTA label="Tell us about your challenge" variant="primary" />
+        <ContactCTA label={t('services.ctaButton')} variant="primary" />
       </div>
     </section>
   )

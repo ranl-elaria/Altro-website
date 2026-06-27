@@ -7,18 +7,40 @@ export default function ContactCTA({ label, variant = 'primary', className = '' 
 
   const buttonLabel = label || t('contact.submit')
 
-  const baseStyles = 'px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold uppercase tracking-wide transition-all duration-200 cursor-pointer inline-block'
+  const baseClasses = 'px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold uppercase tracking-wide transition-all duration-200 cursor-pointer inline-block active:scale-95'
+
+  const variantClasses = {
+    primary: 'text-white',
+    secondary: '',
+    ghost: '',
+  }
 
   const variantStyles = {
-    primary: 'bg-teal-500 text-white hover:bg-teal-600 active:scale-95',
-    secondary: 'border-2 border-teal-500 text-teal-500 hover:bg-teal-500/10 active:scale-95',
-    ghost: 'text-teal-500 hover:bg-teal-500/10 active:scale-95',
+    primary: {
+      backgroundColor: 'var(--color-accent)',
+    },
+    secondary: {
+      borderWidth: '2px',
+      borderColor: 'var(--color-accent)',
+      color: 'var(--color-accent)',
+    },
+    ghost: {
+      color: 'var(--color-accent)',
+    },
   }
 
   return (
     <button
       onClick={openModal}
-      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      style={variantStyles[variant]}
+      onMouseEnter={(e) => {
+        if (variant === 'primary') e.target.style.backgroundColor = 'var(--color-accent-bright)'
+        else e.target.style.backgroundColor = 'rgba(12, 182, 177, 0.1)'
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.backgroundColor = variantStyles[variant].backgroundColor || ''
+      }}
       type="button"
     >
       {buttonLabel}

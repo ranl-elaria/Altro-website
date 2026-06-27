@@ -1,13 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useContactModal } from '../context/ContactModalContext'
-import { useLanguage } from '../i18n/LanguageContext'
+import { useLanguage, useT } from '../i18n/LanguageContext'
 import Contact from './Contact'
+
+const FOCUSABLE = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 export default function ContactModal() {
   const { isOpen, closeModal } = useContactModal()
   const { lang } = useLanguage()
+  const t = useT()
   const [showSuccess, setShowSuccess] = useState(false)
+  const dialogRef = useRef(null)
+  const previouslyFocused = useRef(null)
 
   const handleClose = () => {
     setShowSuccess(false)
@@ -21,6 +26,58 @@ export default function ContactModal() {
       closeModal()
     }, 2400)
   }
+
+  // ESC + focus trap + focus restoration
+  useEffect(() => {
+    if (!isOpen) return
+
+    previouslyFocused.current = document.activeElement
+
+    const handleKey = (e) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        handleClose()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const dialog = dialogRef.current
+      if (!dialog) return
+      const focusables = dialog.querySelectorAll(FOCUSABLE)
+      if (focusables.length === 0) return
+      const first = focusables[0]
+      const last = focusables[focusables.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKey)
+
+    // Focus first focusable in dialog
+    requestAnimationFrame(() => {
+      const dialog = dialogRef.current
+      if (!dialog) return
+      const focusables = dialog.querySelectorAll(FOCUSABLE)
+      if (focusables.length > 0) focusables[0].focus()
+    })
+
+    // Lock body scroll
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = prevOverflow
+      // Restore focus
+      if (previouslyFocused.current && typeof previouslyFocused.current.focus === 'function') {
+        previouslyFocused.current.focus()
+      }
+    }
+  }, [isOpen])
 
   return (
     <AnimatePresence>
@@ -39,10 +96,15 @@ export default function ContactModal() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            aria-hidden="true"
           />
 
           {/* Modal content */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-modal-heading"
             className="relative bg-surface rounded-[32px] sm:rounded-[48px] w-full max-w-2xl max-h-[90vh] overflow-y-auto border-default"
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -56,9 +118,9 @@ export default function ContactModal() {
               style={{ backgroundColor: 'rgba(215,226,234,0.05)' }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.1)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.05)'}
-              aria-label="Close modal"
+              aria-label={t('a11y.closeModal')}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -72,6 +134,8 @@ export default function ContactModal() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
+                  role="status"
+                  aria-live="polite"
                 >
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -83,6 +147,7 @@ export default function ContactModal() {
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -98,9 +163,9 @@ export default function ContactModal() {
                     transition={{ duration: 0.4, delay: 0.2 }}
                     className="text-center px-6"
                   >
-                    <h3 className="text-2xl font-black mb-2 text-accent">Message sent</h3>
+                    <h3 className="text-2xl font-black mb-2 text-accent">{t('contact.successTitle')}</h3>
                     <p className="text-sm text-secondary">
-                      Thanks for reaching out. We'll be in touch within one business day.
+                      {t('contact.successBody')}
                     </p>
                   </motion.div>
                 </motion.div>
@@ -108,7 +173,7 @@ export default function ContactModal() {
             </AnimatePresence>
 
             {/* Form content */}
-            <Contact isModal={true} onSubmitSuccess={handleSubmitSuccess} />
+            <Contact isModal={true} onSubmitSuccess={handleSubmitSuccess} headingId="contact-modal-heading" />
           </motion.div>
         </motion.div>
       )}

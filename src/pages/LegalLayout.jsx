@@ -7,7 +7,7 @@ export default function LegalLayout({ title, lastUpdated, children }) {
       <a href="#legal-main" className="skip-link">Skip to content</a>
       <header className="legal-header">
         <div className="container legal-header__inner">
-          <Link to="/" className="legal-logo" aria-label="Back to altro home">
+          <Link to="/" className="legal-logo" aria-label="Back to altro home" title="Back to altro home">
             <Logo />
           </Link>
           <Link to="/" className="legal-back-link">← Back to home</Link>

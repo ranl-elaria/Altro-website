@@ -10,6 +10,13 @@ function syncHtml(lang) {
   document.documentElement.setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr')
 }
 
+function detectFromUrl() {
+  if (typeof window === 'undefined') return null
+  const path = window.location.pathname
+  if (path === '/he' || path.startsWith('/he/')) return 'he'
+  return null
+}
+
 function updateDocumentMeta(lang) {
   const t = (key) => TRANSLATIONS[lang]?.[key] ?? key
   const title = t('meta.title')
@@ -23,12 +30,20 @@ function updateDocumentMeta(lang) {
   document.querySelector('meta[property="og:url"]')?.setAttribute('content', url)
   document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title)
   document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description)
+  document.querySelector('link[rel="canonical"]')?.setAttribute('href', url)
 }
 
 const LanguageContext = createContext(null)
 
 export function LanguageProvider({ children }) {
   const [lang, setLang] = useState(() => {
+    // Priority: URL path → localStorage → default. IP geo runs only if none of those resolved.
+    const fromUrl = detectFromUrl()
+    if (fromUrl) {
+      syncHtml(fromUrl)
+      updateDocumentMeta(fromUrl)
+      return fromUrl
+    }
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved && SUPPORTED.includes(saved)) {
       syncHtml(saved)
@@ -41,6 +56,8 @@ export function LanguageProvider({ children }) {
   })
 
   useEffect(() => {
+    // Skip IP detection when URL or storage already picked a language.
+    if (detectFromUrl()) return
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved && SUPPORTED.includes(saved)) return
 
@@ -51,6 +68,7 @@ export function LanguageProvider({ children }) {
         localStorage.setItem(STORAGE_KEY, detected)
         setLang(detected)
         syncHtml(detected)
+        updateDocumentMeta(detected)
       })
       .catch(() => {
         localStorage.setItem(STORAGE_KEY, DEFAULT)
