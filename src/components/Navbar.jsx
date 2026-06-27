@@ -3,11 +3,13 @@ import Logo from './Logo'
 import LangSwitcher from './LangSwitcher'
 import useActiveSection from '../hooks/useActiveSection'
 import { useT } from '../i18n/LanguageContext'
+import { useContactModal } from '../context/ContactModalContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const active = useActiveSection(['home', 'services', 'process', 'faq', 'contact'])
+  const active = useActiveSection(['home', 'services', 'process', 'faq'])
+  const { openModal } = useContactModal()
   const t = useT()
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function Navbar() {
           <a href="#process" className={linkClass('process')} onClick={closeMenu}>{t('navbar.process')}</a>
           <a href="#faq" className={linkClass('faq')} onClick={closeMenu}>{t('navbar.faq')}</a>
           <LangSwitcher />
-          <a href="#contact" className="navbar__cta" onClick={closeMenu}>{t('navbar.cta')}</a>
+          <button className="navbar__cta" onClick={() => { openModal(); closeMenu(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', color: 'inherit' }}>{t('navbar.cta')}</button>
         </nav>
 
         <button

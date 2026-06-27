@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'motion/react'
 import MotionReveal from './MotionReveal'
 import useInView from '../hooks/useInView'
 import { useT } from '../i18n/LanguageContext'
@@ -150,7 +150,7 @@ function ProcessStep({ step, index, total, fillRef, sectionRef }) {
   const nodeBright  = useTransform(scrollYProgress, [0.78, 0.90], [1, 0])
 
   return (
-    <div ref={zoneRef} className="process__step-zone">
+    <li ref={zoneRef} className="process__step-zone" style={{ listStyle: 'none' }}>
       {/* Sticky wrapper — snaps card to viewport center while scrolling through zone */}
       <div className="process__step-sticky">
 
@@ -195,7 +195,7 @@ function ProcessStep({ step, index, total, fillRef, sectionRef }) {
         </motion.div>
 
       </div>
-    </div>
+    </li>
   )
 }
 
@@ -237,7 +237,7 @@ export default function Process() {
         <MotionReveal>
           <div className="process__header">
             <div>
-              <h2 className="display-heading display-heading--light">{t('process.heading')}</h2>
+              <h2 className="section-heading">{t('process.heading')}</h2>
             </div>
             <div className="process__header-right">
               <p className="body-sub body-sub--light">
@@ -249,22 +249,24 @@ export default function Process() {
           </div>
         </MotionReveal>
 
-        <div className="process__timeline">
+        <div className="process__timeline" style={{ position: 'relative' }}>
           {/* Glowing spine */}
           <div className="process__spine" aria-hidden="true">
             <div className="process__spine-fill" ref={fillRef} />
           </div>
 
-          {steps.map((step, i) => (
-            <ProcessStep
-              key={step.num}
-              step={step}
-              index={i}
-              total={steps.length}
-              fillRef={fillRef}
-              sectionRef={sectionRef}
-            />
-          ))}
+          <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {steps.map((step, i) => (
+              <ProcessStep
+                key={step.num}
+                step={step}
+                index={i}
+                total={steps.length}
+                fillRef={fillRef}
+                sectionRef={sectionRef}
+              />
+            ))}
+          </ol>
         </div>
 
       </div>

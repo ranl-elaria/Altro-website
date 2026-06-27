@@ -1,18 +1,18 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { LanguageProvider, useT } from './i18n/LanguageContext'
-import Grain from './components/Grain'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { motion } from 'motion/react'
+import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
+import { ContactModalProvider } from './context/ContactModalContext'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
 import Challenges from './components/Challenges'
-import StatBar from './components/StatBar'
 import Services from './components/Services'
 import Outcomes from './components/Outcomes'
+import Testimonials from './components/Testimonials'
 import Process from './components/Process'
 import FAQ from './components/FAQ'
-import Testimonials from './components/Testimonials'
-import Contact from './components/Contact'
+import ContactModal from './components/ContactModal'
 import Footer from './components/Footer'
 import FloatingCTA from './components/FloatingCTA'
 import CookieBanner from './components/CookieBanner'
@@ -22,29 +22,58 @@ const PrivacyPage  = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsPage    = lazy(() => import('./pages/Terms'))
 const NotFoundPage = lazy(() => import('./pages/NotFound'))
 
+const revealVariants = {
+  hidden: { opacity: 0, y: 48 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+}
+
+function Reveal({ children }) {
+  return (
+    <motion.div
+      variants={revealVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-80px' }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function LocaleLayout() {
+  const { switchLang } = useLanguage()
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    const isHebrew = pathname.startsWith('/he')
+    const langFromUrl = isHebrew ? 'he' : 'en'
+    switchLang(langFromUrl)
+  }, [pathname, switchLang])
+
+  return <Site />
+}
+
 function Site() {
   const t = useT()
+
   return (
-    <>
-      <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
-      <Grain />
-      <Navbar />
-      <FloatingCTA />
-      <main id="main-content">
-        <Hero />
-        <Marquee />
-        <Challenges />
-        <StatBar />
-        <Services />
-        {/* <Outcomes /> */}
-        <Process />
-        {/* <Testimonials /> */}
-        <FAQ />
-        <Contact />
+    <div className="page">
+        <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
+        <Navbar />
+        <FloatingCTA />
+        <main id="main-content">
+          <Hero />
+          <Reveal><Marquee /></Reveal>
+          <Reveal><Challenges /></Reveal>
+          <Reveal><Services /></Reveal>
+          <Reveal><Outcomes /></Reveal>
+          {/* <Testimonials /> */}
+          <Reveal><Process /></Reveal>
+          <Reveal><FAQ /></Reveal>
       </main>
       <Footer />
       <CookieBanner />
-    </>
+    </div>
   )
 }
 
@@ -54,8 +83,12 @@ export default function App() {
   return (
     <LanguageProvider>
     <BrowserRouter>
+    <ContactModalProvider>
       <Routes>
-        <Route path="/" element={<Site />} />
+        <Route element={<LocaleLayout />}>
+          <Route index path="/" />
+          <Route path="/he/*" />
+        </Route>
         <Route
           path="/admin"
           element={
@@ -77,6 +110,8 @@ export default function App() {
           element={<Suspense fallback={legalFallback}><NotFoundPage /></Suspense>}
         />
       </Routes>
+      <ContactModal />
+    </ContactModalProvider>
     </BrowserRouter>
     </LanguageProvider>
   )

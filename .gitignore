@@ -9,3 +9,6 @@ __pycache__/
 .claude/
 .vercel
 .env*
+
+# Supabase CLI cache
+supabase/.temp/

@@ -13,6 +13,23 @@ export default function AdminPage() {
     return () => subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    // Belt + suspenders: robots.txt already disallows /admin, but inject noindex per-page too.
+    let meta = document.querySelector('meta[name="robots"]')
+    const created = !meta
+    if (!meta) {
+      meta = document.createElement('meta')
+      meta.setAttribute('name', 'robots')
+      document.head.appendChild(meta)
+    }
+    const prev = meta.getAttribute('content')
+    meta.setAttribute('content', 'noindex, nofollow')
+    return () => {
+      if (created) meta.remove()
+      else if (prev !== null) meta.setAttribute('content', prev)
+    }
+  }, [])
+
   if (session === undefined) return <div className="admin-loading">Loading…</div>
   return session ? <AdminDashboard /> : <AdminLogin />
 }

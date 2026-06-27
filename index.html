@@ -9,6 +9,17 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    <!-- Canonical -->
+    <link rel="canonical" href="https://altro.build/" />
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#0C0C0C" />
+
+    <!-- hreflang -->
+    <link rel="alternate" hreflang="en" href="https://altro.build/" />
+    <link rel="alternate" hreflang="he" href="https://altro.build/he/" />
+    <link rel="alternate" hreflang="x-default" href="https://altro.build/" />
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="altro" />
@@ -25,11 +36,91 @@
     <meta name="twitter:description" content="Custom internal tools, automations, and AI agents for 10–200 person ops teams. Working deliverable in 2–4 weeks." />
     <meta name="twitter:image" content="https://altro.build/og-image.png" />
 
-    <!-- Analytics -->
-    <script async src="https://plausible.io/js/pa-fvmCSjD8eKrRF4KLAegPi.js"></script>
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "altro",
+        "alternateName": "Altro AI",
+        "url": "https://altro.build",
+        "logo": "https://altro.build/og-image.png",
+        "description": "altro ships custom internal tools, automations, and AI agents for 10–200 person ops teams. Fixed scope, working deliverable in 2–4 weeks.",
+        "email": "altroaiteam@gmail.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IL"
+        },
+        "areaServed": "Worldwide",
+        "knowsAbout": ["Internal Tools", "Process Automation", "AI Agents", "API Integrations", "Custom Web Applications"]
+      }
+    </script>
+
+    <!-- Structured Data: WebSite -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "altro",
+        "url": "https://altro.build",
+        "inLanguage": ["en", "he"]
+      }
+    </script>
+
+    <!-- Structured Data: FAQPage -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Do we need to replace our existing systems?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. We build on top of what you already use. Your team keeps working in the same tools — we just make them faster and better connected. No migrations, no disruption."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is our business data safe?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Your data stays in your systems. We connect to them through secure, official APIs — the same way your bank connects to your accounting software. We never store your business data ourselves."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why not just use off-the-shelf software?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Generic software is built for everyone, which means it fits nobody perfectly. Your team ends up working around its limitations. We build exactly what you need and nothing you don't — so it actually gets used."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Will we be dependent on you forever?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You own everything we build: the code, the system, the data. We're happy to stay on for support, but the moment we're done you could hand it to any developer in the world. No black boxes, ever."
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Analytics (self-built, consent-gated) -->
     <script>
-      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-      plausible.init()
+      (function () {
+        var KEY = 'altro_analytics_consent'
+        function load() {
+          var s = document.createElement('script')
+          s.src = '/track.js'; s.defer = true
+          document.head.appendChild(s)
+        }
+        if (localStorage.getItem(KEY) === 'granted') { load(); return }
+        window.__altroLoadAnalytics = load
+      })()
     </script>
 
     <!-- Fonts -->

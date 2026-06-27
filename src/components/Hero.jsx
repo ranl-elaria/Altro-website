@@ -1,104 +1,107 @@
-import { useRef } from 'react'
-import { motion } from 'framer-motion'
-import HeroHub from './HeroHub'
-import WaveMesh from './WaveMesh'
-import { useT } from '../i18n/LanguageContext'
-
-// Jakub recipe: opacity + translateY + blur, spring with no overshoot
-const fadeUp = {
-  hidden: { opacity: 0, y: 18, filter: 'blur(6px)' },
-  visible: {
-    opacity: 1,
-    y: 0,
-    filter: 'blur(0px)',
-    transition: { type: 'spring', duration: 0.6, bounce: 0 },
-  },
-}
-
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.14, delayChildren: 0.05 } },
-}
+import { useLanguage } from '../i18n/LanguageContext'
+import { useContactModal } from '../context/ContactModalContext'
+import FadeIn from './FadeIn'
+import ContactButton from './ContactButton'
 
 export default function Hero() {
-  const heroRef = useRef(null)
-  const t = useT()
-
-  const handleMouseMove = (e) => {
-    const el = heroRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    el.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`)
-    el.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`)
-  }
+  const { t } = useLanguage()
+  const { openModal } = useContactModal()
 
   return (
-    <section className="hero" id="home" ref={heroRef} onMouseMove={handleMouseMove}>
-      {/* 3D wave mesh — the primary ambient background */}
-      <WaveMesh />
+    <section
+      id="home"
+      className="section--dark min-h-screen px-8 sm:px-12 md:px-24 lg:px-40 pt-24 pb-16 sm:pt-28 sm:pb-20 overflow-x-clip"
+    >
+      <div className="max-w-7xl mx-auto min-h-[calc(100vh-112px)] flex flex-col justify-center">
 
-      {/* Atmospheric depth gradients */}
-      <div className="hero__atmos" aria-hidden="true" />
+        {/* Mobile: GIF appears first via DOM order; Desktop: visually hidden, desktop GIF lives in right column. */}
+        <div className="flex flex-col sm:hidden gap-8">
+          <FadeIn delay={0.05} duration={0.9} y={30}>
+            <img
+              src="/altroai-animation.gif"
+              alt="Animated altro mark looping in the brand teal — geometric monogram"
+              className="w-[260px] mx-auto"
+              loading="eager"
+              decoding="async"
+            />
+          </FadeIn>
+        </div>
 
-      {/* Cursor-responsive spotlight */}
-      <div className="hero__spotlight" aria-hidden="true" />
+        {/* Heading: single H1 across all viewports, responsive sizing */}
+        <FadeIn delay={0.15} duration={0.8} y={40}>
+          <h1
+            className="hero-heading font-black uppercase tracking-tight leading-snug sm:leading-[1.05] mb-6 sm:mb-0"
+            style={{
+              fontSize: 'clamp(1.5rem, 7.5vw, 72px)',
+              textAlign: 'start',
+              textWrap: 'balance'
+            }}
+          >
+            {t('hero.heading')}
+          </h1>
+        </FadeIn>
 
-      <div className="container hero__container">
-        <motion.div
-          className="hero__left"
-          variants={stagger}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.h1 className="hero__headline" variants={stagger}>
-            <motion.span className="hero__line" variants={fadeUp}>
-              {t('hero.line1')}
-            </motion.span>
-            <motion.span className="hero__line" variants={fadeUp}>
-              {t('hero.line2a')}{' '}
-              <span className="accent hero__accent-wrap">
-                {t('hero.line2accent')}
-                <span className="hero__accent-line" aria-hidden="true" />
-              </span>
-            </motion.span>
-            <motion.span className="hero__line" variants={fadeUp}>
-              {t('hero.line3')}
-            </motion.span>
-          </motion.h1>
+        {/* Mobile layout: subtitle + CTA stacked below H1 */}
+        <div className="flex flex-col sm:hidden gap-8 mt-8">
+          <FadeIn delay={0.35} duration={0.8} y={20}>
+            <p
+              className="text-secondary font-light leading-relaxed opacity-75"
+              style={{ fontSize: 'clamp(0.875rem, 1.3vw, 1rem)', textAlign: 'start', maxWidth: '480px' }}
+            >
+              {t('hero.subtitle')}
+            </p>
+          </FadeIn>
 
-          <motion.p className="hero__sub" variants={fadeUp}>
-            {t('hero.sub')}
-          </motion.p>
+          <FadeIn delay={0.5} duration={0.8} y={20}>
+            <div className="flex flex-col items-start gap-2">
+              <ContactButton size="lg" onClick={openModal}>
+                {t('hero.cta')}
+              </ContactButton>
+              <p className="text-secondary text-xs font-light opacity-50" style={{ textAlign: 'start' }}>
+                {t('hero.ctaHint')}
+              </p>
+            </div>
+          </FadeIn>
+        </div>
 
-          <motion.div className="hero__actions" variants={fadeUp}>
-            <a href="#contact" className="btn btn--primary btn--glow">
-              {t('hero.ctaPrimary')}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </a>
-            <a href="#process" className="btn btn--ghost">
-              {t('hero.ctaSecondary')}
-            </a>
-          </motion.div>
+        {/* Desktop layout: 60/40 split — H1 (above) sits in left column visually via grid below */}
+        <div className="hidden sm:grid sm:grid-cols-[3fr_2fr] gap-8 md:gap-12 lg:gap-16 items-start mt-8 md:mt-10">
+          <div className="flex flex-col gap-8">
+            <FadeIn delay={0.35} duration={0.8} y={20}>
+              <p
+                className="text-secondary font-light leading-relaxed opacity-75"
+                style={{ fontSize: 'clamp(0.9rem, 1.4vw, 1.05rem)', textAlign: 'start', maxWidth: '520px' }}
+              >
+                {t('hero.subtitle')}
+              </p>
+            </FadeIn>
+          </div>
 
-          <motion.div className="hero__trust" variants={fadeUp}>
-            <span className="hero__trust-dot" />
-            <span className="hero__trust-text">{t('hero.trust')}</span>
-          </motion.div>
-        </motion.div>
+          <div className="flex flex-col items-center gap-6 sm:gap-10">
+            <FadeIn delay={0.05} duration={0.9} y={30}>
+              <img
+                src="/altroai-animation.gif"
+                alt="Animated altro mark looping in the brand teal — geometric monogram"
+                className="w-full mx-auto"
+                style={{ maxWidth: '100%' }}
+                loading="eager"
+                decoding="async"
+              />
+            </FadeIn>
 
-        <HeroHub />
-      </div>
+            <FadeIn delay={0.5} duration={0.8} y={20}>
+              <div className="flex flex-col items-center gap-4">
+                <ContactButton size="2xl" onClick={openModal}>
+                  {t('hero.cta')}
+                </ContactButton>
+                <p className="text-secondary text-sm sm:text-base font-light opacity-60 text-center max-w-xs sm:max-w-sm">
+                  {t('hero.ctaHint')}
+                </p>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
 
-      <div className="hero__scroll-hint" aria-hidden="true">
-        <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
-          <rect x="1" y="1" width="14" height="22" rx="7" stroke="currentColor" strokeWidth="1.5" />
-          <circle cx="8" cy="8" r="2" fill="currentColor">
-            <animate attributeName="cy" values="8;14;8" dur="1.8s" repeatCount="indefinite" />
-          </circle>
-        </svg>
-        <span>{t('hero.scroll')}</span>
       </div>
     </section>
   )

@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useT } from '../i18n/LanguageContext'
+import { useContactModal } from '../context/ContactModalContext'
 
 export default function FloatingCTA() {
   const [visible, setVisible] = useState(false)
   const t = useT()
+  const { openModal } = useContactModal()
 
   useEffect(() => {
     const check = () => {
-      const contact = document.getElementById('contact')
-      const contactRect = contact?.getBoundingClientRect()
       const pastHero = window.scrollY > window.innerHeight * 0.8
-      const contactVisible = contactRect ? contactRect.top < window.innerHeight * 0.5 : false
-      setVisible(pastHero && !contactVisible)
+      setVisible(pastHero)
     }
     window.addEventListener('scroll', check, { passive: true })
     check()
@@ -19,11 +18,16 @@ export default function FloatingCTA() {
   }, [])
 
   return (
-    <a href="#contact" className={`floating-cta${visible ? ' floating-cta--visible' : ''}`}>
+    <button
+      onClick={openModal}
+      className={`floating-cta${visible ? ' floating-cta--visible' : ''}`}
+      type="button"
+      aria-label={t('floatingCta.text')}
+    >
       <span>{t('floatingCta.text')}</span>
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-    </a>
+    </button>
   )
 }

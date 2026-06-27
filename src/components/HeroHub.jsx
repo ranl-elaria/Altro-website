@@ -1,15 +1,16 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
+import { useT } from '../i18n/LanguageContext'
 
 const HUB = { x: 50, y: 50 }
 
 // ── Node definitions ──────────────────────────────────────────────────────────
 // Top half = Custom Web Apps | Bottom half = Automations
-const NODES = [
+const buildNodes = (t) => [
   // ── Web App outcomes (top) ──
   {
     key: 'portal',
-    label: 'Client Portal',
-    sub: 'secure & custom',
+    label: t('heroHub.portal.label'),
+    sub: t('heroHub.portal.sub'),
     from: '#0CB6B1', to: '#34D399',
     glow: 'rgba(12,182,177,0.65)',
     x: 14, y: 18,
@@ -26,8 +27,8 @@ const NODES = [
   },
   {
     key: 'dashboard',
-    label: 'Live Dashboard',
-    sub: 'see everything',
+    label: t('heroHub.dashboard.label'),
+    sub: t('heroHub.dashboard.sub'),
     from: '#3B82F6', to: '#818CF8',
     glow: 'rgba(59,130,246,0.65)',
     x: 50, y: 6,
@@ -45,8 +46,8 @@ const NODES = [
   },
   {
     key: 'tools',
-    label: 'Team Tools',
-    sub: 'built your way',
+    label: t('heroHub.tools.label'),
+    sub: t('heroHub.tools.sub'),
     from: '#A855F7', to: '#EC4899',
     glow: 'rgba(168,85,247,0.65)',
     x: 86, y: 18,
@@ -65,8 +66,8 @@ const NODES = [
   // ── Automation outcomes (bottom) ──
   {
     key: 'invoices',
-    label: 'Send Invoices',
-    sub: 'automatically',
+    label: t('heroHub.invoices.label'),
+    sub: t('heroHub.invoices.sub'),
     from: '#10B981', to: '#34D399',
     glow: 'rgba(16,185,129,0.65)',
     x: 14, y: 82,
@@ -84,8 +85,8 @@ const NODES = [
   },
   {
     key: 'alerts',
-    label: 'Alert Your Team',
-    sub: 'when it matters',
+    label: t('heroHub.alerts.label'),
+    sub: t('heroHub.alerts.sub'),
     from: '#F97316', to: '#FBBF24',
     glow: 'rgba(249,115,22,0.65)',
     x: 50, y: 90,
@@ -100,8 +101,8 @@ const NODES = [
   },
   {
     key: 'onboard',
-    label: 'Onboard Clients',
-    sub: 'without the hassle',
+    label: t('heroHub.onboard.label'),
+    sub: t('heroHub.onboard.sub'),
     from: '#8B5CF6', to: '#A855F7',
     glow: 'rgba(139,92,246,0.65)',
     x: 86, y: 82,
@@ -117,15 +118,8 @@ const NODES = [
   },
 ]
 
-// All beams radiate FROM hub → nodes (hub is the source)
-const BEAM_PATHS = NODES.map(n => ({
-  ...n,
-  // path goes hub → node
-  d: `M ${HUB.x} ${HUB.y} L ${n.x} ${n.y}`,
-}))
-
 // ── Workflow engine hub ────────────────────────────────
-function WorkflowHub() {
+function WorkflowHub({ platformLabel }) {
   return (
     <div style={{
       position: 'absolute', top: '50%', left: '50%',
@@ -195,7 +189,7 @@ function WorkflowHub() {
             fontSize: 6.5, fontWeight: 800, letterSpacing: '0.18em',
             textTransform: 'uppercase', color: 'rgba(12,182,177,0.65)',
             whiteSpace: 'nowrap',
-          }}>your platform</span>
+          }}>{platformLabel}</span>
         </div>
       </motion.div>
     </div>
@@ -280,6 +274,13 @@ function ZoneLabel({ x, y, text }) {
 
 // ── Main component ────────────────────────────────────
 export default function HeroHub() {
+  const t = useT()
+  const NODES = buildNodes(t)
+  const BEAM_PATHS = NODES.map(n => ({
+    ...n,
+    d: `M ${HUB.x} ${HUB.y} L ${n.x} ${n.y}`,
+  }))
+
   return (
     <div className="hhub">
 
@@ -354,11 +355,11 @@ export default function HeroHub() {
       />
 
       {/* Zone labels */}
-      <ZoneLabel x={50} y={3}  text="Custom Web Apps" />
-      <ZoneLabel x={50} y={94} text="Automations" />
+      <ZoneLabel x={50} y={3}  text={t('heroHub.zoneWebapps')} />
+      <ZoneLabel x={50} y={94} text={t('heroHub.zoneAutomations')} />
 
       {/* Workflow engine hub */}
-      <WorkflowHub />
+      <WorkflowHub platformLabel={t('heroHub.platform')} />
 
       {/* Outcome chip nodes */}
       {NODES.map(n => <ChipNode key={n.key} node={n} />)}

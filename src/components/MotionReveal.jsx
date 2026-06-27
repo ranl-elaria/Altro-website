@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 const VARIANTS = {
   hidden: { opacity: 0, y: 22, filter: 'blur(5px)' },
