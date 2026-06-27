@@ -1,0 +1,99 @@
+// OAuth callback. Exchange code, save tokens, redirect to /admin?marketing=integrations.
+
+import { createClient } from '@supabase/supabase-js'
+import { exchangeCode, getUserEmail, DRIVE_SCOPES } from '../../../src/lib/marketing/drive.js'
+import { saveTokens, markError } from '../../../src/lib/marketing/oauth-store.js'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+function siteUrl(req) {
+  const host = req.headers['x-forwarded-host'] || req.headers.host
+  const proto = req.headers['x-forwarded-proto'] || 'https'
+  return `${proto}://${host}`
+}
+
+function parseCookies(req) {
+  const out = {}
+  const c = req.headers.cookie
+  if (!c) return out
+  for (const part of c.split(';')) {
+    const [k, ...v] = part.trim().split('=')
+    out[k] = decodeURIComponent(v.join('='))
+  }
+  return out
+}
+
+function done(res, base, ok, msg) {
+  const status = ok ? 'ok' : 'error'
+  res.redirect(`${base}/admin#marketing=integrations&oauth=${status}&msg=${encodeURIComponent(msg || '')}`)
+}
+
+export default async function handler(req, res) {
+  const base = siteUrl(req)
+  const provider = String(req.query.provider || '').toLowerCase()
+  const code = req.query.code
+  const state = req.query.state
+  const cookies = parseCookies(req)
+
+  if (!provider || !code) return done(res, base, false, 'missing params')
+  if (!state || state !== cookies.mkt_oauth_state) return done(res, base, false, 'state mismatch')
+
+  // Clear state cookie
+  res.setHeader('Set-Cookie', 'mkt_oauth_state=; Path=/; Max-Age=0')
+
+  const redirect_uri = `${base}/api/marketing/oauth/callback?provider=${provider}`
+
+  try {
+    if (provider === 'google') {
+      const tok = await exchangeCode({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri,
+      })
+      const email = await getUserEmail(tok.access_token)
+      await saveTokens(supabase, 'google', {
+        access_token: tok.access_token,
+        refresh_token: tok.refresh_token,
+        expires_in: tok.expires_in,
+        scopes: DRIVE_SCOPES,
+        account_label: email,
+        metadata: { token_type: tok.token_type, scope: tok.scope },
+      })
+      return done(res, base, true, 'google connected')
+    }
+
+    if (provider === 'canva') {
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri,
+        client_id: process.env.CANVA_CLIENT_ID,
+        client_secret: process.env.CANVA_CLIENT_SECRET,
+      })
+      const r = await fetch('https://api.canva.com/rest/v1/oauth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      })
+      const j = await r.json()
+      if (!r.ok) throw new Error(`Canva token: ${j.error_description || JSON.stringify(j)}`)
+      await saveTokens(supabase, 'canva', {
+        access_token: j.access_token,
+        refresh_token: j.refresh_token,
+        expires_in: j.expires_in,
+        scopes: (j.scope || '').split(' ').filter(Boolean),
+        metadata: { token_type: j.token_type },
+      })
+      return done(res, base, true, 'canva connected')
+    }
+
+    return done(res, base, false, `unknown provider: ${provider}`)
+  } catch (err) {
+    await markError(supabase, provider, err?.message || String(err))
+    return done(res, base, false, err?.message || 'oauth failed')
+  }
+}
