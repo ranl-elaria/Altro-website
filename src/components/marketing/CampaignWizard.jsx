@@ -54,11 +54,15 @@ export default function CampaignWizard({ id, onClose }) {
   async function patch(p, opts = {}) {
     setBusy('patch')
     try {
-      const j = await authedFetch(`/api/marketing/campaigns/update?id=${id}`, {
-        method: 'POST',
-        body: JSON.stringify({ patch: p, note: opts.note }),
-      })
-      setC(j.campaign)
+      if (p && Object.keys(p).length > 0) {
+        const j = await authedFetch(`/api/marketing/campaigns/update?id=${id}`, {
+          method: 'POST',
+          body: JSON.stringify({ patch: p, note: opts.note }),
+        })
+        setC(j.campaign)
+      } else {
+        await load()
+      }
     } catch (e) { setError(e.message) }
     setBusy(null)
   }
@@ -183,18 +187,73 @@ function StepInspire({ c, patch, runStep, busy }) {
 
 // ── Step 2 ─────────────────────────────────────────────────
 function StepBrandPull({ c, patch, busy }) {
+  const [pulling, setPulling] = useState(false)
+  const [pullErr, setPullErr] = useState(null)
+  const bc = c.brand_context || {}
+  const templates = bc.canva?.templates || []
+  const recent = bc.drive?.recent_campaigns || []
+
+  async function doPull() {
+    setPulling(true); setPullErr(null)
+    try {
+      await authedFetch(`/api/marketing/campaigns/brand-pull?id=${c.id}`, { method: 'POST' })
+      await patch({})  // triggers reload
+    } catch (e) { setPullErr(e.message) }
+    setPulling(false)
+  }
+
   return (
     <div className="mkt-wiz__panel">
       <h3>Brand pull</h3>
-      <p className="mkt-int__sub">Reference latest AltroAI brand assets. Auto-fetched from Canva + Drive when integrations are wired.</p>
-      <div className="marketing-panel__placeholder">
-        Brand context will populate here after Canva integration deepens. For now, click next to proceed with strategic concepts.
-      </div>
+      <p className="mkt-int__sub">
+        Pulls Canva brand templates + last 10 Drive campaign folders.
+        {bc.fetched_at && <> Last pulled: {new Date(bc.fetched_at).toLocaleString()}</>}
+      </p>
       <div className="mkt-agents__actions">
-        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => patch({ state: 'CONCEPTS' })} disabled={busy}>
-          Next: Concepts →
+        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={doPull} disabled={pulling || busy}>
+          {pulling ? 'Pulling…' : (bc.fetched_at ? 'Re-pull' : 'Pull brand context')}
         </button>
+        {bc.fetched_at && (
+          <button className="mkt-agents__btn" onClick={() => patch({ state: 'CONCEPTS' })} disabled={busy}>
+            Next: Concepts →
+          </button>
+        )}
       </div>
+      {pullErr && <div className="mkt-agents__error">{pullErr}</div>}
+      {(bc.errors || []).map((err, i) => <div key={i} className="mkt-int__err">⚠ {err}</div>)}
+
+      {templates.length > 0 && (
+        <>
+          <h4>Canva brand templates ({templates.length})</h4>
+          <div className="mkt-brand__grid">
+            {templates.map(t => (
+              <a key={t.id} className="mkt-brand__file" href={t.edit_url} target="_blank" rel="noreferrer">
+                <div className="mkt-brand__thumb">
+                  {t.thumbnail ? <img src={t.thumbnail} alt={t.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
+                </div>
+                <div className="mkt-brand__name">{t.title}</div>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+
+      {recent.length > 0 && (
+        <>
+          <h4>Recent Drive campaigns ({recent.length})</h4>
+          <ul className="marketing-integrations">
+            {recent.map(r => (
+              <li key={r.id} className="marketing-integrations__row">
+                <div>
+                  <strong>{r.name}</strong>
+                  <div className="mkt-int__sub">{new Date(r.modifiedTime).toLocaleDateString()}</div>
+                </div>
+                <a className="mkt-agents__btn" href={r.webViewLink} target="_blank" rel="noreferrer">Open</a>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   )
 }
@@ -286,18 +345,122 @@ function StepCopy({ c, patch, runStep, busy }) {
 // ── Step 5 ─────────────────────────────────────────────────
 function StepVisuals({ c, patch, busy }) {
   const visuals = c.visuals || []
+  const [available, setAvailable] = useState(null)
+  const [loadingList, setLoadingList] = useState(false)
+  const [err, setErr] = useState(null)
+  const [spawning, setSpawning] = useState(null)
+
+  async function loadList() {
+    setLoadingList(true); setErr(null)
+    try {
+      const j = await authedFetch(`/api/marketing/campaigns/visuals-list?id=${c.id}`)
+      setAvailable(j)
+    } catch (e) { setErr(e.message) }
+    setLoadingList(false)
+  }
+
+  async function pickDesign(design) {
+    try {
+      await authedFetch(`/api/marketing/campaigns/visuals-pick?id=${c.id}`, {
+        method: 'POST', body: JSON.stringify({ design }),
+      })
+      await patch({})
+    } catch (e) { setErr(e.message) }
+  }
+
+  async function spawnFromTemplate(tpl) {
+    setSpawning(tpl.id); setErr(null)
+    try {
+      await authedFetch(`/api/marketing/campaigns/visuals-spawn?id=${c.id}`, {
+        method: 'POST',
+        body: JSON.stringify({ brand_template_id: tpl.id, title: `${c.name} — ${tpl.title}` }),
+      })
+      await patch({})
+    } catch (e) { setErr(e.message) }
+    setSpawning(null)
+  }
+
+  const designs = available?.designs?.items || available?.designs?.designs || []
+  const templates = available?.templates?.items || available?.templates?.brand_templates || []
+  const chosenCount = visuals.filter(v => v.chosen).length
+
   return (
     <div className="mkt-wiz__panel">
       <h3>Visuals</h3>
-      <p className="mkt-int__sub">Canva auto-generate not yet wired. For now, link existing Canva designs manually.</p>
-      <div className="marketing-panel__placeholder">
-        Phase 4b: Canva generate-design API. For now you can mark visuals chosen by ID after exporting from Canva.
-      </div>
+      <p className="mkt-int__sub">Pick existing Canva designs OR spawn from a brand template. Chosen: {chosenCount}</p>
+
       <div className="mkt-agents__actions">
-        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => patch({ state: 'POLISH' })} disabled={busy}>
-          Next: Polish →
+        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={loadList} disabled={loadingList}>
+          {loadingList ? 'Loading…' : (available ? 'Refresh Canva' : 'Browse Canva')}
         </button>
+        {chosenCount > 0 && (
+          <button className="mkt-agents__btn" onClick={() => patch({ state: 'POLISH' })} disabled={busy}>
+            Next: Polish →
+          </button>
+        )}
       </div>
+      {err && <div className="mkt-agents__error">{err}</div>}
+
+      {visuals.length > 0 && (
+        <>
+          <h4>Attached to this campaign ({visuals.length})</h4>
+          <div className="mkt-brand__grid">
+            {visuals.map(v => (
+              <article key={v.id} className={`mkt-brand__file${v.chosen ? '' : ''}`} style={{
+                borderColor: v.chosen ? 'rgba(34,197,94,0.5)' : undefined,
+                background: v.chosen ? 'rgba(34,197,94,0.08)' : undefined,
+              }}>
+                <div className="mkt-brand__thumb">
+                  {v.thumbnail ? <img src={v.thumbnail} alt={v.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
+                </div>
+                <div className="mkt-brand__name">{v.title || v.id}</div>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  {v.edit_url && <a className="mkt-agents__btn" href={v.edit_url} target="_blank" rel="noreferrer">Edit</a>}
+                  <button className="mkt-agents__btn" onClick={() => pickDesign({ id: v.id, title: v.title, thumbnail: { url: v.thumbnail }, urls: { edit_url: v.edit_url } })}>
+                    {v.chosen ? '✓ Chosen' : 'Choose'}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+
+      {templates.length > 0 && (
+        <>
+          <h4>Spawn new from brand template ({templates.length})</h4>
+          <div className="mkt-brand__grid">
+            {templates.map(t => (
+              <article key={t.id} className="mkt-brand__file">
+                <div className="mkt-brand__thumb">
+                  {t.thumbnail?.url ? <img src={t.thumbnail.url} alt={t.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
+                </div>
+                <div className="mkt-brand__name">{t.title}</div>
+                <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => spawnFromTemplate(t)} disabled={spawning === t.id}>
+                  {spawning === t.id ? 'Spawning…' : 'Spawn'}
+                </button>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+
+      {designs.length > 0 && (
+        <>
+          <h4>Pick from existing Canva designs ({designs.length})</h4>
+          <div className="mkt-brand__grid">
+            {designs.map(d => (
+              <article key={d.id} className="mkt-brand__file">
+                <div className="mkt-brand__thumb">
+                  {d.thumbnail?.url ? <img src={d.thumbnail.url} alt={d.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
+                </div>
+                <div className="mkt-brand__name">{d.title}</div>
+                <button className="mkt-agents__btn" onClick={() => pickDesign(d)}>Add</button>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
