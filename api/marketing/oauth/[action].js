@@ -55,15 +55,19 @@ export default async function handler(req, res) {
     const provider = String(req.query.provider || '').toLowerCase()
     if (!provider) return res.status(400).send('Missing provider')
 
-    const state = crypto.randomBytes(16).toString('hex')
+    const stateRand = crypto.randomBytes(16).toString('hex')
+    // Encode provider IN state so callback can recover it without query param.
+    const state = `${provider}.${stateRand}`
     // PKCE (required by Canva, harmless for Google)
     const code_verifier = crypto.randomBytes(32).toString('base64url')
     const code_challenge = crypto.createHash('sha256').update(code_verifier).digest('base64url')
     res.setHeader('Set-Cookie', [
       `mkt_oauth_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
       `mkt_oauth_verifier=${code_verifier}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
+      `mkt_oauth_provider=${provider}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
     ])
-    const redirect_uri = `${base}/api/marketing/oauth/callback?provider=${provider}`
+    // Clean redirect (no query) — required by Canva, accepted by Google.
+    const redirect_uri = `${base}/api/marketing/oauth/callback`
 
     let authUrl
     if (provider === 'google') {
@@ -98,10 +102,15 @@ export default async function handler(req, res) {
   }
 
   if (action === 'callback') {
-    const provider = String(req.query.provider || '').toLowerCase()
     const code = req.query.code
     const state = req.query.state
     const cookies = parseCookies(req)
+    // Provider recovered from cookie OR state prefix (cookie may be blocked cross-site)
+    const provider = String(
+      cookies.mkt_oauth_provider ||
+      (state && state.includes('.') ? state.split('.')[0] : '') ||
+      ''
+    ).toLowerCase()
 
     if (!provider || !code) return done(res, base, false, 'missing params')
     if (!state || state !== cookies.mkt_oauth_state) return done(res, base, false, 'state mismatch')
@@ -109,9 +118,10 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie', [
       'mkt_oauth_state=; Path=/; Max-Age=0',
       'mkt_oauth_verifier=; Path=/; Max-Age=0',
+      'mkt_oauth_provider=; Path=/; Max-Age=0',
     ])
 
-    const redirect_uri = `${base}/api/marketing/oauth/callback?provider=${provider}`
+    const redirect_uri = `${base}/api/marketing/oauth/callback`
 
     try {
       if (provider === 'google') {
