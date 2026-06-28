@@ -33,7 +33,7 @@ export default function MarketingDashboard() {
     const token = sess?.session?.access_token
     if (!token) { setError('Not authenticated'); setLoading(false); return }
     try {
-      const r = await fetch(`/api/marketing/funnel/stats?days=${days}`, {
+      const r = await fetch(`/api/marketing/services/funnel-stats?days=${days}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const j = await r.json()
@@ -50,7 +50,7 @@ export default function MarketingDashboard() {
     const { data: sess } = await supabase.auth.getSession()
     const token = sess?.session?.access_token
     try {
-      const r = await fetch(`/api/marketing/hubspot/sync${full ? '?full=1' : ''}`, {
+      const r = await fetch(`/api/marketing/services/hubspot-sync${full ? '?full=1' : ''}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
