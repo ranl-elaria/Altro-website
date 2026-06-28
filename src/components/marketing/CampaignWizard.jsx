@@ -399,6 +399,8 @@ function StepVisuals({ c, patch, busy }) {
   const [spawning, setSpawning] = useState(null)
 
   useEffect(() => { loadList() }, [])
+  // Re-sync local map from server state whenever campaign reloads
+  useEffect(() => { setTplMap(c.brand_template_map || {}) }, [c.brand_template_map])
 
   async function loadList() {
     setLoadingList(true); setErr(null)
@@ -426,7 +428,16 @@ function StepVisuals({ c, patch, busy }) {
   }
 
   async function spawnForChannel(channel) {
-    const cfg = tplMap[channel] || { templates: [], mode: 'creative' }
+    // Read fresh config from server state (avoid stale local tplMap)
+    const cfg = (c.brand_template_map || {})[channel] || tplMap[channel] || { templates: [], mode: 'creative' }
+    const tpls = cfg.templates || []
+    const mode = cfg.mode || 'mixed'
+
+    if ((mode === 'template' || mode === 'mixed') && tpls.length === 0) {
+      setErr(`${channel}: mode "${mode}" needs at least 1 brand template. Pick one in the multi-select above or switch mode to "Creative only".`)
+      return
+    }
+
     setSpawning(channel); setErr(null)
     try {
       const chVariants = c.copy_variants?.variants?.[channel] || []
@@ -434,9 +445,8 @@ function StepVisuals({ c, patch, busy }) {
       await authedFetch(`/api/marketing/campaigns/visuals-spawn-channel?id=${c.id}`, {
         method: 'POST',
         body: JSON.stringify({
-          channel, count: 4,
-          mode: cfg.mode || 'mixed',
-          template_ids: cfg.templates || [],
+          channel, count: 4, mode,
+          template_ids: tpls,
           chosen_copy_id: chosenCopy?.id,
         }),
       })
@@ -515,6 +525,11 @@ function StepVisuals({ c, patch, busy }) {
                 {spawning === ch ? 'Generating…' : 'Generate 4 concepts'}
               </button>
             </div>
+            {(cfg.mode === 'template' || cfg.mode === 'mixed') && (cfg.templates || []).length === 0 && (
+              <div className="mkt-int__err">
+                ⚠ Mode "{cfg.mode}" needs a brand template. Select one above or switch to "Creative only".
+              </div>
+            )}
 
             {chVisuals.length > 0 && (
               <div className="mkt-brand__grid">

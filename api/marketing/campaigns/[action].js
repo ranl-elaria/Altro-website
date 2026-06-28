@@ -330,6 +330,13 @@ export default async function handler(req, res) {
     const copy = chVariants.find(v => v.id === chosen_copy_id) || chVariants.find(v => v.chosen) || chVariants[0] || null
 
     // Count split between template / creative
+    const wantsTemplates = mode === 'template' || mode === 'mixed'
+    if (wantsTemplates && (!Array.isArray(template_ids) || template_ids.length === 0)) {
+      return res.status(400).json({
+        error: 'no_templates_selected',
+        hint: `mode "${mode}" requires at least 1 brand template. Select templates in the multi-select then re-spawn, OR switch mode to "creative".`,
+      })
+    }
     const templateCount = mode === 'template' ? N : mode === 'creative' ? 0 : Math.ceil(N / 2)
     const creativeCount = N - templateCount
 
