@@ -55,30 +55,54 @@ export function buildImagePrompt({
   return lines.join(' ')
 }
 
-// ---- OpenAI gpt-image-1 ----
+// ---- OpenAI image (gpt-image-1 with dall-e-3 fallback) ----
 async function generateOpenAI({ apiKey, prompt, w, h }) {
   if (!apiKey) throw new Error('OPENAI_API_KEY missing')
   const size = openaiSize(w, h)
-  const r = await fetch('https://api.openai.com/v1/images/generations', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'gpt-image-1',
-      prompt,
-      n: 1,
-      size,
-      quality: 'high',
-      output_format: 'png',
-    }),
-  })
-  if (!r.ok) throw new Error(`OpenAI image ${r.status}: ${(await r.text()).slice(0, 200)}`)
-  const j = await r.json()
-  const b64 = j.data?.[0]?.b64_json
-  if (!b64) throw new Error('OpenAI returned no b64_json')
-  const bytes = Buffer.from(b64, 'base64')
-  return {
-    provider: 'openai', model: 'gpt-image-1', bytes, mime_type: 'image/png',
-    cost_usd: 0.17, // approx for high-quality
+
+  async function tryModel(model, includeOutputFormat) {
+    const body = { model, prompt, n: 1, size }
+    if (model === 'gpt-image-1' && includeOutputFormat) {
+      body.quality = 'high'
+      body.output_format = 'png'
+    } else if (model === 'dall-e-3') {
+      body.response_format = 'b64_json'
+      body.quality = 'hd'
+    }
+    const r = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const text = await r.text()
+    if (!r.ok) {
+      const err = new Error(`OpenAI ${model} ${r.status}: ${text.slice(0, 300)}`)
+      err.status = r.status
+      err.body = text
+      throw err
+    }
+    const j = JSON.parse(text)
+    const b64 = j.data?.[0]?.b64_json
+    if (b64) return { bytes: Buffer.from(b64, 'base64'), model }
+    const url = j.data?.[0]?.url
+    if (url) {
+      const im = await fetch(url)
+      if (!im.ok) throw new Error(`OpenAI image download ${im.status}`)
+      return { bytes: Buffer.from(await im.arrayBuffer()), model }
+    }
+    throw new Error(`OpenAI ${model} returned neither b64_json nor url: ${text.slice(0, 200)}`)
+  }
+
+  try {
+    const r = await tryModel('gpt-image-1', true)
+    return { provider: 'openai', model: r.model, bytes: r.bytes, mime_type: 'image/png', cost_usd: 0.17 }
+  } catch (e) {
+    // Fall back to dall-e-3 on model-not-found / not-permitted
+    if (e.status === 400 || e.status === 404 || (e.body || '').includes('model')) {
+      const r = await tryModel('dall-e-3', false)
+      return { provider: 'openai', model: r.model, bytes: r.bytes, mime_type: 'image/png', cost_usd: 0.08 }
+    }
+    throw e
   }
 }
 
