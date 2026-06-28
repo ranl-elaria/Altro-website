@@ -136,11 +136,11 @@ export default async function handler(req, res) {
     if (step === 'INSPIRE') {
       prompt = inspirePrompt(intake)
     } else if (step === 'CONCEPTS') {
-      prompt = conceptsPrompt({ intake, inspiration: c.inspiration })
+      prompt = conceptsPrompt({ intake, inspiration: c.inspiration, brand_context: c.brand_context })
     } else if (step === 'COPY') {
       const chosen = (c.concepts?.concepts || []).find(x => x.chosen) || c.concepts?.chosen
       if (!chosen) return res.status(400).json({ error: 'no_chosen_concept' })
-      prompt = copyPrompt({ intake, chosenConcept: chosen, channels: c.channels })
+      prompt = copyPrompt({ intake, chosenConcept: chosen, channels: c.channels, brand_context: c.brand_context })
     } else if (step === 'TIMING') {
       prompt = timingPrompt({ intake, channels: c.channels })
     } else if (step === 'POLISH') {

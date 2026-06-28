@@ -95,6 +95,39 @@ export function createDrive({ access_token }) {
       if (found) return found
       return this.createFolder(name, parentId)
     },
+    async uploadFile({ name, bytes, mime_type, parentId }) {
+      // Multipart upload via raw fetch (Drive API v3).
+      const boundary = `b${Date.now()}`
+      const metadata = JSON.stringify({
+        name,
+        mimeType: mime_type || 'application/octet-stream',
+        ...(parentId ? { parents: [parentId] } : {}),
+      })
+      const enc = new TextEncoder()
+      const head = enc.encode(
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metadata}\r\n` +
+        `--${boundary}\r\nContent-Type: ${mime_type || 'application/octet-stream'}\r\n\r\n`
+      )
+      const tail = enc.encode(`\r\n--${boundary}--`)
+      const body = new Uint8Array(head.length + bytes.length + tail.length)
+      body.set(head, 0); body.set(bytes, head.length); body.set(tail, head.length + bytes.length)
+
+      const r = await fetch(`${UPLOAD}/files?uploadType=multipart&fields=id,name,webViewLink,thumbnailLink,mimeType`, {
+        method: 'POST',
+        headers: { ...h, 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body,
+      })
+      if (!r.ok) throw new Error(`Drive upload ${r.status}: ${(await r.text()).slice(0, 200)}`)
+      return r.json()
+    },
+    async downloadFile(fileId) {
+      const r = await fetch(`${API}/files/${fileId}?alt=media`, { headers: h })
+      if (!r.ok) throw new Error(`Drive download ${r.status}: ${(await r.text()).slice(0, 200)}`)
+      return { bytes: new Uint8Array(await r.arrayBuffer()), mime_type: r.headers.get('content-type') }
+    },
+    async getFileMeta(fileId) {
+      return req(`/files/${fileId}?fields=id,name,mimeType,size,parents,webViewLink,thumbnailLink`)
+    },
     async listChildren(folderId, { pageSize = 100, pageToken } = {}) {
       const q = `'${folderId}' in parents and trashed = false`
       const params = new URLSearchParams({

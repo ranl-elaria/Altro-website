@@ -62,5 +62,31 @@ export function createCanva({ access_token }) {
       })
     },
     getAutofillJob(id) { return req(`/autofills/${id}`) },
+    // Export a design. Returns a job that produces signed download URLs.
+    createExport({ design_id, format = { type: 'png' } } = {}) {
+      return req('/exports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ design_id, format }),
+      })
+    },
+    getExportJob(id) { return req(`/exports/${id}`) },
+    // Upload an asset to Canva. Requires multipart upload via /asset-uploads.
+    async uploadAsset({ name, bytes, mime_type }) {
+      // Canva async asset upload: POST /asset-uploads, returns job
+      const meta = { name_base64: Buffer.from(name).toString('base64') }
+      const r = await fetch(`${API}/asset-uploads`, {
+        method: 'POST',
+        headers: {
+          ...h,
+          'Content-Type': mime_type || 'application/octet-stream',
+          'Asset-Upload-Metadata': JSON.stringify(meta),
+        },
+        body: bytes,
+      })
+      if (!r.ok) throw new Error(`Canva asset upload ${r.status}: ${(await r.text()).slice(0, 200)}`)
+      return r.json()
+    },
+    getAssetUploadJob(id) { return req(`/asset-uploads/${id}`) },
   }
 }

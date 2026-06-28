@@ -3,7 +3,8 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "crons": [
-    { "path": "/api/sync-xplace", "schedule": "0 8 * * *" }
+    { "path": "/api/sync-xplace", "schedule": "0 8 * * *" },
+    { "path": "/api/marketing/services/competitors-snapshot-all", "schedule": "0 6 * * 0" }
   ],
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "headers": [
