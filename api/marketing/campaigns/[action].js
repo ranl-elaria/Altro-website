@@ -356,6 +356,8 @@ export default async function handler(req, res) {
       const upload = await drive.uploadFile({
         name: fileName, bytes: gen.bytes, mime_type: gen.mime_type, parentId: campaignFolder.id,
       })
+      // Make link-visible so browser <img> can load lh3.googleusercontent.com thumbnail without auth
+      try { await drive.makeLinkVisible(upload.id) } catch (e) { console.error('drive permission failed', e.message) }
 
       const visual = {
         id: upload.id,

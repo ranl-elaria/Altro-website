@@ -567,14 +567,29 @@ function StepVisuals({ c, patch, busy }) {
 
             {chVisuals.length > 0 && (
               <div className="mkt-brand__grid">
-                {chVisuals.map(v => (
+                {chVisuals.map(v => {
+                  const kindLabel =
+                    v.kind === 'ai-image' ? `🤖 AI image (${v.provider || 'openai'})` :
+                    v.kind === 'template' ? '🖼 template' :
+                    v.kind === 'creative' ? '✨ creative brief' :
+                    v.kind || 'visual'
+                  const editLabel = v.kind === 'ai-image' ? 'Open in Drive' : 'Edit in Canva'
+                  // Drive thumbnails: thumbnailLink works only via proxy with auth.
+                  // For ai-image: use a Drive direct view URL pattern that requires login but works in same-session iframe-style img.
+                  // Fallback: show download icon + name only.
+                  const driveThumb = v.kind === 'ai-image' && v.drive_file_id
+                    ? `https://lh3.googleusercontent.com/d/${v.drive_file_id}=s320`
+                    : null
+                  const thumbSrc = v.thumbnail || driveThumb
+                  return (
                   <article key={v.id} className="mkt-brand__file" style={{
                     borderColor: v.chosen ? 'rgba(34,197,94,0.5)' : undefined,
                     background: v.chosen ? 'rgba(34,197,94,0.08)' : undefined,
                   }}>
                     <div className="mkt-brand__thumb">
-                      {v.thumbnail ? (
-                        <img src={v.thumbnail} alt={v.title} loading="lazy" referrerPolicy="no-referrer" />
+                      {thumbSrc ? (
+                        <img src={thumbSrc} alt={v.title} loading="lazy" referrerPolicy="no-referrer"
+                          onError={(e) => { e.currentTarget.style.display = 'none' }} />
                       ) : v.kind === 'creative' ? (
                         <div className="mkt-post__concept">
                           <strong>{v.concept?.layout}</strong>
@@ -582,13 +597,14 @@ function StepVisuals({ c, patch, busy }) {
                           <div className="mkt-int__sub">{v.concept?.palette}</div>
                         </div>
                       ) : (
-                        <div className="mkt-brand__icon">⏳</div>
+                        <div className="mkt-brand__icon">{v.kind === 'ai-image' ? '🖼' : '⏳'}</div>
                       )}
                     </div>
                     <div className="mkt-brand__name">{v.title}</div>
                     <div className="mkt-int__sub">
-                      {v.kind === 'template' ? '🖼 template' : '✨ creative concept'}
+                      {kindLabel}
                       {v.job_status && v.job_status !== 'success' && v.job_status !== 'concept_only' && ` · ${v.job_status}`}
+                      {v.cost_usd ? ` · $${Number(v.cost_usd).toFixed(2)}` : ''}
                     </div>
                     {v.kind === 'creative' && v.concept && (
                       <details>
@@ -599,13 +615,14 @@ function StepVisuals({ c, patch, busy }) {
                       </details>
                     )}
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {v.edit_url && <a className="mkt-agents__btn" href={v.edit_url} target="_blank" rel="noreferrer">Edit in Canva</a>}
-                      <button className="mkt-agents__btn" onClick={() => pickDesign({ id: v.id, title: v.title, thumbnail: { url: v.thumbnail }, urls: { edit_url: v.edit_url } })}>
+                      {v.edit_url && <a className="mkt-agents__btn" href={v.edit_url} target="_blank" rel="noreferrer">{editLabel}</a>}
+                      <button className="mkt-agents__btn" onClick={() => pickDesign({ id: v.id, title: v.title, thumbnail: { url: thumbSrc }, urls: { edit_url: v.edit_url } })}>
                         {v.chosen ? '✓ Chosen' : 'Pick'}
                       </button>
                     </div>
                   </article>
-                ))}
+                  )
+                })}
               </div>
             )}
           </section>
