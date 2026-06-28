@@ -18,6 +18,16 @@ function fmtBytes(n) {
   return `${v.toFixed(1)} ${u[i]}`
 }
 
+const TARGET_FOLDERS = [
+  { key: '01_Logos',           label: '01 Logos' },
+  { key: '02_Brand_Guidelines', label: '02 Brand Guidelines' },
+  { key: '03_Templates',       label: '03 Templates' },
+  { key: '04_Ads',             label: '04 Ads' },
+  { key: '05_Social',          label: '05 Social' },
+  { key: '06_Decks',           label: '06 Decks' },
+  { key: '07_Campaigns',       label: '07 Campaigns' },
+]
+
 export default function MarketingBrand() {
   const [source, setSource] = useState('drive')
   const [integ, setInteg] = useState(null)
@@ -28,6 +38,8 @@ export default function MarketingBrand() {
   const [canvaQuery, setCanvaQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [syncing, setSyncing] = useState(null)
+  const [syncMsg, setSyncMsg] = useState(null)
 
   useEffect(() => { bootstrap() }, [])
   useEffect(() => {
@@ -103,6 +115,43 @@ export default function MarketingBrand() {
   const driveConnected = integ?.find(x => x.provider === 'google')?.status === 'connected'
   const canvaConnected = integ?.find(x => x.provider === 'canva')?.status === 'connected'
 
+  async function canvaToDrive(design) {
+    const sub = prompt(`Export "${design.title}" to which Drive folder?\nOptions: ${TARGET_FOLDERS.map(t => t.key).join(', ')}`, '04_Ads')
+    if (!sub) return
+    setSyncing(design.id); setSyncMsg(null); setError(null)
+    const { data: sess } = await supabase.auth.getSession()
+    const token = sess?.session?.access_token
+    try {
+      const r = await fetch('/api/marketing/drive/canva-to-drive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ design_id: design.id, folder_subkey: sub, name: design.title }),
+      })
+      const j = await r.json()
+      if (!r.ok) throw new Error(j.error)
+      setSyncMsg(`Exported ${j.uploaded?.length || 0} file(s) to Drive/${sub}`)
+    } catch (e) { setError(e.message) }
+    setSyncing(null)
+  }
+
+  async function driveToCanva(file) {
+    if (!confirm(`Upload "${file.name}" to Canva as an asset?`)) return
+    setSyncing(file.id); setSyncMsg(null); setError(null)
+    const { data: sess } = await supabase.auth.getSession()
+    const token = sess?.session?.access_token
+    try {
+      const r = await fetch('/api/marketing/drive/drive-to-canva', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ file_id: file.id }),
+      })
+      const j = await r.json()
+      if (!r.ok) throw new Error(j.error)
+      setSyncMsg(`Uploaded "${file.name}" to Canva assets`)
+    } catch (e) { setError(e.message) }
+    setSyncing(null)
+  }
+
   return (
     <section className="marketing-panel mkt-brand">
       <header className="marketing-panel__header">
@@ -126,6 +175,7 @@ export default function MarketingBrand() {
       </div>
 
       {error && <div className="mkt-agents__error">{error}</div>}
+      {syncMsg && <div className="mkt-dash__sync-msg">{syncMsg}</div>}
 
       {source === 'drive' && !driveConnected && (
         <div className="marketing-panel__placeholder">
@@ -164,21 +214,28 @@ export default function MarketingBrand() {
                       <div className="mkt-brand__name">{f.name}</div>
                     </button>
                   ) : (
-                    <a className="mkt-brand__file" href={f.webViewLink} target="_blank" rel="noreferrer">
-                      <div className="mkt-brand__thumb">
-                        {isImage(f.mimeType) && f.thumbnailLink ? (
-                          <img src={f.thumbnailLink} alt={f.name} loading="lazy" />
-                        ) : isVideo(f.mimeType) ? (
-                          <div className="mkt-brand__icon">▶</div>
-                        ) : f.iconLink ? (
-                          <img src={f.iconLink} alt="" />
-                        ) : (
-                          <div className="mkt-brand__icon">📄</div>
-                        )}
-                      </div>
-                      <div className="mkt-brand__name" title={f.name}>{f.name}</div>
-                      <div className="mkt-brand__meta">{fmtBytes(f.size)}</div>
-                    </a>
+                    <div className="mkt-brand__file">
+                      <a href={f.webViewLink} target="_blank" rel="noreferrer" style={{ display: 'contents', color: 'inherit' }}>
+                        <div className="mkt-brand__thumb">
+                          {isImage(f.mimeType) && f.thumbnailLink ? (
+                            <img src={f.thumbnailLink} alt={f.name} loading="lazy" referrerPolicy="no-referrer" />
+                          ) : isVideo(f.mimeType) ? (
+                            <div className="mkt-brand__icon">▶</div>
+                          ) : f.iconLink ? (
+                            <img src={f.iconLink} alt="" />
+                          ) : (
+                            <div className="mkt-brand__icon">📄</div>
+                          )}
+                        </div>
+                        <div className="mkt-brand__name" title={f.name}>{f.name}</div>
+                        <div className="mkt-brand__meta">{fmtBytes(f.size)}</div>
+                      </a>
+                      {canvaConnected && !isFolder(f.mimeType) && (
+                        <button className="mkt-agents__btn" onClick={() => driveToCanva(f)} disabled={syncing === f.id}>
+                          {syncing === f.id ? '…' : '→ Canva'}
+                        </button>
+                      )}
+                    </div>
                   )}
                 </article>
               ))}
@@ -214,22 +271,23 @@ export default function MarketingBrand() {
               {canvaItems.map(d => {
                 const thumb = d.thumbnail?.url || d.thumbnail_url || d.urls?.view_url
                 return (
-                  <a key={d.id} className="mkt-brand__file" href={d.urls?.edit_url || d.url} target="_blank" rel="noreferrer">
-                    <div className="mkt-brand__thumb">
-                      {thumb ? (
-                        <img
-                          src={thumb}
-                          alt={d.title || ''}
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => { e.currentTarget.style.display = 'none' }}
-                        />
-                      ) : (
-                        <div className="mkt-brand__icon">🎨</div>
-                      )}
-                    </div>
-                    <div className="mkt-brand__name" title={d.title}>{d.title || d.id}</div>
-                  </a>
+                  <div key={d.id} className="mkt-brand__file">
+                    <a href={d.urls?.edit_url || d.url} target="_blank" rel="noreferrer" style={{ display: 'contents', color: 'inherit' }}>
+                      <div className="mkt-brand__thumb">
+                        {thumb ? (
+                          <img src={thumb} alt={d.title || ''} loading="lazy" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                        ) : (
+                          <div className="mkt-brand__icon">🎨</div>
+                        )}
+                      </div>
+                      <div className="mkt-brand__name" title={d.title}>{d.title || d.id}</div>
+                    </a>
+                    {driveConnected && (
+                      <button className="mkt-agents__btn" onClick={() => canvaToDrive(d)} disabled={syncing === d.id}>
+                        {syncing === d.id ? '…' : '→ Drive'}
+                      </button>
+                    )}
+                  </div>
                 )
               })}
             </div>

@@ -21,7 +21,20 @@ Generate 10 inspiration cards. Mix competitor angles, current B2B AI marketing t
   }
 }
 
-export function conceptsPrompt({ intake, inspiration }) {
+function brandBlurb(brand_context) {
+  if (!brand_context || (!brand_context.canva?.templates?.length && !brand_context.drive?.recent_campaigns?.length)) return ''
+  const t = brand_context.canva?.templates || []
+  const r = brand_context.drive?.recent_campaigns || []
+  return `
+
+## AltroAI brand context (must respect)
+- Brand voice: premium, direct, technical-credible. No fluff, no hype, no exclamation marks unless ironic.
+- Available brand templates (use these as visual reference): ${t.map(x => x.title).join(', ') || 'none'}
+- Recent campaign archive: ${r.map(x => x.name).join(', ') || 'none'}
+All visual recommendations MUST be achievable with the listed brand templates.`
+}
+
+export function conceptsPrompt({ intake, inspiration, brand_context }) {
   const fav = (inspiration?.cards || []).filter(c => c.starred)
   return {
     system: `You are a senior strategist building campaign concepts for Altro AI.
@@ -37,12 +50,13 @@ Produce exactly 3 distinct concepts.`,
 
 Starred inspiration cards (CMO favorites):
 ${JSON.stringify(fav, null, 2)}
+${brandBlurb(brand_context)}
 
 Generate 3 distinct strategic concepts. Each must have a different angle.`,
   }
 }
 
-export function copyPrompt({ intake, chosenConcept, channels }) {
+export function copyPrompt({ intake, chosenConcept, channels, brand_context }) {
   return {
     system: `You are a senior performance copywriter for Altro AI.
 Voice: premium, direct, technical-credible. No fluff, no hype.
@@ -52,6 +66,7 @@ Per channel: 3 variants.`,
     user: `Concept: ${JSON.stringify(chosenConcept, null, 2)}
 Audience: ${intake?.audience}
 Channels: ${channels.join(', ')}
+${brandBlurb(brand_context)}
 
 Per channel (${channels.join(', ')}), produce 3 copy variants matching that channel's native format.
 - meta: punchy, hook-first, ≤90 words body

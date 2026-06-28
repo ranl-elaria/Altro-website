@@ -10,6 +10,7 @@ import { createApollo } from '../../../src/lib/marketing/apollo.js'
 import { computeFunnel } from '../../../src/lib/marketing/funnel.js'
 import { createCanva } from '../../../src/lib/marketing/canva.js'
 import { getCanvaAccessToken } from '../../../src/lib/marketing/canva-token.js'
+import { runCampaignStep, tryParseJson } from '../../../src/lib/marketing/campaign-runner.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -66,9 +67,16 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true })
   }
 
+  // Vercel cron bypass for snapshot-all
+  const isCron = !!req.headers['x-vercel-cron']
+  const allowCron = isCron && action === 'competitors-snapshot-all'
+
   // ── All other actions need auth ──
-  const user = await authCheck(req)
-  if (!user) return res.status(401).json({ error: 'unauthorized' })
+  let user = null
+  if (!allowCron) {
+    user = await authCheck(req)
+    if (!user) return res.status(401).json({ error: 'unauthorized' })
+  }
 
   if (action === 'funnel-stats') {
     if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
@@ -161,6 +169,95 @@ export default async function handler(req, res) {
       }).eq('id', 1)
       return res.status(500).json({ error: String(err?.message || err) })
     }
+  }
+
+  // ── COMPETITORS-DISCOVER ──────────────────────────
+  // LLM-generates a competitor list from a seed (industry, ICP).
+  if (action === 'competitors-discover') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    let body = req.body
+    if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+    const seed = body?.seed || 'Israeli AI freelancing agency, B2B automations + web apps for 10-200 person ops teams'
+
+    try {
+      const r = await runCampaignStep({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        system: `You map competitor landscapes. Return ONLY valid JSON. No prose.
+Schema: { "competitors": [{ "name": "string", "domain": "string", "industry": "string", "region": "string", "size": "small|mid|large", "why_competitor": "string" }] }
+Produce 10-15 competitors. Mix direct + adjacent. Use real, verifiable companies.`,
+        user: `Seed: ${seed}\n\nReturn JSON only.`,
+      })
+      const parsed = tryParseJson(r.text)
+      if (!parsed?.competitors) return res.status(502).json({ error: 'ai_invalid_json', text: r.text })
+
+      const rows = parsed.competitors.map(c => ({
+        name: c.name, domain: c.domain,
+        source: 'auto',
+        metadata: { industry: c.industry, region: c.region, size: c.size, why: c.why_competitor },
+      }))
+      for (const row of rows) {
+        await supabase.from('marketing_competitors')
+          .upsert(row, { onConflict: 'domain', ignoreDuplicates: false })
+      }
+      return res.status(200).json({ ok: true, discovered: rows.length, cost_usd: r.cost_usd })
+    } catch (err) { return res.status(500).json({ error: String(err?.message || err) }) }
+  }
+
+  // ── COMPETITORS-LIST ──────────────────────────────
+  if (action === 'competitors-list') {
+    if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
+    const { data: comps } = await supabase.from('marketing_competitors')
+      .select('*').eq('active', true).order('discovered_at', { ascending: false })
+    const ids = (comps || []).map(c => c.id)
+    let snapshots = []
+    if (ids.length) {
+      const { data: snaps } = await supabase.from('marketing_competitor_snapshots')
+        .select('id, competitor_id, snapshot_type, captured_at, summary, asset_urls')
+        .in('competitor_id', ids)
+        .order('captured_at', { ascending: false })
+        .limit(500)
+      snapshots = snaps || []
+    }
+    return res.status(200).json({ competitors: comps || [], snapshots })
+  }
+
+  // ── COMPETITORS-SNAPSHOT-ALL (called by cron) ─────
+  if (action === 'competitors-snapshot-all') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    const { data: comps } = await supabase.from('marketing_competitors').select('*').eq('active', true)
+    let captured = 0
+    for (const c of (comps || [])) {
+      try {
+        // Lightweight website snapshot: fetch homepage, store text excerpt
+        const r = await fetch(`https://${c.domain.replace(/^https?:\/\//, '')}`, {
+          headers: { 'User-Agent': 'AltroAI-MarketingOS/1.0' },
+        })
+        const html = await r.text()
+        const text = html
+          .replace(/<script[\s\S]*?<\/script>/gi, '')
+          .replace(/<style[\s\S]*?<\/style>/gi, '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 4000)
+        const titleM = html.match(/<title>([^<]+)<\/title>/i)
+        await supabase.from('marketing_competitor_snapshots').insert({
+          competitor_id: c.id,
+          snapshot_type: 'website',
+          data: { title: titleM?.[1] || null, excerpt: text, http_status: r.status },
+          summary: text.slice(0, 500),
+        })
+        captured++
+      } catch (e) {
+        await supabase.from('marketing_competitor_snapshots').insert({
+          competitor_id: c.id,
+          snapshot_type: 'website',
+          data: { error: String(e?.message || e) },
+          summary: `Failed: ${e?.message || e}`,
+        })
+      }
+    }
+    return res.status(200).json({ ok: true, captured })
   }
 
   return res.status(404).json({ error: 'unknown_action' })

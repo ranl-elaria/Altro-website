@@ -4,6 +4,30 @@ import { createClient } from '@supabase/supabase-js'
 import { createDrive, ensureBrandTree } from '../../../src/lib/marketing/drive.js'
 import { getGoogleAccessToken } from '../../../src/lib/marketing/google-token.js'
 import { loadTokens } from '../../../src/lib/marketing/oauth-store.js'
+import { createCanva } from '../../../src/lib/marketing/canva.js'
+import { getCanvaAccessToken } from '../../../src/lib/marketing/canva-token.js'
+
+async function pollExport(canva, exportId, { tries = 20, delay = 1500 } = {}) {
+  for (let i = 0; i < tries; i++) {
+    const j = await canva.getExportJob(exportId)
+    const status = j.job?.status || j.status
+    if (status === 'success') return j
+    if (status === 'failed') throw new Error(`Canva export failed: ${JSON.stringify(j)}`)
+    await new Promise(r => setTimeout(r, delay))
+  }
+  throw new Error('Canva export timed out')
+}
+
+async function pollAssetUpload(canva, jobId, { tries = 20, delay = 1500 } = {}) {
+  for (let i = 0; i < tries; i++) {
+    const j = await canva.getAssetUploadJob(jobId)
+    const status = j.job?.status || j.status
+    if (status === 'success') return j
+    if (status === 'failed') throw new Error(`Canva asset upload failed: ${JSON.stringify(j)}`)
+    await new Promise(r => setTimeout(r, delay))
+  }
+  throw new Error('Canva asset upload timed out')
+}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -39,6 +63,65 @@ export default async function handler(req, res) {
       const drive = createDrive({ access_token: accessToken })
       const out = await drive.listChildren(folderId, { pageSize: 200 })
       return res.status(200).json({ folderId, files: out.files || [], nextPageToken: out.nextPageToken || null })
+    }
+
+    // Export a Canva design → upload to a Drive folder.
+    // POST body: { design_id, folder_subkey?: '04_Ads', folder_id?, format?: { type: 'png' }, name? }
+    if (action === 'canva-to-drive') {
+      if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+      let body = req.body
+      if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+      const { design_id, folder_id, folder_subkey, format, name } = body || {}
+      if (!design_id) return res.status(400).json({ error: 'missing_design_id' })
+
+      const integ = await loadTokens(supabase, 'google')
+      const subs = integ?.metadata?.subfolders || {}
+      const targetFolder = folder_id || (folder_subkey && subs[folder_subkey]) || integ?.metadata?.marketing_folder_id
+      if (!targetFolder) return res.status(409).json({ error: 'no_target_folder' })
+
+      const canvaToken = await getCanvaAccessToken(supabase)
+      const canva = createCanva({ access_token: canvaToken })
+
+      const exp = await canva.createExport({ design_id, format: format || { type: 'png' } })
+      const expId = exp.job?.id || exp.id
+      const done = await pollExport(canva, expId)
+      const urls = done.job?.urls || done.urls || []
+      if (!urls.length) return res.status(502).json({ error: 'no_export_urls', payload: done })
+
+      const drive = createDrive({ access_token: accessToken })
+      const uploaded = []
+      for (const url of urls) {
+        const r = await fetch(url)
+        if (!r.ok) throw new Error(`Fetch export ${r.status}`)
+        const bytes = new Uint8Array(await r.arrayBuffer())
+        const ext = (format?.type || 'png').toLowerCase()
+        const fileName = `${name || design_id}.${ext}`
+        const mime = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`
+        const f = await drive.uploadFile({ name: fileName, bytes, mime_type: mime, parentId: targetFolder })
+        uploaded.push(f)
+      }
+      return res.status(200).json({ ok: true, uploaded })
+    }
+
+    // Upload a Drive file → Canva as an asset.
+    // POST body: { file_id }
+    if (action === 'drive-to-canva') {
+      if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+      let body = req.body
+      if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+      const { file_id } = body || {}
+      if (!file_id) return res.status(400).json({ error: 'missing_file_id' })
+
+      const drive = createDrive({ access_token: accessToken })
+      const meta = await drive.getFileMeta(file_id)
+      const dl = await drive.downloadFile(file_id)
+
+      const canvaToken = await getCanvaAccessToken(supabase)
+      const canva = createCanva({ access_token: canvaToken })
+      const job = await canva.uploadAsset({ name: meta.name, bytes: dl.bytes, mime_type: dl.mime_type || meta.mimeType })
+      const jobId = job.job?.id || job.id
+      const done = await pollAssetUpload(canva, jobId)
+      return res.status(200).json({ ok: true, asset: done.job?.asset || done.asset || done })
     }
 
     if (action === 'ensure-tree') {
