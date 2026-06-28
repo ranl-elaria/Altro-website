@@ -456,24 +456,31 @@ function StepVisuals({ c, patch, busy }) {
 
   async function generateAiForChannel(channel, opts) {
     setSpawning(channel); setErr(null)
-    try {
-      const chVariants = c.copy_variants?.variants?.[channel] || []
-      const chosenCopy = chVariants.find(v => v.chosen) || chVariants[0]
-      const j = await authedFetch(`/api/marketing/campaigns/visuals-generate-ai?id=${c.id}`, {
+    const N = opts.count || 4
+    const chVariants = c.copy_variants?.variants?.[channel] || []
+    const chosenCopy = chVariants.find(v => v.chosen) || chVariants[0]
+
+    // Fire N parallel single-image calls (each ~30-45s, but parallel = total ~45s).
+    const calls = Array.from({ length: N }, (_, i) =>
+      authedFetch(`/api/marketing/campaigns/visuals-generate-ai?id=${c.id}`, {
         method: 'POST',
         body: JSON.stringify({
-          channel,
-          count: opts.count || 4,
+          channel, variant_idx: i, total: N,
           provider: opts.provider || 'openai',
           size_key: opts.size_key,
           chosen_copy_id: chosenCopy?.id,
           use_brand: !!opts.use_brand,
           brief: opts.brief || null,
         }),
-      })
-      if (j.errors?.length) setErr(`${channel}: ${j.spawned} ok, errors: ${j.errors.map(e => e.error).join('; ')}`)
-      await patch({})
-    } catch (e) { setErr(e.message) }
+      }).catch(e => ({ error: e.message, idx: i }))
+    )
+
+    const results = await Promise.all(calls)
+    const failed = results.filter(r => r.error)
+    if (failed.length) {
+      setErr(`${channel}: ${N - failed.length}/${N} succeeded. Errors: ${failed.map(f => f.error).join(' | ')}`)
+    }
+    await patch({})
     setSpawning(null)
   }
 

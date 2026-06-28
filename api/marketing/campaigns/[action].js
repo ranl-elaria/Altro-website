@@ -310,12 +310,11 @@ export default async function handler(req, res) {
   }
 
   // ── VISUALS-GENERATE-AI ───────────────────────────
-  // POST body: { channel, count?: 4, provider?: 'openai'|'ideogram',
-  //   size_key?: 'meta_post'|'linkedin_post'|..., chosen_copy_id?,
-  //   use_brand?: false, brief?: 'optional creative direction' }
+  // POST body: { channel, variant_idx?: 0, provider?: 'openai'|'ideogram',
+  //   size_key?, chosen_copy_id?, use_brand?: false, brief?, total?: 4 }
   //
-  // For ONE channel, generates N images via external AI, pushes each to Drive
-  // 07_Campaigns/{campaign_slug}/, attaches Drive webViewLink + thumbnailLink to campaign.visuals.
+  // Generates ONE image per call (avoid Vercel 60s timeout when stacking).
+  // UI fires N parallel calls (one per variant_idx) to produce a batch.
   if (action === 'visuals-generate-ai') {
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
     const id = req.query.id
@@ -323,11 +322,10 @@ export default async function handler(req, res) {
     let body = req.body
     if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
     const {
-      channel, count = 4, provider = 'openai',
+      channel, variant_idx = 0, total = 1, provider = 'openai',
       size_key, chosen_copy_id, use_brand = false, brief,
     } = body || {}
     if (!channel) return res.status(400).json({ error: 'missing_channel' })
-    const N = Math.max(1, Math.min(6, count))
     const sizeKey = size_key || defaultSizeForChannel(channel)
     const sizes = listSizes()
     const size = sizes[sizeKey] || sizes.meta_post
@@ -346,61 +344,61 @@ export default async function handler(req, res) {
     if (!campaignsRoot) return res.status(409).json({ error: 'drive_07_campaigns_missing', hint: 'Init Drive folder tree first.' })
     const campaignFolder = await drive.ensureFolder(c.slug, campaignsRoot)
 
-    const spawned = []
-    const errors = []
-    let totalCost = 0
+    try {
+      const prompt = buildImagePrompt({
+        channel, format_label: size.label, copy,
+        brief: brief ? `${brief} (variant ${variant_idx + 1} of ${total})` : `Generate variant ${variant_idx + 1} of ${total}, distinct composition.`,
+        brand_context: use_brand ? c.brand_context : null,
+      })
+      const gen = await generateImage({ provider, prompt, w: size.w, h: size.h })
 
-    for (let i = 0; i < N; i++) {
-      try {
-        const prompt = buildImagePrompt({
-          channel, format_label: size.label, copy,
-          brief: brief ? `${brief} (variant ${i + 1} of ${N})` : `Generate variant ${i + 1} of ${N}, distinct composition.`,
-          brand_context: use_brand ? c.brand_context : null,
-        })
-        const gen = await generateImage({ provider, prompt, w: size.w, h: size.h })
-        totalCost += gen.cost_usd || 0
+      const fileName = `${c.slug}_${channel}_v${variant_idx + 1}_${Date.now()}.png`
+      const upload = await drive.uploadFile({
+        name: fileName, bytes: gen.bytes, mime_type: gen.mime_type, parentId: campaignFolder.id,
+      })
 
-        const fileName = `${c.slug}_${channel}_v${spawned.length + 1}.png`
-        const upload = await drive.uploadFile({
-          name: fileName, bytes: gen.bytes, mime_type: gen.mime_type, parentId: campaignFolder.id,
-        })
-
-        spawned.push({
-          id: upload.id,
-          kind: 'ai-image',
-          provider: gen.provider, model: gen.model,
-          channel, variant_id: copy?.id || null,
-          title: fileName,
-          thumbnail: upload.thumbnailLink || null,
-          edit_url: upload.webViewLink || null,
-          drive_file_id: upload.id,
-          size: { w: size.w, h: size.h, key: sizeKey },
-          prompt, cost_usd: gen.cost_usd,
-          chosen: false, created_at: new Date().toISOString(),
-        })
-      } catch (e) {
-        errors.push({ i, error: String(e?.message || e) })
+      const visual = {
+        id: upload.id,
+        kind: 'ai-image',
+        provider: gen.provider, model: gen.model,
+        channel, variant_id: copy?.id || null,
+        title: fileName,
+        thumbnail: upload.thumbnailLink || null,
+        edit_url: upload.webViewLink || null,
+        drive_file_id: upload.id,
+        size: { w: size.w, h: size.h, key: sizeKey },
+        prompt, cost_usd: gen.cost_usd,
+        chosen: false, created_at: new Date().toISOString(),
       }
+
+      // Append to campaign.visuals
+      const { data: cur } = await supabase.from('marketing_campaigns').select('visuals').eq('id', id).single()
+      const visuals = Array.isArray(cur.visuals) ? cur.visuals : []
+      visuals.push(visual)
+      await supabase.from('marketing_campaigns').update({ visuals }).eq('id', id)
+
+      await supabase.from('marketing_runs').insert({
+        user_email: user.email,
+        agent_slug: `visuals-ai-${provider}`,
+        status: 'done',
+        inputs: { campaign_id: id, channel, variant_idx, provider, size_key: sizeKey, use_brand, brief, prompt_preview: prompt.slice(0, 200) },
+        outputs: { drive_file_id: upload.id, web_view_link: upload.webViewLink },
+        cost_usd: gen.cost_usd, duration_ms: null,
+        finished_at: new Date().toISOString(), campaign_id: id,
+      })
+
+      return res.status(200).json({ ok: true, visual })
+    } catch (e) {
+      const errMsg = String(e?.message || e)
+      await supabase.from('marketing_runs').insert({
+        user_email: user.email,
+        agent_slug: `visuals-ai-${provider}`,
+        status: 'error', error: errMsg,
+        inputs: { campaign_id: id, channel, variant_idx, provider, size_key: sizeKey, use_brand },
+        finished_at: new Date().toISOString(), campaign_id: id,
+      })
+      return res.status(500).json({ error: errMsg })
     }
-
-    const visuals = Array.isArray(c.visuals) ? c.visuals : []
-    visuals.push(...spawned)
-    await supabase.from('marketing_campaigns').update({ visuals }).eq('id', id)
-
-    // Audit
-    await supabase.from('marketing_runs').insert({
-      user_email: user.email,
-      agent_slug: `visuals-ai-${provider}`,
-      status: errors.length === N ? 'error' : 'done',
-      inputs: { campaign_id: id, channel, count: N, provider, size_key: sizeKey, use_brand },
-      outputs: { spawned: spawned.length, errors },
-      cost_usd: totalCost,
-      duration_ms: null,
-      finished_at: new Date().toISOString(),
-      campaign_id: id,
-    })
-
-    return res.status(200).json({ ok: true, spawned: spawned.length, errors, total_cost_usd: totalCost, drive_folder: campaignFolder })
   }
 
   // ── VISUALS-SPAWN-FOR-CHANNEL ─────────────────────
