@@ -78,8 +78,8 @@ export default function MarketingBrand() {
     const { data: sess } = await supabase.auth.getSession()
     const token = sess?.session?.access_token
     try {
-      const q = canvaQuery ? `?query=${encodeURIComponent(canvaQuery)}` : ''
-      const r = await fetch(`/api/marketing/canva/list${q}`, {
+      const q = canvaQuery ? `&query=${encodeURIComponent(canvaQuery)}` : ''
+      const r = await fetch(`/api/marketing/services/canva-list?_=1${q}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const j = await r.json()
