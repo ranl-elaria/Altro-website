@@ -901,3 +901,11 @@
   font-size: 11px; color: rgba(237,234,227,0.8); text-align: center;
 }
 .mkt-post__concept strong { color: #edeae3; }
+
+.mkt-post__advanced {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 6px; padding: 8px 12px; margin-top: 8px;
+}
+.mkt-post__advanced summary { cursor: pointer; font-size: 11px; color: rgba(237,234,227,0.55); }
+.mkt-post__advanced .mkt-post__config { margin-top: 8px; }
