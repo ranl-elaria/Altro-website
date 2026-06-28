@@ -322,8 +322,9 @@ export default async function handler(req, res) {
     let body = req.body
     if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
     const {
-      channel, variant_idx = 0, total = 1, provider = 'openai',
+      channel, variant_idx = 0, total = 1, provider: providerReq = 'auto',
       size_key, chosen_copy_id, use_brand = false, brief,
+      preset_id, subjects = [], include_headline_in_image = false,
     } = body || {}
     if (!channel) return res.status(400).json({ error: 'missing_channel' })
     const sizeKey = size_key || defaultSizeForChannel(channel)
@@ -345,12 +346,17 @@ export default async function handler(req, res) {
     const campaignFolder = await drive.ensureFolder(c.slug, campaignsRoot)
 
     try {
-      const prompt = buildImagePrompt({
+      const built = buildImagePrompt({
         channel, format_label: size.label, copy,
-        brief: brief ? `${brief} (variant ${variant_idx + 1} of ${total})` : `Generate variant ${variant_idx + 1} of ${total}, distinct composition.`,
+        brief: brief ? `${brief} (variant ${variant_idx + 1} of ${total})` : `Variant ${variant_idx + 1} of ${total}, distinct composition.`,
         brand_context: use_brand ? c.brand_context : null,
+        preset_id, subjects, include_headline_in_image,
       })
-      const gen = await generateImage({ provider, prompt, w: size.w, h: size.h })
+      // Auto-pick provider: text-in-image → Ideogram (if key), else OpenAI.
+      const provider = providerReq === 'auto'
+        ? (built.wants_text && process.env.IDEOGRAM_API_KEY ? 'ideogram' : 'openai')
+        : providerReq
+      const gen = await generateImage({ provider, prompt: built.prompt, w: size.w, h: size.h })
 
       const fileName = `${c.slug}_${channel}_v${variant_idx + 1}_${Date.now()}.png`
       const upload = await drive.uploadFile({
@@ -369,7 +375,8 @@ export default async function handler(req, res) {
         edit_url: upload.webViewLink || null,
         drive_file_id: upload.id,
         size: { w: size.w, h: size.h, key: sizeKey },
-        prompt, cost_usd: gen.cost_usd,
+        prompt: built.prompt, preset_id: preset_id || null,
+        cost_usd: gen.cost_usd,
         chosen: false, created_at: new Date().toISOString(),
       }
 
@@ -383,7 +390,7 @@ export default async function handler(req, res) {
         user_email: user.email,
         agent_slug: `visuals-ai-${provider}`,
         status: 'done',
-        inputs: { campaign_id: id, channel, variant_idx, provider, size_key: sizeKey, use_brand, brief, prompt_preview: prompt.slice(0, 200) },
+        inputs: { campaign_id: id, channel, variant_idx, provider, size_key: sizeKey, use_brand, brief, preset_id, prompt_preview: built.prompt.slice(0, 200) },
         outputs: { drive_file_id: upload.id, web_view_link: upload.webViewLink },
         cost_usd: gen.cost_usd, duration_ms: null,
         finished_at: new Date().toISOString(), campaign_id: id,
