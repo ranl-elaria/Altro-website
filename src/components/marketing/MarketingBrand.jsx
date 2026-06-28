@@ -211,16 +211,27 @@ export default function MarketingBrand() {
             <div className="marketing-panel__placeholder">No designs.</div>
           ) : (
             <div className="mkt-brand__grid">
-              {canvaItems.map(d => (
-                <a key={d.id} className="mkt-brand__file" href={d.urls?.edit_url || d.url} target="_blank" rel="noreferrer">
-                  <div className="mkt-brand__thumb">
-                    {d.thumbnail?.url
-                      ? <img src={d.thumbnail.url} alt={d.title} loading="lazy" />
-                      : <div className="mkt-brand__icon">🎨</div>}
-                  </div>
-                  <div className="mkt-brand__name" title={d.title}>{d.title || d.id}</div>
-                </a>
-              ))}
+              {canvaItems.map(d => {
+                const thumb = d.thumbnail?.url || d.thumbnail_url || d.urls?.view_url
+                return (
+                  <a key={d.id} className="mkt-brand__file" href={d.urls?.edit_url || d.url} target="_blank" rel="noreferrer">
+                    <div className="mkt-brand__thumb">
+                      {thumb ? (
+                        <img
+                          src={thumb}
+                          alt={d.title || ''}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => { e.currentTarget.style.display = 'none' }}
+                        />
+                      ) : (
+                        <div className="mkt-brand__icon">🎨</div>
+                      )}
+                    </div>
+                    <div className="mkt-brand__name" title={d.title}>{d.title || d.id}</div>
+                  </a>
+                )
+              })}
             </div>
           )}
         </>
