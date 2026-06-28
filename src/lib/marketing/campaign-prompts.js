@@ -1,13 +1,18 @@
 // System + user prompt builders for each campaign wizard step.
 // Each step returns JSON for the UI to render + save into marketing_campaigns.
 
+// Simplified state machine. BRAND_PULL auto-runs on create. STAGE merged into PUBLISH_READY. POLISH+TIMING merged to REVIEW.
 export const STEPS = [
-  'INTAKE', 'INSPIRE', 'BRAND_PULL', 'CONCEPTS', 'COPY',
-  'VISUALS', 'POLISH', 'TIMING', 'STAGE', 'PUBLISH_READY',
-  'PUBLISHED', 'ARCHIVE', 'MEASURE',
+  'INTAKE', 'INSPIRE', 'CONCEPTS', 'COPY', 'VISUALS',
+  'REVIEW', 'PUBLISH_READY', 'PUBLISHED', 'ARCHIVE', 'MEASURE',
 ]
 
-export function inspirePrompt({ goal, audience, channels }) {
+function notesBlurb(note) {
+  if (!note) return ''
+  return `\n\n## CMO refinement notes (must address)\n${String(note).trim()}`
+}
+
+export function inspirePrompt({ goal, audience, channels, note }) {
   return {
     system: `You are a marketing inspiration analyst for Altro AI (an Israeli AI freelancing agency, B2B, premium positioning).
 Return ONLY valid JSON. No prose, no markdown fences.
@@ -17,7 +22,7 @@ Produce exactly 10 cards.`,
 Audience: ${audience || 'unspecified'}
 Channels: ${(channels || []).join(', ')}
 
-Generate 10 inspiration cards. Mix competitor angles, current B2B AI marketing trends, and creative references. Be specific and current (2026).`,
+Generate 10 inspiration cards. Mix competitor angles, current B2B AI marketing trends, and creative references. Be specific and current (2026).${notesBlurb(note)}`,
   }
 }
 
@@ -34,7 +39,7 @@ function brandBlurb(brand_context) {
 All visual recommendations MUST be achievable with the listed brand templates.`
 }
 
-export function conceptsPrompt({ intake, inspiration, brand_context }) {
+export function conceptsPrompt({ intake, inspiration, brand_context, note }) {
   const fav = (inspiration?.cards || []).filter(c => c.starred)
   return {
     system: `You are a senior strategist building campaign concepts for Altro AI.
@@ -50,13 +55,13 @@ Produce exactly 3 distinct concepts.`,
 
 Starred inspiration cards (CMO favorites):
 ${JSON.stringify(fav, null, 2)}
-${brandBlurb(brand_context)}
+${brandBlurb(brand_context)}${notesBlurb(note)}
 
 Generate 3 distinct strategic concepts. Each must have a different angle.`,
   }
 }
 
-export function copyPrompt({ intake, chosenConcept, channels, brand_context }) {
+export function copyPrompt({ intake, chosenConcept, channels, brand_context, note }) {
   return {
     system: `You are a senior performance copywriter for Altro AI.
 Voice: premium, direct, technical-credible. No fluff, no hype.
@@ -66,7 +71,7 @@ Per channel: 3 variants.`,
     user: `Concept: ${JSON.stringify(chosenConcept, null, 2)}
 Audience: ${intake?.audience}
 Channels: ${channels.join(', ')}
-${brandBlurb(brand_context)}
+${brandBlurb(brand_context)}${notesBlurb(note)}
 
 Per channel (${channels.join(', ')}), produce 3 copy variants matching that channel's native format.
 - meta: punchy, hook-first, ≤90 words body
@@ -74,6 +79,26 @@ Per channel (${channels.join(', ')}), produce 3 copy variants matching that chan
 - email: subject + body. body 150-220 words. clear single CTA
 - x: <280 chars
 Respect channel norms.`,
+  }
+}
+
+export function reviewPrompt({ intake, chosenConcept, chosenVariants, chosenVisuals, channels, note }) {
+  return {
+    system: `You are a senior creative director + paid-media strategist. Critique the campaign AND recommend timing.
+Return ONLY valid JSON. No prose.
+Schema: {
+  "notes": [{ "area": "string", "issue": "string", "suggestion": "string", "severity": "low|med|high" }],
+  "timing": { "<channel>": [{ "slot": "string (day + time + timezone)", "reason": "string", "score": 1-10 }] }
+}
+Max 8 notes. Per channel: top 3 slots.`,
+    user: `Concept: ${JSON.stringify(chosenConcept, null, 2)}
+Copy: ${JSON.stringify(chosenVariants, null, 2)}
+Visuals: ${JSON.stringify(chosenVisuals?.map(v => ({ id: v.id, title: v.title })), null, 2)}
+Audience: ${intake?.audience}
+Channels: ${channels.join(', ')}
+Audience timezone bias: Israel + Western Europe + US East Coast (B2B AI buyers).${notesBlurb(note)}
+
+Critique the integrated campaign. Recommend top 3 publishing slots per channel.`,
   }
 }
 

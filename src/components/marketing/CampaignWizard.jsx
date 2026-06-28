@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
+// Simplified state machine (10 → 7 visible steps + Archive + Measure).
+// BRAND_PULL auto-runs on create. STAGE merged into PUBLISH_READY. POLISH+TIMING merged to REVIEW.
 const STEPS = [
-  { id: 'INTAKE',       label: '0. Intake' },
-  { id: 'INSPIRE',      label: '1. Inspire' },
-  { id: 'BRAND_PULL',   label: '2. Brand pull' },
+  { id: 'INTAKE',       label: '1. Intake' },
+  { id: 'INSPIRE',      label: '2. Inspire' },
   { id: 'CONCEPTS',     label: '3. Concepts' },
   { id: 'COPY',         label: '4. Copy' },
   { id: 'VISUALS',      label: '5. Visuals' },
-  { id: 'POLISH',       label: '6. Polish' },
-  { id: 'TIMING',       label: '6.5 Timing' },
-  { id: 'STAGE',        label: '7. Stage' },
-  { id: 'PUBLISH_READY',label: '7b. Publish' },
+  { id: 'REVIEW',       label: '6. Review' },
+  { id: 'PUBLISH_READY',label: '7. Publish' },
   { id: 'ARCHIVE',      label: '8. Archive' },
   { id: 'MEASURE',      label: '9. Measure' },
 ]
@@ -77,6 +76,14 @@ export default function CampaignWizard({ id, onClose }) {
     setBusy(null)
   }
 
+  function setStepNote(step, val) {
+    const next = { ...(c.step_notes || {}), [step]: val }
+    setC({ ...c, step_notes: next })
+  }
+  async function saveStepNote(step) {
+    await patch({ step_notes: c.step_notes || {} })
+  }
+
   if (loading) return <div className="marketing-panel__placeholder">Loading campaign…</div>
   if (!c) return <div className="mkt-agents__error">Campaign not found</div>
 
@@ -93,37 +100,148 @@ export default function CampaignWizard({ id, onClose }) {
         </div>
       </header>
 
-      <nav className="mkt-wiz__steps">
-        {STEPS.map(s => (
-          <button
-            key={s.id}
-            className={`mkt-wiz__step${active === s.id ? ' mkt-wiz__step--active' : ''}${c.state === s.id ? ' mkt-wiz__step--current' : ''}`}
-            onClick={() => setActive(s.id)}
-          >{s.label}</button>
-        ))}
-      </nav>
-
       {error && <div className="mkt-agents__error">{error}</div>}
 
-      <div className="mkt-wiz__body">
-        {active === 'INTAKE'      && <StepIntake c={c} patch={patch} busy={busy} />}
-        {active === 'INSPIRE'     && <StepInspire c={c} patch={patch} runStep={runStep} busy={busy} />}
-        {active === 'BRAND_PULL'  && <StepBrandPull c={c} patch={patch} busy={busy} />}
-        {active === 'CONCEPTS'    && <StepConcepts c={c} patch={patch} runStep={runStep} busy={busy} />}
-        {active === 'COPY'        && <StepCopy c={c} patch={patch} runStep={runStep} busy={busy} />}
-        {active === 'VISUALS'     && <StepVisuals c={c} patch={patch} busy={busy} />}
-        {active === 'POLISH'      && <StepPolish c={c} patch={patch} runStep={runStep} busy={busy} />}
-        {active === 'TIMING'      && <StepTiming c={c} patch={patch} runStep={runStep} busy={busy} />}
-        {active === 'STAGE'       && <StepStage c={c} patch={patch} busy={busy} />}
-        {active === 'PUBLISH_READY' && <StepPublish c={c} patch={patch} busy={busy} />}
-        {active === 'ARCHIVE'     && <StepArchive c={c} patch={patch} busy={busy} />}
-        {active === 'MEASURE'     && <StepMeasure c={c} patch={patch} busy={busy} />}
+      <div className="mkt-wiz__layout">
+        {/* Left: campaign canvas — always-visible summary */}
+        <CampaignCanvas c={c} active={active} setActive={setActive} />
+
+        {/* Right: active step workspace */}
+        <div className="mkt-wiz__work">
+          <NotesField step={active} c={c} setStepNote={setStepNote} saveStepNote={saveStepNote} />
+
+          {active === 'INTAKE'        && <StepIntake c={c} patch={patch} busy={busy} />}
+          {active === 'INSPIRE'       && <StepInspire c={c} patch={patch} runStep={runStep} busy={busy} />}
+          {active === 'CONCEPTS'      && <StepConcepts c={c} patch={patch} runStep={runStep} busy={busy} />}
+          {active === 'COPY'          && <StepCopy c={c} patch={patch} runStep={runStep} busy={busy} />}
+          {active === 'VISUALS'       && <StepVisuals c={c} patch={patch} busy={busy} />}
+          {active === 'REVIEW'        && <StepReview c={c} patch={patch} runStep={runStep} busy={busy} />}
+          {active === 'PUBLISH_READY' && <StepPublish c={c} patch={patch} busy={busy} />}
+          {active === 'ARCHIVE'       && <StepArchive c={c} patch={patch} busy={busy} />}
+          {active === 'MEASURE'       && <StepMeasure c={c} />}
+        </div>
       </div>
     </section>
   )
 }
 
-// ── Step 0 ─────────────────────────────────────────────────
+// ── Campaign canvas (left sidebar) ─────────────────────────
+function CampaignCanvas({ c, active, setActive }) {
+  const chosenConcept = (c.concepts?.concepts || []).find(x => x.chosen)
+  const variants = c.copy_variants?.variants || {}
+  const chosenVisuals = (c.visuals || []).filter(v => v.chosen)
+  const timing = c.timing?.timing || {}
+  const notes = c.polish_notes?.notes || []
+
+  return (
+    <aside className="mkt-canvas">
+      <nav className="mkt-canvas__steps">
+        {STEPS.map(s => (
+          <button
+            key={s.id}
+            className={`mkt-canvas__step${active === s.id ? ' mkt-canvas__step--active' : ''}${c.state === s.id ? ' mkt-canvas__step--current' : ''}`}
+            onClick={() => setActive(s.id)}
+          >
+            <span className="mkt-canvas__step-bullet" />
+            <span>{s.label}</span>
+          </button>
+        ))}
+      </nav>
+
+      <div className="mkt-canvas__summary">
+        <h4>Campaign canvas</h4>
+
+        <section>
+          <h5>Brand</h5>
+          <p className="mkt-int__sub">
+            {c.brand_context?.canva?.templates?.length || 0} Canva templates · {c.brand_context?.drive?.recent_campaigns?.length || 0} past campaigns
+          </p>
+        </section>
+
+        {chosenConcept ? (
+          <section>
+            <h5>Concept</h5>
+            <strong>{chosenConcept.name}</strong>
+            <p className="mkt-int__sub">{chosenConcept.hook}</p>
+          </section>
+        ) : <SectionEmpty label="Concept" />}
+
+        {Object.keys(variants).length > 0 ? (
+          <section>
+            <h5>Copy ({Object.keys(variants).length} ch)</h5>
+            {Object.entries(variants).map(([ch, vs]) => {
+              const chosen = vs.find(v => v.chosen)
+              return (
+                <div key={ch} className="mkt-int__sub" style={{ marginTop: 4 }}>
+                  <strong>{ch}:</strong> {chosen ? chosen.hook?.slice(0, 50) : <em>none chosen</em>}
+                </div>
+              )
+            })}
+          </section>
+        ) : <SectionEmpty label="Copy" />}
+
+        {chosenVisuals.length > 0 ? (
+          <section>
+            <h5>Visuals ({chosenVisuals.length})</h5>
+            <div className="mkt-canvas__thumbs">
+              {chosenVisuals.slice(0, 4).map(v => (
+                <div key={v.id} className="mkt-canvas__thumb">
+                  {v.thumbnail ? <img src={v.thumbnail} alt={v.title} loading="lazy" referrerPolicy="no-referrer" /> : <span>🎨</span>}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : <SectionEmpty label="Visuals" />}
+
+        {notes.length > 0 && (
+          <section>
+            <h5>Review notes ({notes.length})</h5>
+            <p className="mkt-int__sub">{notes.filter(n => n.severity === 'high').length} high, {notes.filter(n => n.severity === 'med').length} med</p>
+          </section>
+        )}
+
+        {Object.keys(timing).length > 0 && (
+          <section>
+            <h5>Timing</h5>
+            {Object.entries(timing).slice(0, 3).map(([ch, slots]) => (
+              <div key={ch} className="mkt-int__sub">{ch}: {slots[0]?.slot}</div>
+            ))}
+          </section>
+        )}
+      </div>
+    </aside>
+  )
+}
+
+function SectionEmpty({ label }) {
+  return (
+    <section>
+      <h5>{label}</h5>
+      <p className="mkt-int__sub" style={{ opacity: 0.5 }}>—</p>
+    </section>
+  )
+}
+
+// ── CMO notes field ───────────────────────────────────────
+function NotesField({ step, c, setStepNote, saveStepNote }) {
+  const val = c.step_notes?.[step] || ''
+  if (step === 'PUBLISH_READY' || step === 'ARCHIVE' || step === 'MEASURE' || step === 'INTAKE') return null
+  return (
+    <details className="mkt-wiz__notes-wrap">
+      <summary>📝 CMO refinement notes for this step{val ? ' (set)' : ''}</summary>
+      <textarea
+        className="mkt-agents__input"
+        rows={3}
+        placeholder="Add notes the AI must address on re-run (e.g. 'less corporate, more punchy', 'focus on cost-savings angle')"
+        value={val}
+        onChange={e => setStepNote(step, e.target.value)}
+        onBlur={() => saveStepNote(step)}
+      />
+    </details>
+  )
+}
+
+// ── Step 1 ─────────────────────────────────────────────────
 function StepIntake({ c, patch, busy }) {
   const [audience, setAudience] = useState(c.audience?.text || '')
   return (
@@ -145,7 +263,7 @@ function StepIntake({ c, patch, busy }) {
   )
 }
 
-// ── Step 1 ─────────────────────────────────────────────────
+// ── Step 2 ─────────────────────────────────────────────────
 function StepInspire({ c, patch, runStep, busy }) {
   const cards = c.inspiration?.cards || []
   function toggleStar(id) {
@@ -155,15 +273,15 @@ function StepInspire({ c, patch, runStep, busy }) {
   return (
     <div className="mkt-wiz__panel">
       <h3>Inspire</h3>
-      <p className="mkt-int__sub">Star the 2-4 cards that resonate. Concepts step uses starred only.</p>
+      <p className="mkt-int__sub">Star 2-4 cards that resonate. Concepts step uses starred only.</p>
       <div className="mkt-agents__actions">
         <button className="mkt-agents__btn mkt-agents__btn--primary"
           onClick={() => runStep('INSPIRE')} disabled={busy === 'INSPIRE'}>
-          {busy === 'INSPIRE' ? 'Generating…' : (cards.length ? 'Re-generate cards' : 'Generate 10 cards')}
+          {busy === 'INSPIRE' ? 'Generating…' : (cards.length ? 'Re-generate (uses your notes)' : 'Generate 10 cards')}
         </button>
         {cards.length > 0 && (
-          <button className="mkt-agents__btn" onClick={() => patch({ state: 'BRAND_PULL' })}>
-            Next: Brand pull →
+          <button className="mkt-agents__btn" onClick={() => patch({ state: 'CONCEPTS' })}>
+            Next: Concepts →
           </button>
         )}
       </div>
@@ -181,79 +299,6 @@ function StepInspire({ c, patch, runStep, busy }) {
           </article>
         ))}
       </div>
-    </div>
-  )
-}
-
-// ── Step 2 ─────────────────────────────────────────────────
-function StepBrandPull({ c, patch, busy }) {
-  const [pulling, setPulling] = useState(false)
-  const [pullErr, setPullErr] = useState(null)
-  const bc = c.brand_context || {}
-  const templates = bc.canva?.templates || []
-  const recent = bc.drive?.recent_campaigns || []
-
-  async function doPull() {
-    setPulling(true); setPullErr(null)
-    try {
-      await authedFetch(`/api/marketing/campaigns/brand-pull?id=${c.id}`, { method: 'POST' })
-      await patch({})  // triggers reload
-    } catch (e) { setPullErr(e.message) }
-    setPulling(false)
-  }
-
-  return (
-    <div className="mkt-wiz__panel">
-      <h3>Brand pull</h3>
-      <p className="mkt-int__sub">
-        Pulls Canva brand templates + last 10 Drive campaign folders.
-        {bc.fetched_at && <> Last pulled: {new Date(bc.fetched_at).toLocaleString()}</>}
-      </p>
-      <div className="mkt-agents__actions">
-        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={doPull} disabled={pulling || busy}>
-          {pulling ? 'Pulling…' : (bc.fetched_at ? 'Re-pull' : 'Pull brand context')}
-        </button>
-        {bc.fetched_at && (
-          <button className="mkt-agents__btn" onClick={() => patch({ state: 'CONCEPTS' })} disabled={busy}>
-            Next: Concepts →
-          </button>
-        )}
-      </div>
-      {pullErr && <div className="mkt-agents__error">{pullErr}</div>}
-      {(bc.errors || []).map((err, i) => <div key={i} className="mkt-int__err">⚠ {err}</div>)}
-
-      {templates.length > 0 && (
-        <>
-          <h4>Canva brand templates ({templates.length})</h4>
-          <div className="mkt-brand__grid">
-            {templates.map(t => (
-              <a key={t.id} className="mkt-brand__file" href={t.edit_url} target="_blank" rel="noreferrer">
-                <div className="mkt-brand__thumb">
-                  {t.thumbnail ? <img src={t.thumbnail} alt={t.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
-                </div>
-                <div className="mkt-brand__name">{t.title}</div>
-              </a>
-            ))}
-          </div>
-        </>
-      )}
-
-      {recent.length > 0 && (
-        <>
-          <h4>Recent Drive campaigns ({recent.length})</h4>
-          <ul className="marketing-integrations">
-            {recent.map(r => (
-              <li key={r.id} className="marketing-integrations__row">
-                <div>
-                  <strong>{r.name}</strong>
-                  <div className="mkt-int__sub">{new Date(r.modifiedTime).toLocaleDateString()}</div>
-                </div>
-                <a className="mkt-agents__btn" href={r.webViewLink} target="_blank" rel="noreferrer">Open</a>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
     </div>
   )
 }
@@ -348,7 +393,9 @@ function StepVisuals({ c, patch, busy }) {
   const [available, setAvailable] = useState(null)
   const [loadingList, setLoadingList] = useState(false)
   const [err, setErr] = useState(null)
-  const [spawning, setSpawning] = useState(null)
+  const [batchCount, setBatchCount] = useState(4)
+  const [batchBusy, setBatchBusy] = useState(false)
+  const [tplMap, setTplMap] = useState(c.brand_template_map || {})
 
   async function loadList() {
     setLoadingList(true); setErr(null)
@@ -357,6 +404,11 @@ function StepVisuals({ c, patch, busy }) {
       setAvailable(j)
     } catch (e) { setErr(e.message) }
     setLoadingList(false)
+  }
+
+  async function saveTplMap(next) {
+    setTplMap(next)
+    await patch({ brand_template_map: next })
   }
 
   async function pickDesign(design) {
@@ -368,45 +420,84 @@ function StepVisuals({ c, patch, busy }) {
     } catch (e) { setErr(e.message) }
   }
 
-  async function spawnFromTemplate(tpl) {
-    setSpawning(tpl.id); setErr(null)
+  async function batchSpawn() {
+    setBatchBusy(true); setErr(null)
     try {
-      await authedFetch(`/api/marketing/campaigns/visuals-spawn?id=${c.id}`, {
+      const j = await authedFetch(`/api/marketing/campaigns/visuals-batch-spawn?id=${c.id}`, {
         method: 'POST',
-        body: JSON.stringify({ brand_template_id: tpl.id, title: `${c.name} — ${tpl.title}` }),
+        body: JSON.stringify({ count: batchCount, template_map: tplMap }),
       })
+      if (j.errors?.length) setErr(`Spawned ${j.spawned}, errors: ${j.errors.map(e => e.error).join('; ')}`)
       await patch({})
     } catch (e) { setErr(e.message) }
-    setSpawning(null)
+    setBatchBusy(false)
   }
 
   const designs = available?.designs?.items || available?.designs?.designs || []
   const templates = available?.templates?.items || available?.templates?.brand_templates || []
   const chosenCount = visuals.filter(v => v.chosen).length
+  const channels = c.channels || []
+  const tplCount = Object.values(tplMap).filter(Boolean).length
 
   return (
     <div className="mkt-wiz__panel">
       <h3>Visuals</h3>
-      <p className="mkt-int__sub">Pick existing Canva designs OR spawn from a brand template. Chosen: {chosenCount}</p>
+      <p className="mkt-int__sub">
+        Assign one Canva brand template per channel, then auto-spawn 2-6 designs pre-filled with chosen copy. Chosen: {chosenCount}
+      </p>
 
       <div className="mkt-agents__actions">
-        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={loadList} disabled={loadingList}>
-          {loadingList ? 'Loading…' : (available ? 'Refresh Canva' : 'Browse Canva')}
+        <button className="mkt-agents__btn" onClick={loadList} disabled={loadingList}>
+          {loadingList ? 'Loading…' : (available ? 'Refresh templates' : 'Load Canva templates')}
         </button>
         {chosenCount > 0 && (
-          <button className="mkt-agents__btn" onClick={() => patch({ state: 'POLISH' })} disabled={busy}>
-            Next: Polish →
+          <button className="mkt-agents__btn" onClick={() => patch({ state: 'REVIEW' })} disabled={busy}>
+            Next: Review →
           </button>
         )}
       </div>
       {err && <div className="mkt-agents__error">{err}</div>}
 
+      {/* Template assignment per channel */}
+      {templates.length > 0 && channels.length > 0 && (
+        <section className="mkt-wiz__panel" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: 12 }}>
+          <h4>Channel → brand template ({tplCount}/{channels.length} mapped)</h4>
+          {channels.map(ch => (
+            <div key={ch} className="mkt-camp-new__row" style={{ alignItems: 'center', gridTemplateColumns: '120px 1fr' }}>
+              <div><strong>{ch}</strong></div>
+              <select className="mkt-agents__input" value={tplMap[ch] || ''} onChange={e => saveTplMap({ ...tplMap, [ch]: e.target.value })}>
+                <option value="">— pick template —</option>
+                {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+              </select>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* Batch spawn */}
+      {tplCount > 0 && (
+        <section className="mkt-wiz__panel" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: 12 }}>
+          <h4>Auto-spawn from templates + chosen copy</h4>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <label style={{ fontSize: 12, color: 'rgba(237,234,227,0.7)' }}>Variants:</label>
+            <input type="number" min={2} max={6} value={batchCount} onChange={e => setBatchCount(Math.max(2, Math.min(6, Number(e.target.value))))}
+              className="mkt-agents__input" style={{ width: 70 }} />
+            <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={batchSpawn} disabled={batchBusy}>
+              {batchBusy ? 'Spawning…' : `Spawn ${batchCount} designs`}
+            </button>
+          </div>
+          <p className="mkt-int__sub" style={{ marginTop: 4 }}>
+            Each design fills your brand template fields named <code>headline/title</code>, <code>body/subhead</code>, <code>cta/button_text</code> from chosen copy variants. If no copy chosen, AI is creative.
+          </p>
+        </section>
+      )}
+
       {visuals.length > 0 && (
         <>
-          <h4>Attached to this campaign ({visuals.length})</h4>
+          <h4>Spawned + attached ({visuals.length})</h4>
           <div className="mkt-brand__grid">
             {visuals.map(v => (
-              <article key={v.id} className={`mkt-brand__file${v.chosen ? '' : ''}`} style={{
+              <article key={v.id} className="mkt-brand__file" style={{
                 borderColor: v.chosen ? 'rgba(34,197,94,0.5)' : undefined,
                 background: v.chosen ? 'rgba(34,197,94,0.08)' : undefined,
               }}>
@@ -414,6 +505,7 @@ function StepVisuals({ c, patch, busy }) {
                   {v.thumbnail ? <img src={v.thumbnail} alt={v.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
                 </div>
                 <div className="mkt-brand__name">{v.title || v.id}</div>
+                {v.channel && <div className="mkt-int__sub">{v.channel}</div>}
                 <div style={{ display: 'flex', gap: 4 }}>
                   {v.edit_url && <a className="mkt-agents__btn" href={v.edit_url} target="_blank" rel="noreferrer">Edit</a>}
                   <button className="mkt-agents__btn" onClick={() => pickDesign({ id: v.id, title: v.title, thumbnail: { url: v.thumbnail }, urls: { edit_url: v.edit_url } })}>
@@ -426,28 +518,9 @@ function StepVisuals({ c, patch, busy }) {
         </>
       )}
 
-      {templates.length > 0 && (
-        <>
-          <h4>Spawn new from brand template ({templates.length})</h4>
-          <div className="mkt-brand__grid">
-            {templates.map(t => (
-              <article key={t.id} className="mkt-brand__file">
-                <div className="mkt-brand__thumb">
-                  {t.thumbnail?.url ? <img src={t.thumbnail.url} alt={t.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
-                </div>
-                <div className="mkt-brand__name">{t.title}</div>
-                <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => spawnFromTemplate(t)} disabled={spawning === t.id}>
-                  {spawning === t.id ? 'Spawning…' : 'Spawn'}
-                </button>
-              </article>
-            ))}
-          </div>
-        </>
-      )}
-
       {designs.length > 0 && (
         <>
-          <h4>Pick from existing Canva designs ({designs.length})</h4>
+          <h4>Or pick from existing Canva designs ({designs.length})</h4>
           <div className="mkt-brand__grid">
             {designs.map(d => (
               <article key={d.id} className="mkt-brand__file">
@@ -465,24 +538,28 @@ function StepVisuals({ c, patch, busy }) {
   )
 }
 
-// ── Step 6 ─────────────────────────────────────────────────
-function StepPolish({ c, runStep, patch, busy }) {
+// ── Step 6: Review (combined polish + timing) ─────────────
+function StepReview({ c, runStep, patch, busy }) {
   const notes = c.polish_notes?.notes || []
+  const timing = c.timing?.timing || {}
   function toggleAccept(i) {
     const next = notes.map((n, idx) => idx === i ? { ...n, accepted: !n.accepted } : n)
     patch({ polish_notes: { ...c.polish_notes, notes: next } })
   }
   return (
     <div className="mkt-wiz__panel">
-      <h3>Polish</h3>
+      <h3>Review</h3>
+      <p className="mkt-int__sub">Critique + timing in one pass.</p>
       <div className="mkt-agents__actions">
-        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => runStep('POLISH')} disabled={busy === 'POLISH'}>
-          {busy === 'POLISH' ? 'Critiquing…' : 'Generate critique'}
+        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => runStep('REVIEW')} disabled={busy === 'REVIEW'}>
+          {busy === 'REVIEW' ? 'Reviewing…' : (notes.length ? 'Re-review' : 'Generate review')}
         </button>
         {notes.length > 0 && (
-          <button className="mkt-agents__btn" onClick={() => patch({ state: 'TIMING' })}>Next: Timing →</button>
+          <button className="mkt-agents__btn" onClick={() => patch({ state: 'PUBLISH_READY' })}>Next: Publish →</button>
         )}
       </div>
+
+      {notes.length > 0 && <h4>Critique notes</h4>}
       {notes.map((n, i) => (
         <div key={i} className={`mkt-wiz__note mkt-wiz__note--${n.severity}`}>
           <div><strong>{n.area}</strong> <span className="mkt-int__badge mkt-int__badge--off">{n.severity}</span></div>
@@ -491,74 +568,42 @@ function StepPolish({ c, runStep, patch, busy }) {
           <button className="mkt-agents__btn" onClick={() => toggleAccept(i)}>{n.accepted ? '✓ Accepted' : 'Accept'}</button>
         </div>
       ))}
-    </div>
-  )
-}
 
-// ── Step 6.5 ───────────────────────────────────────────────
-function StepTiming({ c, runStep, patch, busy }) {
-  const timing = c.timing?.timing || {}
-  const channels = Object.keys(timing)
-  return (
-    <div className="mkt-wiz__panel">
-      <h3>Timing</h3>
-      <p className="mkt-int__sub">Best publishing windows per channel. Audience-timezone aware.</p>
-      <div className="mkt-agents__actions">
-        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => runStep('TIMING')} disabled={busy === 'TIMING'}>
-          {busy === 'TIMING' ? 'Calculating…' : 'Calculate timing'}
-        </button>
-        {channels.length > 0 && (
-          <button className="mkt-agents__btn" onClick={() => patch({ state: 'STAGE' })}>Next: Stage →</button>
-        )}
-      </div>
-      {channels.map(ch => (
-        <div key={ch} className="mkt-wiz__panel">
-          <h4>{ch}</h4>
-          {(timing[ch] || []).map((slot, i) => (
-            <div key={i} className="mkt-wiz__slot">
-              <strong>{slot.slot}</strong> <span className="mkt-wiz__star">{'★'.repeat(Math.round(slot.score / 2))}</span>
-              <p className="mkt-int__sub">{slot.reason}</p>
+      {Object.keys(timing).length > 0 && (
+        <>
+          <h4>Recommended publishing windows</h4>
+          {Object.entries(timing).map(([ch, slots]) => (
+            <div key={ch} className="mkt-wiz__panel">
+              <h5>{ch}</h5>
+              {slots.map((slot, i) => (
+                <div key={i} className="mkt-wiz__slot">
+                  <strong>{slot.slot}</strong> <span className="mkt-wiz__star">{'★'.repeat(Math.round(slot.score / 2))}</span>
+                  <p className="mkt-int__sub">{slot.reason}</p>
+                </div>
+              ))}
             </div>
           ))}
-        </div>
-      ))}
+        </>
+      )}
     </div>
   )
 }
 
-// ── Step 7 ─────────────────────────────────────────────────
-function StepStage({ c, patch, busy }) {
-  return (
-    <div className="mkt-wiz__panel">
-      <h3>Stage</h3>
-      <p className="mkt-int__sub">Save campaign as draft on connected platforms. Manual publish only.</p>
-      <div className="marketing-panel__placeholder">
-        Drafting to Meta / LinkedIn requires those integrations. Mark as ready when manual draft created externally.
-      </div>
-      <div className="mkt-agents__actions">
-        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => patch({ state: 'PUBLISH_READY' })} disabled={busy}>
-          Mark publish-ready →
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ── Step 7b ────────────────────────────────────────────────
+// ── Step 7: Publish ────────────────────────────────────────
 function StepPublish({ c, patch, busy }) {
   function confirmPublish() {
-    if (!confirm(`Publish "${c.name}"? This logs intent. Actual publish must happen manually in each platform until publish integrations are wired.`)) return
+    if (!confirm(`Publish "${c.name}"? Logs intent. Manual publish per platform until Meta/LinkedIn integrations wire up.`)) return
     patch({ state: 'PUBLISHED', publish_status: { ...c.publish_status, manual: { at: new Date().toISOString() } } }, { note: 'manual publish confirmed' })
   }
   return (
     <div className="mkt-wiz__panel">
       <h3>Publish</h3>
       <div className="mkt-agents__error">
-        ⚠ Hard rule: agent code cannot publish. CMO clicks below to log intent. Until Meta/LinkedIn integrations are wired, publish manually on each platform.
+        ⚠ Agent code cannot publish. CMO must click below.
       </div>
       <div className="mkt-agents__actions">
         <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={confirmPublish} disabled={busy}>Confirm publish</button>
-        <button className="mkt-agents__btn" onClick={() => patch({ state: 'DRAFTED' })} disabled={busy}>Save as draft instead</button>
+        <button className="mkt-agents__btn" onClick={() => patch({ state: 'DRAFTED' })} disabled={busy}>Save as draft</button>
       </div>
     </div>
   )
@@ -569,7 +614,7 @@ function StepArchive({ c, patch, busy }) {
   return (
     <div className="mkt-wiz__panel">
       <h3>Archive</h3>
-      <p className="mkt-int__sub">Drive + Canva mirror folder will be auto-created at AltroAI/Marketing/07_Campaigns/{c.slug}/ when wired.</p>
+      <p className="mkt-int__sub">Drive folder: AltroAI/Marketing/07_Campaigns/{c.slug}/</p>
       <div className="mkt-agents__actions">
         <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => patch({ state: 'MEASURE' })} disabled={busy}>
           Next: Measure →
@@ -584,7 +629,7 @@ function StepMeasure({ c }) {
   return (
     <div className="mkt-wiz__panel">
       <h3>Measure</h3>
-      <p className="mkt-int__sub">Post-launch metrics pulled from connected platforms. Pending integration with Meta/LinkedIn insights APIs.</p>
+      <p className="mkt-int__sub">Post-launch metrics. Pending Meta/LinkedIn insights integrations.</p>
       <div className="marketing-panel__placeholder">
         Will show impressions, CTR, leads attributed to this campaign once metric pull endpoints exist.
       </div>
