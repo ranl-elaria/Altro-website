@@ -460,17 +460,19 @@ function StepVisuals({ c, patch, busy }) {
     const chVariants = c.copy_variants?.variants?.[channel] || []
     const chosenCopy = chVariants.find(v => v.chosen) || chVariants[0]
 
-    // Fire N parallel single-image calls (each ~30-45s, but parallel = total ~45s).
     const calls = Array.from({ length: N }, (_, i) =>
       authedFetch(`/api/marketing/campaigns/visuals-generate-ai?id=${c.id}`, {
         method: 'POST',
         body: JSON.stringify({
           channel, variant_idx: i, total: N,
-          provider: opts.provider || 'openai',
+          provider: opts.provider || 'auto',
           size_key: opts.size_key,
           chosen_copy_id: chosenCopy?.id,
           use_brand: !!opts.use_brand,
           brief: opts.brief || null,
+          preset_id: opts.preset_id,
+          subjects: opts.subjects || [],
+          include_headline_in_image: !!opts.include_headline_in_image,
         }),
       }).catch(e => ({ error: e.message, idx: i }))
     )
@@ -647,47 +649,114 @@ const CHANNEL_DEFAULT_SIZE = {
   meta: 'meta_post', linkedin: 'linkedin_post', email: 'email_header', x: 'x_post', youtube: 'youtube_thumb',
 }
 
+const STYLE_PRESETS_UI = [
+  { id: 'stripe_minimal',     label: 'Stripe — minimal + sharp gradients' },
+  { id: 'linear_dark',        label: 'Linear — dark mode + sharp grid' },
+  { id: 'vercel_geometric',   label: 'Vercel — geometric + monospace' },
+  { id: 'notion_playful',     label: 'Notion — playful + illustrative' },
+  { id: 'mercury_editorial',  label: 'Mercury — editorial + photographic' },
+  { id: 'ramp_brutalist',     label: 'Ramp — brutalist bold + big numbers' },
+  { id: 'anthropic_warm',     label: 'Anthropic — warm minimal + paper' },
+  { id: 'openai_gradient',    label: 'OpenAI — gradient meshes + glow' },
+  { id: 'apple_hero',         label: 'Apple — product hero + dramatic light' },
+]
+
+const SUBJECT_OPTIONS = [
+  { id: 'conceptual_illustration', label: 'Conceptual illustration' },
+  { id: 'pure_typography',         label: 'Pure typography on texture' },
+  { id: 'abstract_data_viz',       label: 'Abstract data viz' },
+  { id: 'product_ui_mockup',       label: 'Product / UI mockup' },
+  { id: 'editorial_photo',         label: 'Editorial photography' },
+]
+
+const CHANNEL_DEFAULT_PRESET = {
+  linkedin: 'mercury_editorial',
+  meta: 'ramp_brutalist',
+  email: 'notion_playful',
+  x: 'linear_dark',
+  youtube: 'apple_hero',
+}
+
 function PostAiPanel({ channel, c, busy, onGenerate }) {
-  const [provider, setProvider] = useState('openai')
+  const [provider, setProvider] = useState('auto')
   const [sizeKey, setSizeKey] = useState(CHANNEL_DEFAULT_SIZE[channel] || 'meta_post')
   const [count, setCount] = useState(4)
-  const [useBrand, setUseBrand] = useState(false)
+  const [useBrand, setUseBrand] = useState(true)
   const [brief, setBrief] = useState('')
+  const [presetId, setPresetId] = useState(CHANNEL_DEFAULT_PRESET[channel] || 'stripe_minimal')
+  const [subjects, setSubjects] = useState([])
+  const [includeHeadline, setIncludeHeadline] = useState(false)
+
+  function toggleSubject(id) {
+    setSubjects(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id])
+  }
 
   return (
-    <div className="mkt-post__config">
-      <label className="mkt-agents__field" style={{ width: 160 }}>
-        <span className="mkt-agents__field-label">Provider</span>
-        <select className="mkt-agents__input" value={provider} onChange={e => setProvider(e.target.value)}>
-          <option value="openai">OpenAI gpt-image-1</option>
-          <option value="ideogram">Ideogram V2 (text-in-image)</option>
-        </select>
-      </label>
-      <label className="mkt-agents__field" style={{ width: 200 }}>
-        <span className="mkt-agents__field-label">Size</span>
-        <select className="mkt-agents__input" value={sizeKey} onChange={e => setSizeKey(e.target.value)}>
-          {Object.entries(SIZE_OPTIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
-      </label>
-      <label className="mkt-agents__field" style={{ width: 80 }}>
-        <span className="mkt-agents__field-label">Variants</span>
-        <input className="mkt-agents__input" type="number" min={1} max={6} value={count}
-          onChange={e => setCount(Math.max(1, Math.min(6, Number(e.target.value))))} />
-      </label>
-      <label className="mkt-agents__field" style={{ width: 130, alignSelf: 'flex-end' }}>
-        <input type="checkbox" checked={useBrand} onChange={e => setUseBrand(e.target.checked)} />
-        <span className="mkt-agents__field-label" style={{ display: 'inline-block', marginLeft: 6 }}>
-          Lock to AltroAI brand
-        </span>
-      </label>
-      <label className="mkt-agents__field" style={{ flex: 1, minWidth: 240 }}>
+    <div className="mkt-post__config" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <label className="mkt-agents__field" style={{ flex: 1, minWidth: 240 }}>
+          <span className="mkt-agents__field-label">Style preset</span>
+          <select className="mkt-agents__input" value={presetId} onChange={e => setPresetId(e.target.value)}>
+            {STYLE_PRESETS_UI.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+          </select>
+        </label>
+        <label className="mkt-agents__field" style={{ width: 180 }}>
+          <span className="mkt-agents__field-label">Size</span>
+          <select className="mkt-agents__input" value={sizeKey} onChange={e => setSizeKey(e.target.value)}>
+            {Object.entries(SIZE_OPTIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </label>
+        <label className="mkt-agents__field" style={{ width: 130 }}>
+          <span className="mkt-agents__field-label">Provider</span>
+          <select className="mkt-agents__input" value={provider} onChange={e => setProvider(e.target.value)}>
+            <option value="auto">Auto (best)</option>
+            <option value="openai">OpenAI</option>
+            <option value="ideogram">Ideogram</option>
+          </select>
+        </label>
+        <label className="mkt-agents__field" style={{ width: 70 }}>
+          <span className="mkt-agents__field-label">N</span>
+          <input className="mkt-agents__input" type="number" min={1} max={6} value={count}
+            onChange={e => setCount(Math.max(1, Math.min(6, Number(e.target.value))))} />
+        </label>
+      </div>
+
+      <div className="mkt-agents__field">
+        <span className="mkt-agents__field-label">Subject focus (optional)</span>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+          {SUBJECT_OPTIONS.map(s => (
+            <label key={s.id} className={`mkt-camp-new__chip${subjects.includes(s.id) ? ' mkt-camp-new__chip--on' : ''}`}>
+              <input type="checkbox" checked={subjects.includes(s.id)} onChange={() => toggleSubject(s.id)} hidden />
+              {s.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+        <label style={{ fontSize: 12, color: 'rgba(237,234,227,0.85)', display: 'flex', gap: 6, alignItems: 'center' }}>
+          <input type="checkbox" checked={useBrand} onChange={e => setUseBrand(e.target.checked)} />
+          Lock to AltroAI brand (palette/typography)
+        </label>
+        <label style={{ fontSize: 12, color: 'rgba(237,234,227,0.85)', display: 'flex', gap: 6, alignItems: 'center' }}>
+          <input type="checkbox" checked={includeHeadline} onChange={e => setIncludeHeadline(e.target.checked)} />
+          Render headline IN image (auto-uses Ideogram)
+        </label>
+      </div>
+
+      <label className="mkt-agents__field">
         <span className="mkt-agents__field-label">Creative brief (optional)</span>
         <input className="mkt-agents__input" value={brief} onChange={e => setBrief(e.target.value)}
-          placeholder="e.g. 'split-screen comparison, cold editorial', 'animated wireframe behind headline'" />
+          placeholder="e.g. 'compress timeline visualization', 'split-screen org chart inversion'" />
       </label>
+
       <button
         className="mkt-agents__btn mkt-agents__btn--primary"
-        onClick={() => onGenerate(channel, { count, provider, size_key: sizeKey, use_brand: useBrand, brief })}
+        onClick={() => onGenerate(channel, {
+          count, provider, size_key: sizeKey, use_brand: useBrand, brief,
+          preset_id: presetId, subjects,
+          include_headline_in_image: includeHeadline,
+        })}
         disabled={busy} style={{ alignSelf: 'flex-end' }}>
         {busy ? 'Generating…' : `Generate ${count} AI images`}
       </button>

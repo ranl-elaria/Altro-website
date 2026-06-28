@@ -31,28 +31,55 @@ function openaiSize(w, h) {
   return '1024x1536'
 }
 
-// Build the system/user prompt for image gen. Includes brand context when supplied.
+import { ALTRO_BRAND, getPreset, HARD_AVOIDS, defaultPresetForChannel } from './style-presets.js'
+
+// Build the prompt. Style preset = primary driver. Brand lock = inject AltroAI palette/typography.
+// Returns: { prompt, wants_text }  — wants_text used to auto-pick Ideogram for text-in-image.
 export function buildImagePrompt({
-  channel, format_label, copy, brief, brand_context, style_hint,
+  channel, format_label, copy, brief, brand_context, preset_id,
+  subjects = [], include_headline_in_image = false,
 }) {
+  const preset = getPreset(preset_id || defaultPresetForChannel(channel))
+
   const lines = []
   lines.push(`Premium B2B marketing visual for ${channel} (${format_label}).`)
-  if (copy?.hook) lines.push(`Headline to communicate visually: "${copy.hook}".`)
-  if (copy?.body) lines.push(`Supporting message: ${copy.body}`)
-  if (copy?.cta)  lines.push(`Implied call-to-action: ${copy.cta}`)
-  if (brief)      lines.push(`Creative direction: ${brief}`)
+  lines.push(`STYLE DIRECTION: ${preset.label}.`)
+  lines.push(`Style essence: ${preset.summary}`)
+  lines.push(`Typography rule: ${preset.typography}`)
+  lines.push(`Composition rule: ${preset.composition}`)
+  lines.push(`Palette rule: ${preset.palette_rule}`)
 
-  if (brand_context) {
-    const tpls = brand_context.canva?.templates?.map(t => t.title).filter(Boolean) || []
-    lines.push(`Brand: AltroAI — Israeli AI freelancing agency, B2B. Voice: premium, direct, technical-credible, restrained.`)
-    if (tpls.length) lines.push(`Reference brand templates: ${tpls.slice(0, 3).join(', ')}.`)
-    lines.push(`Brand visual language: deep charcoal background, single accent color, editorial typography, generous negative space, no faces, no stock photography, no gradients, no emoji.`)
-  } else {
-    lines.push(`Style direction: ${style_hint || 'clean editorial, modern B2B SaaS aesthetic, restrained color palette, sharp typography, no stock photos'}`)
+  if (subjects.length) {
+    lines.push(`Subject focus (pick ONE): ${subjects.join(', ')}.`)
   }
 
-  lines.push(`Composition rules: balanced, scroll-stopping, eye drawn to headline area. Avoid clutter. No watermarks. Avoid corporate-cliché imagery (handshakes, lightbulbs, growth charts).`)
-  return lines.join(' ')
+  if (copy?.hook) {
+    if (include_headline_in_image) {
+      lines.push(`HEADLINE IN IMAGE (render clearly, readable): "${copy.hook}"`)
+      if (copy.cta) lines.push(`Subtle CTA text: "${copy.cta}"`)
+    } else {
+      lines.push(`Conceptually express this idea (NO text in image, headline added later in overlay): "${copy.hook}"`)
+    }
+  }
+  if (copy?.body && include_headline_in_image) lines.push(`Supporting text: "${copy.body}"`)
+
+  if (brief) lines.push(`CMO creative direction: ${brief}`)
+
+  if (brand_context) {
+    const p = ALTRO_BRAND.palette
+    lines.push(`BRAND LOCK — AltroAI: ${ALTRO_BRAND.voice}`)
+    lines.push(`Palette (use these HEX exactly, no other colors): Teal ${p.teal} (accent ~25%), Navy ${p.navy} (5%), Charcoal ${p.charcoal} (40%), White ${p.white} (20%), Light Gray ${p.light_gray} (10%).`)
+    lines.push(`Typography: ${ALTRO_BRAND.typeface}.`)
+    lines.push(`Brand values to evoke: ${ALTRO_BRAND.values.join(', ')}.`)
+  }
+
+  lines.push(`HARD AVOIDS: ${HARD_AVOIDS.join('; ')}.`)
+  lines.push(`Output: production-grade ad creative, scroll-stopping, magazine-quality lighting and composition.`)
+
+  return {
+    prompt: lines.join(' '),
+    wants_text: include_headline_in_image,
+  }
 }
 
 // ---- OpenAI image (gpt-image-1 with dall-e-3 fallback) ----
