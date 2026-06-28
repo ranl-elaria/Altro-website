@@ -8,7 +8,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { runCampaignStep, tryParseJson } from '../../../src/lib/marketing/campaign-runner.js'
 import {
-  inspirePrompt, conceptsPrompt, copyPrompt, timingPrompt, polishPrompt,
+  inspirePrompt, conceptsPrompt, copyPrompt, timingPrompt, polishPrompt, reviewPrompt,
 } from '../../../src/lib/marketing/campaign-prompts.js'
 import { createCanva } from '../../../src/lib/marketing/canva.js'
 import { getCanvaAccessToken } from '../../../src/lib/marketing/canva-token.js'
@@ -95,6 +95,36 @@ export default async function handler(req, res) {
 
     const { data, error } = await supabase.from('marketing_campaigns').insert(row).select().single()
     if (error) return res.status(500).json({ error: error.message })
+
+    // Best-effort brand-pull. Don't fail create if Canva/Drive offline.
+    try {
+      const brand_context = { fetched_at: new Date().toISOString(), canva: null, drive: null, errors: [] }
+      try {
+        const ct = await getCanvaAccessToken(supabase)
+        const cv = createCanva({ access_token: ct })
+        const tpls = await cv.listBrandTemplates({})
+        brand_context.canva = {
+          templates: (tpls.items || tpls.brand_templates || []).slice(0, 20).map(t => ({
+            id: t.id, title: t.title, thumbnail: t.thumbnail?.url, edit_url: t.urls?.edit_url,
+          })),
+        }
+      } catch (e) { brand_context.errors.push(`canva: ${e.message}`) }
+      try {
+        const gt = await getGoogleAccessToken(supabase)
+        const integ = await loadTokens(supabase, 'google')
+        const campaignsFolderId = integ?.metadata?.subfolders?.['07_Campaigns']
+        if (campaignsFolderId) {
+          const dv = createDrive({ access_token: gt })
+          const out = await dv.listChildren(campaignsFolderId, { pageSize: 10 })
+          brand_context.drive = {
+            recent_campaigns: (out.files || []).map(f => ({ id: f.id, name: f.name, modifiedTime: f.modifiedTime, webViewLink: f.webViewLink })),
+          }
+        }
+      } catch (e) { brand_context.errors.push(`drive: ${e.message}`) }
+      await supabase.from('marketing_campaigns').update({ brand_context }).eq('id', data.id)
+      data.brand_context = brand_context
+    } catch (e) { /* swallow */ }
+
     return res.status(200).json({ campaign: data })
   }
 
@@ -133,14 +163,16 @@ export default async function handler(req, res) {
     let prompt
     let intake = { goal: c.goal, audience: c.audience?.text || c.audience, channels: c.channels, budget_usd: c.budget_usd, deadline: c.deadline }
 
+    const note = c.step_notes?.[step] || null
+
     if (step === 'INSPIRE') {
-      prompt = inspirePrompt(intake)
+      prompt = inspirePrompt({ ...intake, note })
     } else if (step === 'CONCEPTS') {
-      prompt = conceptsPrompt({ intake, inspiration: c.inspiration, brand_context: c.brand_context })
+      prompt = conceptsPrompt({ intake, inspiration: c.inspiration, brand_context: c.brand_context, note })
     } else if (step === 'COPY') {
       const chosen = (c.concepts?.concepts || []).find(x => x.chosen) || c.concepts?.chosen
       if (!chosen) return res.status(400).json({ error: 'no_chosen_concept' })
-      prompt = copyPrompt({ intake, chosenConcept: chosen, channels: c.channels, brand_context: c.brand_context })
+      prompt = copyPrompt({ intake, chosenConcept: chosen, channels: c.channels, brand_context: c.brand_context, note })
     } else if (step === 'TIMING') {
       prompt = timingPrompt({ intake, channels: c.channels })
     } else if (step === 'POLISH') {
@@ -149,6 +181,16 @@ export default async function handler(req, res) {
         chosenConcept: chosen,
         chosenVariants: c.copy_variants?.chosen || c.copy_variants,
         chosenVisuals: (c.visuals || []).filter(v => v.chosen),
+      })
+    } else if (step === 'REVIEW') {
+      const chosen = (c.concepts?.concepts || []).find(x => x.chosen) || c.concepts?.chosen
+      prompt = reviewPrompt({
+        intake,
+        chosenConcept: chosen,
+        chosenVariants: c.copy_variants,
+        chosenVisuals: (c.visuals || []).filter(v => v.chosen),
+        channels: c.channels,
+        note,
       })
     } else {
       return res.status(400).json({ error: `step_not_ai_driven: ${step}` })
@@ -166,10 +208,12 @@ export default async function handler(req, res) {
       // Persist into the right column.
       const colMap = {
         INSPIRE: 'inspiration', CONCEPTS: 'concepts', COPY: 'copy_variants',
-        TIMING: 'timing', POLISH: 'polish_notes',
+        TIMING: 'timing', POLISH: 'polish_notes', REVIEW: 'polish_notes',
       }
       const col = colMap[step]
       const patch = { [col]: parsed, state: step }
+      // REVIEW returns both notes + timing — also persist timing
+      if (step === 'REVIEW' && parsed.timing) patch.timing = { timing: parsed.timing }
       patch.state_history = recordTransition(c, step, user.email, `ai-generated · $${result.cost_usd.toFixed(4)}`)
 
       const { data: updated, error: upErr } = await supabase
@@ -260,6 +304,76 @@ export default async function handler(req, res) {
     } catch (err) {
       return res.status(500).json({ error: String(err?.message || err) })
     }
+  }
+
+  // ── VISUALS-BATCH-SPAWN ───────────────────────────
+  // POST body: { count?: 4, channels?: ['meta','linkedin',...], template_map?: { meta: 'tpl_id', ... } }
+  // For each channel/template, spawn 1 design pre-filled with chosen copy variant.
+  if (action === 'visuals-batch-spawn') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    const id = req.query.id
+    if (!id) return res.status(400).json({ error: 'missing_id' })
+    let body = req.body
+    if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+    const reqCount = Math.max(2, Math.min(6, body?.count || 4))
+    const channelFilter = body?.channels
+    const overrideMap = body?.template_map || {}
+
+    const { data: c } = await supabase.from('marketing_campaigns').select('*').eq('id', id).single()
+    if (!c) return res.status(404).json({ error: 'not_found' })
+
+    const tplMap = { ...(c.brand_template_map || {}), ...overrideMap }
+    const channels = (channelFilter || c.channels || []).filter(ch => tplMap[ch])
+    if (channels.length === 0) return res.status(400).json({ error: 'no_channels_with_templates_mapped' })
+
+    const variants = c.copy_variants?.variants || {}
+    const canvaToken = await getCanvaAccessToken(supabase)
+    const canva = createCanva({ access_token: canvaToken })
+
+    // Build spawn list — cycle through channels until we hit reqCount
+    const spawnPlan = []
+    let i = 0
+    while (spawnPlan.length < reqCount && i < reqCount * 4) {
+      const ch = channels[i % channels.length]
+      const tpl = tplMap[ch]
+      const chVariants = variants[ch] || []
+      const chosen = chVariants.find(v => v.chosen) || chVariants[Math.floor(spawnPlan.length / channels.length) % Math.max(1, chVariants.length)]
+      spawnPlan.push({ channel: ch, template_id: tpl, variant: chosen || null })
+      i++
+    }
+
+    const spawned = []
+    const errors = []
+    for (const p of spawnPlan) {
+      try {
+        const fillData = {}
+        if (p.variant?.hook)  fillData.headline    = { type: 'text', text: p.variant.hook }
+        if (p.variant?.hook)  fillData.title       = { type: 'text', text: p.variant.hook }
+        if (p.variant?.body)  fillData.body        = { type: 'text', text: p.variant.body }
+        if (p.variant?.body)  fillData.subhead     = { type: 'text', text: p.variant.body }
+        if (p.variant?.cta)   fillData.cta         = { type: 'text', text: p.variant.cta }
+        if (p.variant?.cta)   fillData.button_text = { type: 'text', text: p.variant.cta }
+        const title = `${c.name} — ${p.channel}`
+        const job = await canva.createFromBrandTemplate({
+          brand_template_id: p.template_id, title,
+          data: Object.keys(fillData).length ? fillData : undefined,
+        })
+        spawned.push({
+          id: job.job?.id || job.id || `${Date.now()}-${spawned.length}`,
+          spawned_from: p.template_id,
+          channel: p.channel,
+          variant_id: p.variant?.id || null,
+          title, job, chosen: false, created_at: new Date().toISOString(),
+        })
+      } catch (e) {
+        errors.push({ channel: p.channel, template_id: p.template_id, error: String(e?.message || e) })
+      }
+    }
+
+    const visuals = Array.isArray(c.visuals) ? c.visuals : []
+    visuals.push(...spawned)
+    await supabase.from('marketing_campaigns').update({ visuals }).eq('id', id)
+    return res.status(200).json({ ok: true, spawned: spawned.length, errors, visuals: spawned })
   }
 
   // ── VISUALS-SPAWN ─────────────────────────────────
