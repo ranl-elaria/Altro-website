@@ -95,6 +95,15 @@ export function createDrive({ access_token }) {
       if (found) return found
       return this.createFolder(name, parentId)
     },
+    async makeLinkVisible(fileId) {
+      const r = await fetch(`${API}/files/${fileId}/permissions`, {
+        method: 'POST',
+        headers: { ...h, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' }),
+      })
+      if (!r.ok) throw new Error(`Drive permissions ${r.status}: ${(await r.text()).slice(0, 200)}`)
+      return r.json()
+    },
     async uploadFile({ name, bytes, mime_type, parentId }) {
       // Multipart upload via raw fetch (Drive API v3).
       const boundary = `b${Date.now()}`
