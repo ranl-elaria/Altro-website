@@ -66,7 +66,8 @@ export default async function handler(req, res) {
     }
 
     // Export a Canva design → upload to a Drive folder.
-    // POST body: { design_id, folder_subkey?: '04_Ads', folder_id?, format?: { type: 'png' }, name? }
+    // POST body: { design_id, folder_subkey?: '04_Ads', folder_id?, format?, name? }
+    // Format auto-detected from design_type if not provided.
     if (action === 'canva-to-drive') {
       if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
       let body = req.body
@@ -82,7 +83,29 @@ export default async function handler(req, res) {
       const canvaToken = await getCanvaAccessToken(supabase)
       const canva = createCanva({ access_token: canvaToken })
 
-      const exp = await canva.createExport({ design_id, format: format || { type: 'png' } })
+      // Auto-detect format from design metadata.
+      let useFormat = format
+      if (!useFormat) {
+        try {
+          const meta = await canva.getDesign(design_id)
+          const d = meta.design || meta
+          const type = (d.design_type?.name || d.type || '').toLowerCase()
+          const pageCount = d.page_count || d.pages?.length || 1
+          if (type.includes('video') || type.includes('reel') || type.includes('animat')) {
+            useFormat = { type: 'mp4', quality: 'horizontal_1080p' }
+          } else if (type.includes('gif')) {
+            useFormat = { type: 'gif' }
+          } else if (type.includes('presentation') || type.includes('deck') || pageCount > 3) {
+            useFormat = { type: 'pdf_standard' }
+          } else {
+            useFormat = { type: 'png' }
+          }
+        } catch (e) {
+          useFormat = { type: 'png' }
+        }
+      }
+
+      const exp = await canva.createExport({ design_id, format: useFormat })
       const expId = exp.job?.id || exp.id
       const done = await pollExport(canva, expId)
       const urls = done.job?.urls || done.urls || []
@@ -90,17 +113,23 @@ export default async function handler(req, res) {
 
       const drive = createDrive({ access_token: accessToken })
       const uploaded = []
-      for (const url of urls) {
-        const r = await fetch(url)
+      const ext = (useFormat.type || 'png').toLowerCase().replace('pdf_standard', 'pdf').replace('pdf_print', 'pdf')
+      const mime =
+        ext === 'pdf' ? 'application/pdf' :
+        ext === 'mp4' ? 'video/mp4' :
+        ext === 'gif' ? 'image/gif' :
+        ext === 'pptx' ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation' :
+        `image/${ext === 'jpg' ? 'jpeg' : ext}`
+      for (let i = 0; i < urls.length; i++) {
+        const r = await fetch(urls[i])
         if (!r.ok) throw new Error(`Fetch export ${r.status}`)
         const bytes = new Uint8Array(await r.arrayBuffer())
-        const ext = (format?.type || 'png').toLowerCase()
-        const fileName = `${name || design_id}.${ext}`
-        const mime = ext === 'pdf' ? 'application/pdf' : `image/${ext === 'jpg' ? 'jpeg' : ext}`
+        const suffix = urls.length > 1 ? `-p${i + 1}` : ''
+        const fileName = `${name || design_id}${suffix}.${ext}`
         const f = await drive.uploadFile({ name: fileName, bytes, mime_type: mime, parentId: targetFolder })
         uploaded.push(f)
       }
-      return res.status(200).json({ ok: true, uploaded })
+      return res.status(200).json({ ok: true, format: useFormat, uploaded })
     }
 
     // Upload a Drive file → Canva as an asset.

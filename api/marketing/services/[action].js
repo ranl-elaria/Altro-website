@@ -171,6 +171,65 @@ export default async function handler(req, res) {
     }
   }
 
+  // ── BRANDBOOK ─────────────────────────────────────
+  // GET: pulls logos, colors, fonts, templates, recent assets from Canva (single call).
+  if (action === 'brandbook') {
+    if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
+    try {
+      const token = await getCanvaAccessToken(supabase)
+      const canva = createCanva({ access_token: token })
+      const [colors, fonts, logos, templates, assets] = await Promise.all([
+        canva.listColors().catch(e => ({ error: e.message, colors: [] })),
+        canva.listFonts().catch(e => ({ error: e.message, fonts: [] })),
+        canva.listLogos().catch(e => ({ error: e.message, logos: [] })),
+        canva.listBrandTemplates({}).catch(e => ({ error: e.message, items: [] })),
+        canva.listAssets({ limit: 50 }).catch(e => ({ error: e.message, items: [] })),
+      ])
+      return res.status(200).json({
+        colors: colors.colors || colors.items || [],
+        fonts: fonts.fonts || fonts.items || [],
+        logos: logos.logos || logos.items || [],
+        templates: templates.items || templates.brand_templates || [],
+        assets: assets.items || assets.assets || [],
+        errors: [colors, fonts, logos, templates, assets].map(x => x.error).filter(Boolean),
+      })
+    } catch (err) {
+      return res.status(500).json({ error: String(err?.message || err) })
+    }
+  }
+
+  // ── BRANDBOOK-UPLOAD ──────────────────────────────
+  // POST multipart-ish: { name, base64, mime_type, tags? }
+  // Uploads to Canva as an asset. CMO tags it as 'logo' / 'brand-asset' / etc.
+  if (action === 'brandbook-upload') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    let body = req.body
+    if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+    const { name, base64, mime_type, tags = [] } = body || {}
+    if (!name || !base64) return res.status(400).json({ error: 'missing_name_or_base64' })
+
+    try {
+      const bytes = Buffer.from(base64, 'base64')
+      const token = await getCanvaAccessToken(supabase)
+      const canva = createCanva({ access_token: token })
+      const job = await canva.uploadAsset({ name, bytes, mime_type })
+      const jobId = job.job?.id || job.id
+      // Poll briefly
+      let asset = null
+      for (let i = 0; i < 20; i++) {
+        const j = await canva.getAssetUploadJob(jobId)
+        const status = j.job?.status || j.status
+        if (status === 'success') { asset = j.job?.asset || j.asset; break }
+        if (status === 'failed') return res.status(500).json({ error: 'canva_upload_failed', payload: j })
+        await new Promise(r => setTimeout(r, 1500))
+      }
+      if (asset?.id && tags.length) await canva.tagAsset(asset.id, tags)
+      return res.status(200).json({ ok: true, asset })
+    } catch (err) {
+      return res.status(500).json({ error: String(err?.message || err) })
+    }
+  }
+
   // ── COMPETITORS-DISCOVER ──────────────────────────
   // LLM-generates a competitor list from a seed (industry, ICP).
   if (action === 'competitors-discover') {
