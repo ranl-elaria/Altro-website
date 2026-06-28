@@ -50,5 +50,17 @@ export function createCanva({ access_token }) {
       return req(`/brand-templates?${params.toString()}`)
     },
     getDesign(id) { return req(`/designs/${id}`) },
+    getBrandTemplateDataset(id) { return req(`/brand-templates/${id}/dataset`) },
+    // Create a new design from a brand template, optionally substituting fields.
+    // Canva returns a job; in v1 the design appears in the user's account.
+    createFromBrandTemplate({ brand_template_id, data = {}, title } = {}) {
+      const body = { brand_template_id, ...(title ? { title } : {}), ...(Object.keys(data).length ? { data } : {}) }
+      return req('/autofills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+    },
+    getAutofillJob(id) { return req(`/autofills/${id}`) },
   }
 }
