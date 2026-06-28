@@ -88,5 +88,27 @@ export function createCanva({ access_token }) {
       return r.json()
     },
     getAssetUploadJob(id) { return req(`/asset-uploads/${id}`) },
+    // Brand kit endpoints (Canva Connect Brand API)
+    listBrandKits() { return req('/brand-templates?ownership=any') }, // brand kits surface via brand-templates
+    getBrandKit(id) { return req(`/brand-kits/${id}`) },
+    listColors() { return req('/brand-kits/colors').catch(() => ({ colors: [] })) },
+    listFonts() { return req('/brand-kits/fonts').catch(() => ({ fonts: [] })) },
+    listLogos() { return req('/brand-kits/logos').catch(() => ({ logos: [] })) },
+    // Generic asset search
+    listAssets({ query, tag, continuation, limit = 50 } = {}) {
+      const params = new URLSearchParams({ limit: String(limit) })
+      if (query) params.set('query', query)
+      if (tag) params.set('tag', tag)
+      if (continuation) params.set('continuation', continuation)
+      return req(`/assets?${params.toString()}`).catch(() => ({ items: [] }))
+    },
+    // Tag an asset (used to mark as logo/brand-asset after upload)
+    tagAsset(assetId, tags) {
+      return req(`/assets/${assetId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tags }),
+      }).catch(() => null)
+    },
   }
 }

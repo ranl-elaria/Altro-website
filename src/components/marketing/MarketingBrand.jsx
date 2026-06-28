@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import BrandBook from './BrandBook'
 
 const SUBFOLDERS = [
   '01_Logos', '02_Brand_Guidelines', '03_Templates',
@@ -29,7 +30,7 @@ const TARGET_FOLDERS = [
 ]
 
 export default function MarketingBrand() {
-  const [source, setSource] = useState('drive')
+  const [source, setSource] = useState('brandbook')
   const [integ, setInteg] = useState(null)
   const [path, setPath] = useState([])
   const [folderId, setFolderId] = useState(null)
@@ -161,6 +162,12 @@ export default function MarketingBrand() {
 
       <div className="mkt-brand__tabs">
         <button
+          className={`mkt-agents__tab${source === 'brandbook' ? ' mkt-agents__tab--active' : ''}`}
+          onClick={() => setSource('brandbook')}
+        >
+          Brand book {canvaConnected ? '' : '(needs Canva)'}
+        </button>
+        <button
           className={`mkt-agents__tab${source === 'drive' ? ' mkt-agents__tab--active' : ''}`}
           onClick={() => setSource('drive')}
         >
@@ -170,12 +177,14 @@ export default function MarketingBrand() {
           className={`mkt-agents__tab${source === 'canva' ? ' mkt-agents__tab--active' : ''}`}
           onClick={() => setSource('canva')}
         >
-          Canva {canvaConnected ? '' : '(not connected)'}
+          Canva designs {canvaConnected ? '' : '(not connected)'}
         </button>
       </div>
 
       {error && <div className="mkt-agents__error">{error}</div>}
       {syncMsg && <div className="mkt-dash__sync-msg">{syncMsg}</div>}
+
+      {source === 'brandbook' && <BrandBook canvaConnected={canvaConnected} />}
 
       {source === 'drive' && !driveConnected && (
         <div className="marketing-panel__placeholder">
