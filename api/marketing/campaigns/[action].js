@@ -306,67 +306,114 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── VISUALS-BATCH-SPAWN ───────────────────────────
-  // POST body: { count?: 4, channels?: ['meta','linkedin',...], template_map?: { meta: 'tpl_id', ... } }
-  // For each channel/template, spawn 1 design pre-filled with chosen copy variant.
-  if (action === 'visuals-batch-spawn') {
+  // ── VISUALS-SPAWN-FOR-CHANNEL ─────────────────────
+  // POST body: { channel, count?: 4, mode?: 'template'|'creative'|'mixed', template_ids?: [], chosen_copy_id? }
+  // Spawns `count` visual concepts for ONE channel (one post). Polls each autofill, saves thumbnail + edit_url.
+  // mode:
+  //   template — only from brand templates (uses one chosen copy variant, cycles through provided template_ids)
+  //   creative — no template, AI describes a visual concept (Anthropic call), returns text-only placeholders
+  //   mixed    — half template, half creative
+  if (action === 'visuals-spawn-channel') {
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
     const id = req.query.id
     if (!id) return res.status(400).json({ error: 'missing_id' })
     let body = req.body
     if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
-    const reqCount = Math.max(2, Math.min(6, body?.count || 4))
-    const channelFilter = body?.channels
-    const overrideMap = body?.template_map || {}
+    const { channel, count = 4, mode = 'mixed', template_ids = [], chosen_copy_id } = body || {}
+    if (!channel) return res.status(400).json({ error: 'missing_channel' })
+    const N = Math.max(1, Math.min(6, count))
 
     const { data: c } = await supabase.from('marketing_campaigns').select('*').eq('id', id).single()
     if (!c) return res.status(404).json({ error: 'not_found' })
 
-    const tplMap = { ...(c.brand_template_map || {}), ...overrideMap }
-    const channels = (channelFilter || c.channels || []).filter(ch => tplMap[ch])
-    if (channels.length === 0) return res.status(400).json({ error: 'no_channels_with_templates_mapped' })
+    const chVariants = c.copy_variants?.variants?.[channel] || []
+    const copy = chVariants.find(v => v.id === chosen_copy_id) || chVariants.find(v => v.chosen) || chVariants[0] || null
 
-    const variants = c.copy_variants?.variants || {}
+    // Count split between template / creative
+    const templateCount = mode === 'template' ? N : mode === 'creative' ? 0 : Math.ceil(N / 2)
+    const creativeCount = N - templateCount
+
     const canvaToken = await getCanvaAccessToken(supabase)
     const canva = createCanva({ access_token: canvaToken })
 
-    // Build spawn list — cycle through channels until we hit reqCount
-    const spawnPlan = []
-    let i = 0
-    while (spawnPlan.length < reqCount && i < reqCount * 4) {
-      const ch = channels[i % channels.length]
-      const tpl = tplMap[ch]
-      const chVariants = variants[ch] || []
-      const chosen = chVariants.find(v => v.chosen) || chVariants[Math.floor(spawnPlan.length / channels.length) % Math.max(1, chVariants.length)]
-      spawnPlan.push({ channel: ch, template_id: tpl, variant: chosen || null })
-      i++
-    }
-
     const spawned = []
     const errors = []
-    for (const p of spawnPlan) {
+
+    // Template-based: cycle through provided template_ids
+    for (let i = 0; i < templateCount; i++) {
+      const tpl = template_ids[i % Math.max(1, template_ids.length)]
+      if (!tpl) { errors.push({ kind: 'template', error: 'no_template_id' }); continue }
       try {
         const fillData = {}
-        if (p.variant?.hook)  fillData.headline    = { type: 'text', text: p.variant.hook }
-        if (p.variant?.hook)  fillData.title       = { type: 'text', text: p.variant.hook }
-        if (p.variant?.body)  fillData.body        = { type: 'text', text: p.variant.body }
-        if (p.variant?.body)  fillData.subhead     = { type: 'text', text: p.variant.body }
-        if (p.variant?.cta)   fillData.cta         = { type: 'text', text: p.variant.cta }
-        if (p.variant?.cta)   fillData.button_text = { type: 'text', text: p.variant.cta }
-        const title = `${c.name} — ${p.channel}`
+        if (copy?.hook) { fillData.headline = { type: 'text', text: copy.hook }; fillData.title = { type: 'text', text: copy.hook } }
+        if (copy?.body) { fillData.body = { type: 'text', text: copy.body }; fillData.subhead = { type: 'text', text: copy.body } }
+        if (copy?.cta)  { fillData.cta  = { type: 'text', text: copy.cta };  fillData.button_text = { type: 'text', text: copy.cta } }
+        const title = `${c.name} — ${channel} v${spawned.length + 1}`
         const job = await canva.createFromBrandTemplate({
-          brand_template_id: p.template_id, title,
+          brand_template_id: tpl, title,
           data: Object.keys(fillData).length ? fillData : undefined,
         })
+        const jobId = job.job?.id || job.id
+
+        // Poll autofill job to completion (max ~30s)
+        let designId = null, thumbnail = null, editUrl = null, jobStatus = 'in_progress'
+        for (let p = 0; p < 20; p++) {
+          await new Promise(r => setTimeout(r, 1500))
+          const j = await canva.getAutofillJob(jobId).catch(() => null)
+          if (!j) continue
+          jobStatus = j.job?.status || j.status
+          if (jobStatus === 'success') {
+            const d = j.job?.result?.design || j.result?.design || j.design
+            designId = d?.id
+            thumbnail = d?.thumbnail?.url || null
+            editUrl = d?.urls?.edit_url || null
+            break
+          }
+          if (jobStatus === 'failed') break
+        }
+
         spawned.push({
-          id: job.job?.id || job.id || `${Date.now()}-${spawned.length}`,
-          spawned_from: p.template_id,
-          channel: p.channel,
-          variant_id: p.variant?.id || null,
-          title, job, chosen: false, created_at: new Date().toISOString(),
+          id: designId || jobId || `${Date.now()}-${spawned.length}`,
+          kind: 'template',
+          spawned_from: tpl,
+          channel,
+          variant_id: copy?.id || null,
+          title, thumbnail, edit_url: editUrl, job_status: jobStatus,
+          chosen: false, created_at: new Date().toISOString(),
         })
       } catch (e) {
-        errors.push({ channel: p.channel, template_id: p.template_id, error: String(e?.message || e) })
+        errors.push({ kind: 'template', template_id: tpl, error: String(e?.message || e) })
+      }
+    }
+
+    // Creative (no template): use Claude to describe a visual concept. Output = text-only card.
+    if (creativeCount > 0) {
+      try {
+        const r = await runCampaignStep({
+          apiKey: process.env.ANTHROPIC_API_KEY,
+          system: `You design visual concepts for paid + organic ads. Return ONLY valid JSON.
+Schema: { "concepts": [{ "id": "string", "title": "string", "layout": "string", "subject": "string", "palette": "string", "mood": "string", "type_treatment": "string", "headline_overlay": "string", "production_note": "string" }] }`,
+          user: `Channel: ${channel}
+Copy: ${JSON.stringify(copy, null, 2)}
+Brand context: ${JSON.stringify({ templates: c.brand_context?.canva?.templates?.map(t => t.title) || [] })}
+Audience: ${c.audience?.text}
+
+Produce ${creativeCount} distinct visual concepts that respect AltroAI brand (premium, technical-credible, restrained palette). Each should be different in layout/subject/mood. CMO will hand these to a designer to build.`,
+        })
+        const parsed = tryParseJson(r.text)
+        for (const cn of (parsed?.concepts || [])) {
+          spawned.push({
+            id: cn.id || `creative-${Date.now()}-${spawned.length}`,
+            kind: 'creative',
+            channel, variant_id: copy?.id || null,
+            title: cn.title || 'Creative concept',
+            thumbnail: null, edit_url: null, job_status: 'concept_only',
+            concept: cn,
+            chosen: false, created_at: new Date().toISOString(),
+          })
+        }
+      } catch (e) {
+        errors.push({ kind: 'creative', error: String(e?.message || e) })
       }
     }
 

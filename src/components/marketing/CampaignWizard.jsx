@@ -387,15 +387,18 @@ function StepCopy({ c, patch, runStep, busy }) {
   )
 }
 
-// ── Step 5 ─────────────────────────────────────────────────
+// ── Step 5: Visuals ────────────────────────────────────────
+// One "post" per channel. Each post = chosen copy variant + N rendered visual concepts.
+// Per-channel: pick 1-3 brand templates, choose creative mode, click "Generate 4 concepts".
 function StepVisuals({ c, patch, busy }) {
   const visuals = c.visuals || []
   const [available, setAvailable] = useState(null)
   const [loadingList, setLoadingList] = useState(false)
   const [err, setErr] = useState(null)
-  const [batchCount, setBatchCount] = useState(4)
-  const [batchBusy, setBatchBusy] = useState(false)
   const [tplMap, setTplMap] = useState(c.brand_template_map || {})
+  const [spawning, setSpawning] = useState(null)
+
+  useEffect(() => { loadList() }, [])
 
   async function loadList() {
     setLoadingList(true); setErr(null)
@@ -406,7 +409,9 @@ function StepVisuals({ c, patch, busy }) {
     setLoadingList(false)
   }
 
-  async function saveTplMap(next) {
+  async function saveTplMap(channel, patchVal) {
+    const cur = tplMap[channel] || { templates: [], mode: 'mixed' }
+    const next = { ...tplMap, [channel]: { ...cur, ...patchVal } }
     setTplMap(next)
     await patch({ brand_template_map: next })
   }
@@ -420,120 +425,143 @@ function StepVisuals({ c, patch, busy }) {
     } catch (e) { setErr(e.message) }
   }
 
-  async function batchSpawn() {
-    setBatchBusy(true); setErr(null)
+  async function spawnForChannel(channel) {
+    const cfg = tplMap[channel] || { templates: [], mode: 'creative' }
+    setSpawning(channel); setErr(null)
     try {
-      const j = await authedFetch(`/api/marketing/campaigns/visuals-batch-spawn?id=${c.id}`, {
+      const chVariants = c.copy_variants?.variants?.[channel] || []
+      const chosenCopy = chVariants.find(v => v.chosen) || chVariants[0]
+      await authedFetch(`/api/marketing/campaigns/visuals-spawn-channel?id=${c.id}`, {
         method: 'POST',
-        body: JSON.stringify({ count: batchCount, template_map: tplMap }),
+        body: JSON.stringify({
+          channel, count: 4,
+          mode: cfg.mode || 'mixed',
+          template_ids: cfg.templates || [],
+          chosen_copy_id: chosenCopy?.id,
+        }),
       })
-      if (j.errors?.length) setErr(`Spawned ${j.spawned}, errors: ${j.errors.map(e => e.error).join('; ')}`)
       await patch({})
     } catch (e) { setErr(e.message) }
-    setBatchBusy(false)
+    setSpawning(null)
   }
 
-  const designs = available?.designs?.items || available?.designs?.designs || []
   const templates = available?.templates?.items || available?.templates?.brand_templates || []
   const chosenCount = visuals.filter(v => v.chosen).length
   const channels = c.channels || []
-  const tplCount = Object.values(tplMap).filter(Boolean).length
 
   return (
     <div className="mkt-wiz__panel">
       <h3>Visuals</h3>
       <p className="mkt-int__sub">
-        Assign one Canva brand template per channel, then auto-spawn 2-6 designs pre-filled with chosen copy. Chosen: {chosenCount}
+        One post per channel. Each post gets 4 visual concepts (mix of brand-template-based + creative AI-described).
+        Pick multiple winners per post. Total chosen: {chosenCount}
       </p>
 
       <div className="mkt-agents__actions">
         <button className="mkt-agents__btn" onClick={loadList} disabled={loadingList}>
-          {loadingList ? 'Loading…' : (available ? 'Refresh templates' : 'Load Canva templates')}
+          {loadingList ? 'Loading templates…' : 'Refresh templates'}
         </button>
         {chosenCount > 0 && (
-          <button className="mkt-agents__btn" onClick={() => patch({ state: 'REVIEW' })} disabled={busy}>
+          <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => patch({ state: 'REVIEW' })} disabled={busy}>
             Next: Review →
           </button>
         )}
       </div>
       {err && <div className="mkt-agents__error">{err}</div>}
 
-      {/* Template assignment per channel */}
-      {templates.length > 0 && channels.length > 0 && (
-        <section className="mkt-wiz__panel" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: 12 }}>
-          <h4>Channel → brand template ({tplCount}/{channels.length} mapped)</h4>
-          {channels.map(ch => (
-            <div key={ch} className="mkt-camp-new__row" style={{ alignItems: 'center', gridTemplateColumns: '120px 1fr' }}>
-              <div><strong>{ch}</strong></div>
-              <select className="mkt-agents__input" value={tplMap[ch] || ''} onChange={e => saveTplMap({ ...tplMap, [ch]: e.target.value })}>
-                <option value="">— pick template —</option>
-                {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
-              </select>
+      {/* One panel per channel */}
+      {channels.map(ch => {
+        const cfg = tplMap[ch] || { templates: [], mode: 'mixed' }
+        const chVisuals = visuals.filter(v => v.channel === ch)
+        const chVariants = c.copy_variants?.variants?.[ch] || []
+        const chosenCopy = chVariants.find(v => v.chosen)
+        return (
+          <section key={ch} className="mkt-post">
+            <header className="mkt-post__head">
+              <h4>{ch}</h4>
+              {chosenCopy ? (
+                <div className="mkt-post__copy">
+                  <strong>"{chosenCopy.hook}"</strong>
+                  <span className="mkt-int__sub"> — {chosenCopy.cta}</span>
+                </div>
+              ) : (
+                <div className="mkt-int__sub">⚠ no copy variant chosen for this channel</div>
+              )}
+            </header>
+
+            <div className="mkt-post__config">
+              <label className="mkt-agents__field" style={{ flex: 1 }}>
+                <span className="mkt-agents__field-label">Brand templates (multi-select)</span>
+                <select multiple className="mkt-agents__input" style={{ minHeight: 80 }}
+                  value={cfg.templates || []}
+                  onChange={e => saveTplMap(ch, { templates: Array.from(e.target.selectedOptions).map(o => o.value) })}>
+                  {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+                </select>
+              </label>
+              <label className="mkt-agents__field" style={{ width: 160 }}>
+                <span className="mkt-agents__field-label">Mode</span>
+                <select className="mkt-agents__input" value={cfg.mode || 'mixed'}
+                  onChange={e => saveTplMap(ch, { mode: e.target.value })}>
+                  <option value="template">Template only</option>
+                  <option value="creative">Creative only (AI)</option>
+                  <option value="mixed">Mixed (2 + 2)</option>
+                </select>
+              </label>
+              <button
+                className="mkt-agents__btn mkt-agents__btn--primary"
+                onClick={() => spawnForChannel(ch)}
+                disabled={spawning === ch}
+                style={{ alignSelf: 'flex-end' }}>
+                {spawning === ch ? 'Generating…' : 'Generate 4 concepts'}
+              </button>
             </div>
-          ))}
-        </section>
-      )}
 
-      {/* Batch spawn */}
-      {tplCount > 0 && (
-        <section className="mkt-wiz__panel" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: 12 }}>
-          <h4>Auto-spawn from templates + chosen copy</h4>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <label style={{ fontSize: 12, color: 'rgba(237,234,227,0.7)' }}>Variants:</label>
-            <input type="number" min={2} max={6} value={batchCount} onChange={e => setBatchCount(Math.max(2, Math.min(6, Number(e.target.value))))}
-              className="mkt-agents__input" style={{ width: 70 }} />
-            <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={batchSpawn} disabled={batchBusy}>
-              {batchBusy ? 'Spawning…' : `Spawn ${batchCount} designs`}
-            </button>
-          </div>
-          <p className="mkt-int__sub" style={{ marginTop: 4 }}>
-            Each design fills your brand template fields named <code>headline/title</code>, <code>body/subhead</code>, <code>cta/button_text</code> from chosen copy variants. If no copy chosen, AI is creative.
-          </p>
-        </section>
-      )}
-
-      {visuals.length > 0 && (
-        <>
-          <h4>Spawned + attached ({visuals.length})</h4>
-          <div className="mkt-brand__grid">
-            {visuals.map(v => (
-              <article key={v.id} className="mkt-brand__file" style={{
-                borderColor: v.chosen ? 'rgba(34,197,94,0.5)' : undefined,
-                background: v.chosen ? 'rgba(34,197,94,0.08)' : undefined,
-              }}>
-                <div className="mkt-brand__thumb">
-                  {v.thumbnail ? <img src={v.thumbnail} alt={v.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
-                </div>
-                <div className="mkt-brand__name">{v.title || v.id}</div>
-                {v.channel && <div className="mkt-int__sub">{v.channel}</div>}
-                <div style={{ display: 'flex', gap: 4 }}>
-                  {v.edit_url && <a className="mkt-agents__btn" href={v.edit_url} target="_blank" rel="noreferrer">Edit</a>}
-                  <button className="mkt-agents__btn" onClick={() => pickDesign({ id: v.id, title: v.title, thumbnail: { url: v.thumbnail }, urls: { edit_url: v.edit_url } })}>
-                    {v.chosen ? '✓ Chosen' : 'Choose'}
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </>
-      )}
-
-      {designs.length > 0 && (
-        <>
-          <h4>Or pick from existing Canva designs ({designs.length})</h4>
-          <div className="mkt-brand__grid">
-            {designs.map(d => (
-              <article key={d.id} className="mkt-brand__file">
-                <div className="mkt-brand__thumb">
-                  {d.thumbnail?.url ? <img src={d.thumbnail.url} alt={d.title} loading="lazy" referrerPolicy="no-referrer" /> : <div className="mkt-brand__icon">🎨</div>}
-                </div>
-                <div className="mkt-brand__name">{d.title}</div>
-                <button className="mkt-agents__btn" onClick={() => pickDesign(d)}>Add</button>
-              </article>
-            ))}
-          </div>
-        </>
-      )}
+            {chVisuals.length > 0 && (
+              <div className="mkt-brand__grid">
+                {chVisuals.map(v => (
+                  <article key={v.id} className="mkt-brand__file" style={{
+                    borderColor: v.chosen ? 'rgba(34,197,94,0.5)' : undefined,
+                    background: v.chosen ? 'rgba(34,197,94,0.08)' : undefined,
+                  }}>
+                    <div className="mkt-brand__thumb">
+                      {v.thumbnail ? (
+                        <img src={v.thumbnail} alt={v.title} loading="lazy" referrerPolicy="no-referrer" />
+                      ) : v.kind === 'creative' ? (
+                        <div className="mkt-post__concept">
+                          <strong>{v.concept?.layout}</strong>
+                          <div className="mkt-int__sub">{v.concept?.subject}</div>
+                          <div className="mkt-int__sub">{v.concept?.palette}</div>
+                        </div>
+                      ) : (
+                        <div className="mkt-brand__icon">⏳</div>
+                      )}
+                    </div>
+                    <div className="mkt-brand__name">{v.title}</div>
+                    <div className="mkt-int__sub">
+                      {v.kind === 'template' ? '🖼 template' : '✨ creative concept'}
+                      {v.job_status && v.job_status !== 'success' && v.job_status !== 'concept_only' && ` · ${v.job_status}`}
+                    </div>
+                    {v.kind === 'creative' && v.concept && (
+                      <details>
+                        <summary style={{ fontSize: 11, cursor: 'pointer', color: 'rgba(237,234,227,0.6)' }}>Full brief</summary>
+                        <pre style={{ fontSize: 10, whiteSpace: 'pre-wrap', margin: '4px 0', color: 'rgba(237,234,227,0.75)' }}>
+{JSON.stringify(v.concept, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {v.edit_url && <a className="mkt-agents__btn" href={v.edit_url} target="_blank" rel="noreferrer">Edit in Canva</a>}
+                      <button className="mkt-agents__btn" onClick={() => pickDesign({ id: v.id, title: v.title, thumbnail: { url: v.thumbnail }, urls: { edit_url: v.edit_url } })}>
+                        {v.chosen ? '✓ Chosen' : 'Pick'}
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        )
+      })}
     </div>
   )
 }
