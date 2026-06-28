@@ -56,7 +56,13 @@ export default async function handler(req, res) {
     if (!provider) return res.status(400).send('Missing provider')
 
     const state = crypto.randomBytes(16).toString('hex')
-    res.setHeader('Set-Cookie', `mkt_oauth_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`)
+    // PKCE (required by Canva, harmless for Google)
+    const code_verifier = crypto.randomBytes(32).toString('base64url')
+    const code_challenge = crypto.createHash('sha256').update(code_verifier).digest('base64url')
+    res.setHeader('Set-Cookie', [
+      `mkt_oauth_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
+      `mkt_oauth_verifier=${code_verifier}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
+    ])
     const redirect_uri = `${base}/api/marketing/oauth/callback?provider=${provider}`
 
     let authUrl
@@ -81,6 +87,8 @@ export default async function handler(req, res) {
         redirect_uri,
         scope: 'design:content:read design:meta:read design:content:write folder:read folder:write asset:read asset:write brandtemplate:meta:read brandtemplate:content:read',
         state,
+        code_challenge,
+        code_challenge_method: 'S256',
       })
       authUrl = `https://www.canva.com/api/oauth/authorize?${params.toString()}`
     } else {
@@ -97,7 +105,11 @@ export default async function handler(req, res) {
 
     if (!provider || !code) return done(res, base, false, 'missing params')
     if (!state || state !== cookies.mkt_oauth_state) return done(res, base, false, 'state mismatch')
-    res.setHeader('Set-Cookie', 'mkt_oauth_state=; Path=/; Max-Age=0')
+    const code_verifier = cookies.mkt_oauth_verifier || ''
+    res.setHeader('Set-Cookie', [
+      'mkt_oauth_state=; Path=/; Max-Age=0',
+      'mkt_oauth_verifier=; Path=/; Max-Age=0',
+    ])
 
     const redirect_uri = `${base}/api/marketing/oauth/callback?provider=${provider}`
 
@@ -126,12 +138,18 @@ export default async function handler(req, res) {
           grant_type: 'authorization_code',
           code,
           redirect_uri,
-          client_id: process.env.CANVA_CLIENT_ID,
-          client_secret: process.env.CANVA_CLIENT_SECRET,
+          code_verifier,
         })
+        // Canva uses HTTP Basic auth (client_id:client_secret) for token endpoint
+        const basic = Buffer.from(
+          `${process.env.CANVA_CLIENT_ID}:${process.env.CANVA_CLIENT_SECRET}`
+        ).toString('base64')
         const r = await fetch('https://api.canva.com/rest/v1/oauth/token', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${basic}`,
+          },
           body,
         })
         const j = await r.json()

@@ -5,11 +5,15 @@ const API = 'https://api.canva.com/rest/v1'
 
 export async function refreshCanvaToken({ refresh_token, client_id, client_secret }) {
   const body = new URLSearchParams({
-    grant_type: 'refresh_token', refresh_token, client_id, client_secret,
+    grant_type: 'refresh_token', refresh_token,
   })
+  const basic = Buffer.from(`${client_id}:${client_secret}`).toString('base64')
   const r = await fetch(`${API}/oauth/token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${basic}`,
+    },
     body,
   })
   if (!r.ok) throw new Error(`Canva refresh: ${r.status} ${await r.text()}`)
