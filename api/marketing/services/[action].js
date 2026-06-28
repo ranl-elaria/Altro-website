@@ -172,27 +172,46 @@ export default async function handler(req, res) {
   }
 
   // ── BRANDBOOK ─────────────────────────────────────
-  // GET: pulls logos, colors, fonts, templates, recent assets from Canva (single call).
+  // Canva Connect doesn't expose /colors /fonts /logos as top-level.
+  // We derive:
+  //   - templates: /brand-templates  (real)
+  //   - dataset (colors, fonts referenced): /brand-templates/{id}/dataset  (real)
+  //   - logos: tagged assets ('brand:logo')  (real, via /assets search)
+  //   - assets: recent uploaded assets       (real)
   if (action === 'brandbook') {
     if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
     try {
       const token = await getCanvaAccessToken(supabase)
       const canva = createCanva({ access_token: token })
-      const [colors, fonts, logos, templates, assets] = await Promise.all([
-        canva.listColors().catch(e => ({ error: e.message, colors: [] })),
-        canva.listFonts().catch(e => ({ error: e.message, fonts: [] })),
-        canva.listLogos().catch(e => ({ error: e.message, logos: [] })),
-        canva.listBrandTemplates({}).catch(e => ({ error: e.message, items: [] })),
-        canva.listAssets({ limit: 50 }).catch(e => ({ error: e.message, items: [] })),
-      ])
-      return res.status(200).json({
-        colors: colors.colors || colors.items || [],
-        fonts: fonts.fonts || fonts.items || [],
-        logos: logos.logos || logos.items || [],
-        templates: templates.items || templates.brand_templates || [],
-        assets: assets.items || assets.assets || [],
-        errors: [colors, fonts, logos, templates, assets].map(x => x.error).filter(Boolean),
-      })
+      const errors = []
+
+      const templatesRes = await canva.listBrandTemplates({}).catch(e => { errors.push(`templates: ${e.message}`); return {} })
+      const templates = templatesRes.items || templatesRes.brand_templates || []
+
+      // Pull dataset from first 3 templates → union of colors + fonts
+      const colorMap = new Map()
+      const fontMap = new Map()
+      for (const t of templates.slice(0, 3)) {
+        const ds = await canva.getDataset(t.id).catch(() => null)
+        if (!ds) continue
+        const fields = ds.dataset?.fields || ds.fields || {}
+        for (const [, def] of Object.entries(fields)) {
+          if (def?.type === 'color' && def?.value) colorMap.set(def.value.toUpperCase(), { hex: def.value, name: def.name || null })
+          if (def?.type === 'text' && def?.font?.family) fontMap.set(def.font.family, { family: def.font.family, name: def.font.family, weight: def.font.weight })
+        }
+      }
+      const colors = Array.from(colorMap.values())
+      const fonts = Array.from(fontMap.values())
+
+      // Logos = assets tagged 'logo' or 'brand'
+      const logosRes = await canva.listAssets({ tag: 'logo', limit: 30 }).catch(e => { errors.push(`logos: ${e.message}`); return {} })
+      const logos = logosRes.items || logosRes.assets || []
+
+      // Generic recent assets
+      const assetsRes = await canva.listAssets({ limit: 50 }).catch(e => { errors.push(`assets: ${e.message}`); return {} })
+      const assets = assetsRes.items || assetsRes.assets || []
+
+      return res.status(200).json({ colors, fonts, logos, templates, assets, errors })
     } catch (err) {
       return res.status(500).json({ error: String(err?.message || err) })
     }

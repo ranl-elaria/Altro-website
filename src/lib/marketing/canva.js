@@ -71,16 +71,19 @@ export function createCanva({ access_token }) {
       })
     },
     getExportJob(id) { return req(`/exports/${id}`) },
-    // Upload an asset to Canva. Requires multipart upload via /asset-uploads.
+    // Upload an asset to Canva. /v1/asset-uploads accepts raw body with custom Asset-Upload-Metadata header.
+    // Per Canva docs: name in metadata must be base64url-encoded.
     async uploadAsset({ name, bytes, mime_type }) {
-      // Canva async asset upload: POST /asset-uploads, returns job
-      const meta = { name_base64: Buffer.from(name).toString('base64') }
+      // base64url-encode name
+      const nameB64 = Buffer.from(name).toString('base64')
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+      const meta = JSON.stringify({ name_base64: nameB64 })
       const r = await fetch(`${API}/asset-uploads`, {
         method: 'POST',
         headers: {
-          ...h,
-          'Content-Type': mime_type || 'application/octet-stream',
-          'Asset-Upload-Metadata': JSON.stringify(meta),
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': 'application/octet-stream',
+          'Asset-Upload-Metadata': meta,
         },
         body: bytes,
       })
@@ -88,12 +91,11 @@ export function createCanva({ access_token }) {
       return r.json()
     },
     getAssetUploadJob(id) { return req(`/asset-uploads/${id}`) },
-    // Brand kit endpoints (Canva Connect Brand API)
-    listBrandKits() { return req('/brand-templates?ownership=any') }, // brand kits surface via brand-templates
-    getBrandKit(id) { return req(`/brand-kits/${id}`) },
-    listColors() { return req('/brand-kits/colors').catch(() => ({ colors: [] })) },
-    listFonts() { return req('/brand-kits/fonts').catch(() => ({ fonts: [] })) },
-    listLogos() { return req('/brand-kits/logos').catch(() => ({ logos: [] })) },
+    // Brand kit: only brand templates + their datasets are exposed via Canva Connect API.
+    // No public /colors /fonts /logos endpoints. Derive from template datasets + tagged assets.
+    getDataset(brandTemplateId) {
+      return req(`/brand-templates/${brandTemplateId}/dataset`).catch(() => null)
+    },
     // Generic asset search
     listAssets({ query, tag, continuation, limit = 50 } = {}) {
       const params = new URLSearchParams({ limit: String(limit) })
