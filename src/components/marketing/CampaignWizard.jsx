@@ -428,13 +428,12 @@ function StepVisuals({ c, patch, busy }) {
   }
 
   async function spawnForChannel(channel) {
-    // Read fresh config from server state (avoid stale local tplMap)
     const cfg = (c.brand_template_map || {})[channel] || tplMap[channel] || { templates: [], mode: 'creative' }
     const tpls = cfg.templates || []
     const mode = cfg.mode || 'mixed'
 
     if ((mode === 'template' || mode === 'mixed') && tpls.length === 0) {
-      setErr(`${channel}: mode "${mode}" needs at least 1 brand template. Pick one in the multi-select above or switch mode to "Creative only".`)
+      setErr(`${channel}: mode "${mode}" needs at least 1 brand template. Pick one or switch to "Creative" / "AI image".`)
       return
     }
 
@@ -450,6 +449,29 @@ function StepVisuals({ c, patch, busy }) {
           chosen_copy_id: chosenCopy?.id,
         }),
       })
+      await patch({})
+    } catch (e) { setErr(e.message) }
+    setSpawning(null)
+  }
+
+  async function generateAiForChannel(channel, opts) {
+    setSpawning(channel); setErr(null)
+    try {
+      const chVariants = c.copy_variants?.variants?.[channel] || []
+      const chosenCopy = chVariants.find(v => v.chosen) || chVariants[0]
+      const j = await authedFetch(`/api/marketing/campaigns/visuals-generate-ai?id=${c.id}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          channel,
+          count: opts.count || 4,
+          provider: opts.provider || 'openai',
+          size_key: opts.size_key,
+          chosen_copy_id: chosenCopy?.id,
+          use_brand: !!opts.use_brand,
+          brief: opts.brief || null,
+        }),
+      })
+      if (j.errors?.length) setErr(`${channel}: ${j.spawned} ok, errors: ${j.errors.map(e => e.error).join('; ')}`)
       await patch({})
     } catch (e) { setErr(e.message) }
     setSpawning(null)
@@ -499,37 +521,42 @@ function StepVisuals({ c, patch, busy }) {
               )}
             </header>
 
-            <div className="mkt-post__config">
-              <label className="mkt-agents__field" style={{ flex: 1 }}>
-                <span className="mkt-agents__field-label">Brand templates (multi-select)</span>
-                <select multiple className="mkt-agents__input" style={{ minHeight: 80 }}
-                  value={cfg.templates || []}
-                  onChange={e => saveTplMap(ch, { templates: Array.from(e.target.selectedOptions).map(o => o.value) })}>
-                  {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
-                </select>
-              </label>
-              <label className="mkt-agents__field" style={{ width: 160 }}>
-                <span className="mkt-agents__field-label">Mode</span>
-                <select className="mkt-agents__input" value={cfg.mode || 'mixed'}
-                  onChange={e => saveTplMap(ch, { mode: e.target.value })}>
-                  <option value="template">Template only</option>
-                  <option value="creative">Creative only (AI)</option>
-                  <option value="mixed">Mixed (2 + 2)</option>
-                </select>
-              </label>
-              <button
-                className="mkt-agents__btn mkt-agents__btn--primary"
-                onClick={() => spawnForChannel(ch)}
-                disabled={spawning === ch}
-                style={{ alignSelf: 'flex-end' }}>
-                {spawning === ch ? 'Generating…' : 'Generate 4 concepts'}
-              </button>
-            </div>
-            {(cfg.mode === 'template' || cfg.mode === 'mixed') && (cfg.templates || []).length === 0 && (
-              <div className="mkt-int__err">
-                ⚠ Mode "{cfg.mode}" needs a brand template. Select one above or switch to "Creative only".
+            <PostAiPanel channel={ch} c={c} busy={spawning === ch} onGenerate={generateAiForChannel} />
+
+            <details className="mkt-post__advanced">
+              <summary>Advanced: spawn from brand template instead</summary>
+              <div className="mkt-post__config">
+                <label className="mkt-agents__field" style={{ flex: 1 }}>
+                  <span className="mkt-agents__field-label">Brand templates (multi-select)</span>
+                  <select multiple className="mkt-agents__input" style={{ minHeight: 80 }}
+                    value={cfg.templates || []}
+                    onChange={e => saveTplMap(ch, { templates: Array.from(e.target.selectedOptions).map(o => o.value) })}>
+                    {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+                  </select>
+                </label>
+                <label className="mkt-agents__field" style={{ width: 160 }}>
+                  <span className="mkt-agents__field-label">Mode</span>
+                  <select className="mkt-agents__input" value={cfg.mode || 'mixed'}
+                    onChange={e => saveTplMap(ch, { mode: e.target.value })}>
+                    <option value="template">Template only</option>
+                    <option value="creative">Creative briefs (no render)</option>
+                    <option value="mixed">Mixed (2 + 2)</option>
+                  </select>
+                </label>
+                <button
+                  className="mkt-agents__btn"
+                  onClick={() => spawnForChannel(ch)}
+                  disabled={spawning === ch}
+                  style={{ alignSelf: 'flex-end' }}>
+                  {spawning === ch ? 'Generating…' : 'Spawn from template'}
+                </button>
               </div>
-            )}
+              {(cfg.mode === 'template' || cfg.mode === 'mixed') && (cfg.templates || []).length === 0 && (
+                <div className="mkt-int__err">
+                  ⚠ Mode "{cfg.mode}" needs a brand template.
+                </div>
+              )}
+            </details>
 
             {chVisuals.length > 0 && (
               <div className="mkt-brand__grid">
@@ -577,6 +604,69 @@ function StepVisuals({ c, patch, busy }) {
           </section>
         )
       })}
+    </div>
+  )
+}
+
+// ── Post-level AI image generator panel ───────────────────
+const SIZE_OPTIONS = {
+  meta_post:       'Meta feed 1080×1080',
+  meta_story:      'Meta story 1080×1920',
+  linkedin_post:   'LinkedIn 1200×627',
+  linkedin_square: 'LinkedIn square 1080×1080',
+  x_post:          'X 16:9 1600×900',
+  email_header:    'Email header 600×200',
+  youtube_thumb:   'YouTube 1280×720',
+}
+
+const CHANNEL_DEFAULT_SIZE = {
+  meta: 'meta_post', linkedin: 'linkedin_post', email: 'email_header', x: 'x_post', youtube: 'youtube_thumb',
+}
+
+function PostAiPanel({ channel, c, busy, onGenerate }) {
+  const [provider, setProvider] = useState('openai')
+  const [sizeKey, setSizeKey] = useState(CHANNEL_DEFAULT_SIZE[channel] || 'meta_post')
+  const [count, setCount] = useState(4)
+  const [useBrand, setUseBrand] = useState(false)
+  const [brief, setBrief] = useState('')
+
+  return (
+    <div className="mkt-post__config">
+      <label className="mkt-agents__field" style={{ width: 160 }}>
+        <span className="mkt-agents__field-label">Provider</span>
+        <select className="mkt-agents__input" value={provider} onChange={e => setProvider(e.target.value)}>
+          <option value="openai">OpenAI gpt-image-1</option>
+          <option value="ideogram">Ideogram V2 (text-in-image)</option>
+        </select>
+      </label>
+      <label className="mkt-agents__field" style={{ width: 200 }}>
+        <span className="mkt-agents__field-label">Size</span>
+        <select className="mkt-agents__input" value={sizeKey} onChange={e => setSizeKey(e.target.value)}>
+          {Object.entries(SIZE_OPTIONS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+      </label>
+      <label className="mkt-agents__field" style={{ width: 80 }}>
+        <span className="mkt-agents__field-label">Variants</span>
+        <input className="mkt-agents__input" type="number" min={1} max={6} value={count}
+          onChange={e => setCount(Math.max(1, Math.min(6, Number(e.target.value))))} />
+      </label>
+      <label className="mkt-agents__field" style={{ width: 130, alignSelf: 'flex-end' }}>
+        <input type="checkbox" checked={useBrand} onChange={e => setUseBrand(e.target.checked)} />
+        <span className="mkt-agents__field-label" style={{ display: 'inline-block', marginLeft: 6 }}>
+          Lock to AltroAI brand
+        </span>
+      </label>
+      <label className="mkt-agents__field" style={{ flex: 1, minWidth: 240 }}>
+        <span className="mkt-agents__field-label">Creative brief (optional)</span>
+        <input className="mkt-agents__input" value={brief} onChange={e => setBrief(e.target.value)}
+          placeholder="e.g. 'split-screen comparison, cold editorial', 'animated wireframe behind headline'" />
+      </label>
+      <button
+        className="mkt-agents__btn mkt-agents__btn--primary"
+        onClick={() => onGenerate(channel, { count, provider, size_key: sizeKey, use_brand: useBrand, brief })}
+        disabled={busy} style={{ alignSelf: 'flex-end' }}>
+        {busy ? 'Generating…' : `Generate ${count} AI images`}
+      </button>
     </div>
   )
 }
