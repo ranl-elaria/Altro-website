@@ -18,6 +18,8 @@ import { loadTokens } from '../../../src/lib/marketing/oauth-store.js'
 import {
   generateImage, buildImagePrompt, listSizes, defaultSizeForChannel,
 } from '../../../src/lib/marketing/imagegen.js'
+import { autoresearchOptimize } from '../../../src/lib/marketing/autoresearch.js'
+import { expertPanelScore } from '../../../src/lib/marketing/expert-panel.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -804,6 +806,81 @@ Produce ${creativeCount} distinct visual concepts that respect AltroAI brand (pr
     }
     await supabase.from('marketing_campaigns').update({ visuals }).eq('id', id)
     return res.status(200).json({ visuals })
+  }
+
+  // ── CONCEPTS-EVOLVE ───────────────────────────────
+  // POST { kind: 'copy'|'concept', text, brandContext?, variantsPerRound?, maxRounds?, minScore? }
+  // Karpathy-style: gen N variants → expert score → keep top → evolve. Returns winner + log.
+  if (action === 'concepts-evolve') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    const id = req.query.id
+    let body = req.body
+    if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+    const {
+      kind = 'visual_concept', text, brandContext = '',
+      variantsPerRound = 8, maxRounds = 2, minScore = 85,
+    } = body || {}
+    if (!text) return res.status(400).json({ error: 'missing_text' })
+
+    // Cost cap
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data: dayRuns } = await supabase.from('marketing_runs').select('cost_usd').gte('started_at', since)
+    const dayCost = (dayRuns || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0)
+    const cap = Number(process.env.DAILY_COST_CAP_USD || 10)
+    if (dayCost >= cap) return res.status(429).json({ error: 'daily_cost_cap_exceeded', total: dayCost, cap })
+
+    try {
+      const result = await autoresearchOptimize({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        content: text, contentType: kind,
+        variantsPerRound, maxRounds, minScore, brandContext,
+      })
+      await supabase.from('marketing_runs').insert({
+        user_email: user.email, agent_slug: `concepts-evolve-${kind}`,
+        status: 'done', inputs: { kind, len: String(text).length },
+        outputs: { final_score: result.finalScore, rounds: result.rounds },
+        cost_usd: result.totalCost,
+        finished_at: new Date().toISOString(), campaign_id: id || null,
+      })
+      return res.status(200).json({ ok: true, ...result })
+    } catch (e) {
+      return res.status(500).json({ error: 'evolve_failed', message: String(e?.message || e) })
+    }
+  }
+
+  // ── REVIEW-PANEL ──────────────────────────────────
+  // POST { kind: 'copy'|'visual'|'campaign', artifact, target?, maxRounds?, brandContext? }
+  // Recursive expert panel: score → revise → re-score until ≥ target.
+  if (action === 'review-panel') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    const id = req.query.id
+    let body = req.body
+    if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+    const { kind = 'copy', artifact, target = 90, maxRounds = 3, brandContext = '' } = body || {}
+    if (!artifact) return res.status(400).json({ error: 'missing_artifact' })
+
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data: dayRuns } = await supabase.from('marketing_runs').select('cost_usd').gte('started_at', since)
+    const dayCost = (dayRuns || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0)
+    const cap = Number(process.env.DAILY_COST_CAP_USD || 10)
+    if (dayCost >= cap) return res.status(429).json({ error: 'daily_cost_cap_exceeded', total: dayCost, cap })
+
+    try {
+      const result = await expertPanelScore({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        artifact, kind, target, maxRounds, brandContext,
+      })
+      await supabase.from('marketing_runs').insert({
+        user_email: user.email, agent_slug: `review-panel-${kind}`,
+        status: 'done', inputs: { kind, target },
+        outputs: { final_score: result.final_score, rounds: result.rounds.length },
+        cost_usd: result.cost_usd,
+        finished_at: new Date().toISOString(), campaign_id: id || null,
+      })
+      return res.status(200).json({ ok: true, ...result })
+    } catch (e) {
+      return res.status(500).json({ error: 'panel_failed', message: String(e?.message || e) })
+    }
   }
 
   return res.status(404).json({ error: 'unknown_action' })

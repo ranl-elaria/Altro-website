@@ -59,6 +59,8 @@ export default function CampaignWizard({ id, onClose }) {
           body: JSON.stringify({ patch: p, note: opts.note }),
         })
         setC(j.campaign)
+        // Auto-advance: if patch changed state, mirror in active
+        if (p.state) setActive(p.state)
       } else {
         await load()
       }
@@ -108,6 +110,7 @@ export default function CampaignWizard({ id, onClose }) {
 
         {/* Right: active step workspace */}
         <div className="mkt-wiz__work">
+          <NarrativeSummary c={c} active={active} />
           <NotesField step={active} c={c} setStepNote={setStepNote} saveStepNote={saveStepNote} />
 
           {active === 'INTAKE'        && <StepIntake c={c} patch={patch} busy={busy} />}
@@ -213,6 +216,39 @@ function CampaignCanvas({ c, active, setActive }) {
   )
 }
 
+// Narrative compile view — full sentence summary above active workspace
+function NarrativeSummary({ c, active }) {
+  const audience = c.audience?.text
+  const chosenConcept = (c.concepts?.concepts || []).find(x => x.chosen)
+  const variants = c.copy_variants?.variants || {}
+  const channelsWithCopy = Object.entries(variants).filter(([, vs]) => vs.some(v => v.chosen)).map(([ch]) => ch)
+  const visuals = (c.visuals || [])
+  const picked = visuals.filter(v => v.chosen)
+  const generated = visuals.length
+
+  const parts = []
+  parts.push(<><strong>Campaign:</strong> {c.name}. </>)
+  parts.push(<><strong>Goal:</strong> {c.goal || 'unset'}. </>)
+  if (c.channels?.length) parts.push(<><strong>Channels:</strong> {c.channels.join(', ')}. </>)
+  if (audience) parts.push(<><strong>Audience:</strong> {audience.length > 60 ? audience.slice(0, 60) + '…' : audience}. </>)
+  if (chosenConcept) parts.push(<><strong>Concept:</strong> "{chosenConcept.name}" — {chosenConcept.hook}. </>)
+  if (channelsWithCopy.length) parts.push(<><strong>Copy locked:</strong> {channelsWithCopy.join(', ')}. </>)
+  if (generated) parts.push(<><strong>Visuals:</strong> {generated} generated, {picked.length} picked. </>)
+  if (c.state === 'PUBLISH_READY') parts.push(<><strong>Status:</strong> ready to publish.</>)
+
+  const activeIdx = STEPS.findIndex(s => s.id === active)
+  return (
+    <div className="mkt-wiz__narrative">
+      <div>{parts.map((p, i) => <span key={i}>{p}</span>)}</div>
+      <div className="mkt-wiz__narrative-progress">
+        {STEPS.map((s, i) => (
+          <span key={s.id} className={`mkt-wiz__narrative-pill${i < activeIdx ? ' mkt-wiz__narrative-pill--done' : i === activeIdx ? ' mkt-wiz__narrative-pill--current' : ''}`} title={s.label} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function SectionEmpty({ label }) {
   return (
     <section>
@@ -308,7 +344,8 @@ function StepConcepts({ c, patch, runStep, busy }) {
   const concepts = c.concepts?.concepts || []
   function chose(id) {
     const next = concepts.map(x => ({ ...x, chosen: x.id === id }))
-    patch({ concepts: { ...c.concepts, concepts: next } })
+    // Auto-advance to COPY on choice
+    patch({ concepts: { ...c.concepts, concepts: next }, state: 'COPY' })
   }
   return (
     <div className="mkt-wiz__panel">
@@ -349,7 +386,9 @@ function StepCopy({ c, patch, runStep, busy }) {
   function chose(channel, id) {
     const next = { ...variants }
     next[channel] = next[channel].map(v => ({ ...v, chosen: v.id === id }))
-    patch({ copy_variants: { ...c.copy_variants, variants: next } })
+    // Auto-advance to VISUALS once every channel has a chosen variant
+    const allChosen = Object.values(next).every(arr => arr.some(v => v.chosen))
+    patch({ copy_variants: { ...c.copy_variants, variants: next }, ...(allChosen ? { state: 'VISUALS' } : {}) })
   }
   function editText(channel, id, field, value) {
     const next = { ...variants }
@@ -493,7 +532,8 @@ function SingleChannelGenerator({ c, channel, patch }) {
         method: 'POST',
         body: JSON.stringify({ design: { id: v.id, title: v.title, thumbnail: { url: v.thumbnail }, urls: { edit_url: v.edit_url } } }),
       })
-      await patch({})
+      // Auto-advance to REVIEW on first pick
+      await patch({ state: 'REVIEW' })
     } catch (e) { setErr(e.message) }
   }
 
