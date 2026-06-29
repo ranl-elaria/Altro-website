@@ -223,24 +223,30 @@ export default async function handler(req, res) {
     if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
     const templateId = req.query.template_id
     if (!templateId) return res.status(400).json({ error: 'missing_template_id' })
-    try {
-      const token = await getCanvaAccessToken(supabase)
-      const canva = createCanva({ access_token: token })
-      const ds = await canva.getDataset(templateId).catch(e => ({ error: e.message }))
-      if (!ds || ds.error) return res.status(200).json({ raw: ds, fields: [], required: ['headline','body','cta','hero_image'], missing: ['headline','body','cta','hero_image'], ready: false, hint: 'Canva returned no dataset. Most common cause: template was created as a regular design then "Saved as brand template" via the menu, but fields were never linked to data via Canva\'s Connect-data feature (right-click text → "Connect data" or use Bulk Create app). Without explicit data connections, dataset endpoint returns empty.' })
-      const fields = ds.dataset?.fields || ds.fields || {}
-      const fieldList = Object.entries(fields).map(([name, def]) => ({
-        name,
-        type: def?.type || 'unknown',
-        sample: def?.value || def?.text || null,
-      }))
-      const required = ['headline', 'body', 'cta', 'hero_image']
-      const present = fieldList.map(f => f.name)
-      const missing = required.filter(r => !present.includes(r))
-      return res.status(200).json({ fields: fieldList, required, missing, ready: missing.length === 0, raw: ds })
-    } catch (err) {
-      return res.status(500).json({ error: String(err?.message || err) })
-    }
+    const token = await getCanvaAccessToken(supabase)
+    const canva = createCanva({ access_token: token })
+    let dataset = null, datasetError = null
+    let metadata = null, metadataError = null
+    try { dataset = await canva.getDataset(templateId) } catch (e) { datasetError = e.message }
+    try { metadata = await canva.getBrandTemplate(templateId) } catch (e) { metadataError = e.message }
+
+    const fields = dataset?.dataset?.fields || dataset?.fields || {}
+    const fieldList = Object.entries(fields).map(([name, def]) => ({
+      name, type: def?.type || 'unknown', sample: def?.value || def?.text || null,
+    }))
+    const required = ['headline', 'body', 'cta', 'hero_image']
+    const present = fieldList.map(f => f.name)
+    const missing = required.filter(r => !present.includes(r))
+
+    return res.status(200).json({
+      template_id: templateId,
+      fields: fieldList, required, missing,
+      ready: missing.length === 0,
+      dataset_raw: dataset,
+      dataset_error: datasetError,
+      metadata_raw: metadata,
+      metadata_error: metadataError,
+    })
   }
 
   // ── COST-DAILY ────────────────────────────────────
