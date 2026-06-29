@@ -387,10 +387,272 @@ function StepCopy({ c, patch, runStep, busy }) {
   )
 }
 
-// ── Step 5: Visuals ────────────────────────────────────────
-// One "post" per channel. Each post = chosen copy variant + N rendered visual concepts.
-// Per-channel: pick 1-3 brand templates, choose creative mode, click "Generate 4 concepts".
+// ── Step 5: Visuals — single channel at a time, Canva Autofill primary, AI fallback ────────────
 function StepVisuals({ c, patch, busy }) {
+  const channels = c.channels || []
+  const [activeCh, setActiveCh] = useState(channels[0] || 'linkedin')
+  return (
+    <div className="mkt-wiz__panel">
+      <h3>Visuals</h3>
+      <p className="mkt-int__sub">Pick one channel. AI researches winning posts on that channel + generates 4 distinct concepts via Canva Autofill (or OpenAI fallback).</p>
+      <div className="mkt-agents__actions">
+        {channels.map(ch => (
+          <button key={ch}
+            className={`mkt-agents__btn${activeCh === ch ? ' mkt-agents__btn--primary' : ''}`}
+            onClick={() => setActiveCh(ch)}>
+            {ch}
+          </button>
+        ))}
+        {(c.visuals || []).some(v => v.chosen) && (
+          <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => patch({ state: 'REVIEW' })} disabled={busy}>
+            Next: Review →
+          </button>
+        )}
+      </div>
+      <SingleChannelGenerator c={c} channel={activeCh} patch={patch} />
+    </div>
+  )
+}
+
+function SingleChannelGenerator({ c, channel, patch }) {
+  const [templates, setTemplates] = useState([])
+  const [templateId, setTemplateId] = useState('')
+  const [templateCheck, setTemplateCheck] = useState(null)
+  const [refImg, setRefImg] = useState(null)
+  const [refAnalysis, setRefAnalysis] = useState('')
+  const [analyzingRef, setAnalyzingRef] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(null)
+  const [dayCost, setDayCost] = useState(null)
+
+  useEffect(() => { loadTemplates(); loadDayCost() }, [])
+  useEffect(() => { if (templateId) inspectTemplate(templateId); else setTemplateCheck(null) }, [templateId])
+
+  async function loadTemplates() {
+    try {
+      const j = await authedFetch(`/api/marketing/campaigns/visuals-list?id=${c.id}`)
+      setTemplates(j.templates?.items || j.templates?.brand_templates || [])
+    } catch (e) {}
+  }
+  async function loadDayCost() {
+    try {
+      const j = await authedFetch('/api/marketing/services/cost-daily')
+      setDayCost(j)
+    } catch (e) {}
+  }
+  async function inspectTemplate(id) {
+    try {
+      const j = await authedFetch(`/api/marketing/services/template-inspect?template_id=${id}`)
+      setTemplateCheck(j)
+    } catch (e) { setTemplateCheck({ error: e.message }) }
+  }
+
+  async function onRefUpload(e) {
+    const file = e.target.files?.[0]; e.target.value = ''
+    if (!file) return
+    const buf = await file.arrayBuffer()
+    let bin = ''
+    const bytes = new Uint8Array(buf)
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000))
+    const b64 = btoa(bin)
+    setRefImg({ name: file.name, preview: URL.createObjectURL(file) })
+    setAnalyzingRef(true); setErr(null)
+    try {
+      const j = await authedFetch('/api/marketing/campaigns/reference-analyze', {
+        method: 'POST',
+        body: JSON.stringify({ image_base64: b64, mime_type: file.type }),
+      })
+      setRefAnalysis(j.analysis)
+    } catch (e) { setErr(e.message) }
+    setAnalyzingRef(false)
+  }
+
+  async function generate() {
+    setBusy(true); setErr(null)
+    try {
+      await authedFetch(`/api/marketing/campaigns/single-channel-generate?id=${c.id}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          channel,
+          template_id: templateId || null,
+          reference_analysis: refAnalysis || null,
+          allow_fallback: true,
+        }),
+      })
+      await patch({})
+      loadDayCost()
+    } catch (e) { setErr(e.message) }
+    setBusy(false)
+  }
+
+  async function pickVisual(v) {
+    try {
+      await authedFetch(`/api/marketing/campaigns/visuals-pick?id=${c.id}`, {
+        method: 'POST',
+        body: JSON.stringify({ design: { id: v.id, title: v.title, thumbnail: { url: v.thumbnail }, urls: { edit_url: v.edit_url } } }),
+      })
+      await patch({})
+    } catch (e) { setErr(e.message) }
+  }
+
+  const chosenCopy = (c.copy_variants?.variants?.[channel] || []).find(v => v.chosen)
+  const channelVisuals = (c.visuals || []).filter(v => v.channel === channel)
+
+  return (
+    <div className="mkt-post">
+      <header className="mkt-post__head">
+        <h4>{channel}</h4>
+        {chosenCopy ? (
+          <div className="mkt-post__copy">
+            <strong>"{chosenCopy.hook}"</strong>
+          </div>
+        ) : (
+          <div className="mkt-int__err">⚠ pick copy variant in Step 4 first</div>
+        )}
+      </header>
+
+      {/* Cost cap banner */}
+      {dayCost && (
+        <div className="mkt-int__hint" style={{
+          borderColor: dayCost.exceeded ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.06)',
+          background: dayCost.exceeded ? 'rgba(248,113,113,0.05)' : undefined,
+        }}>
+          Daily cost: ${dayCost.total_usd.toFixed(4)} / ${dayCost.cap_usd} cap · {dayCost.exceeded ? '🛑 BLOCKED' : `$${dayCost.remaining_usd.toFixed(2)} remaining`}
+        </div>
+      )}
+
+      {/* Template setup checklist */}
+      {templates.length === 0 && (
+        <details className="mkt-wiz__notes-wrap" open>
+          <summary>📋 First time? Set up Canva brand templates (one-time)</summary>
+          <ol style={{ fontSize: 12, lineHeight: 1.6, color: 'rgba(237,234,227,0.85)', paddingLeft: 18, marginTop: 8 }}>
+            <li>Canva → Create design → custom size for channel (LinkedIn 1200×627, Meta 1080×1080, Email 1200×400)</li>
+            <li>Background: AltroAI Charcoal <code>#353535</code></li>
+            <li>Add headline text layer (48-64pt Helvetica Neue Bold, White) → <strong>Layer name: <code>headline</code></strong></li>
+            <li>Add body text layer (18-22pt Light Gray <code>#D9D9D9</code>) → <strong>Layer name: <code>body</code></strong></li>
+            <li>Add CTA text (16pt Teal <code>#3C6E71</code>) → <strong>Layer name: <code>cta</code></strong></li>
+            <li>Add empty image frame for hero → <strong>Layer name: <code>hero_image</code></strong></li>
+            <li>Add AltroAI logo (transparent BG, bottom corner)</li>
+            <li>Top right menu → Share → Brand template → Save as brand template</li>
+            <li>Name it (e.g. <code>AltroAI LinkedIn Post</code>)</li>
+            <li>Come back here + click "Refresh templates"</li>
+          </ol>
+          <button className="mkt-agents__btn" onClick={loadTemplates}>Refresh templates</button>
+        </details>
+      )}
+
+      <div className="mkt-post__config" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+        <label className="mkt-agents__field">
+          <span className="mkt-agents__field-label">Canva brand template ({templates.length} available)</span>
+          <select className="mkt-agents__input" value={templateId} onChange={e => setTemplateId(e.target.value)}>
+            <option value="">— pick template (recommended) —</option>
+            {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+          </select>
+        </label>
+
+        {templateCheck && (
+          <div className="mkt-int__hint" style={{
+            borderColor: templateCheck.ready ? 'rgba(34,197,94,0.4)' : 'rgba(248,113,113,0.4)',
+          }}>
+            {templateCheck.ready ? '✅ Template ready' : (
+              <>⚠ Template missing required fields: <code>{(templateCheck.missing || []).join(', ')}</code>. Open in Canva, set Layer names exactly to: <code>headline</code>, <code>body</code>, <code>cta</code>, <code>hero_image</code>.</>
+            )}
+            <div style={{ marginTop: 4, fontSize: 11 }}>Found fields: {(templateCheck.fields || []).map(f => `${f.name} (${f.type})`).join(', ') || 'none'}</div>
+          </div>
+        )}
+
+        {/* Reference image upload */}
+        <div className="mkt-agents__field">
+          <span className="mkt-agents__field-label">Reference image (optional — drag a design you love)</span>
+          <input type="file" accept="image/*" onChange={onRefUpload} className="mkt-agents__input" />
+          {refImg && <img src={refImg.preview} alt="ref" style={{ maxWidth: 120, marginTop: 6, borderRadius: 4 }} />}
+          {analyzingRef && <div className="mkt-int__sub">Analyzing reference…</div>}
+          {refAnalysis && (
+            <details style={{ marginTop: 4 }}>
+              <summary style={{ fontSize: 11, cursor: 'pointer' }}>Reference analysis (will be injected into prompts)</summary>
+              <pre style={{ fontSize: 11, whiteSpace: 'pre-wrap', margin: '4px 0' }}>{refAnalysis}</pre>
+            </details>
+          )}
+        </div>
+
+        <button
+          className="mkt-agents__btn mkt-agents__btn--primary"
+          onClick={generate}
+          disabled={busy || !chosenCopy || (dayCost?.exceeded)}
+          style={{ alignSelf: 'flex-end' }}>
+          {busy ? 'Researching + generating 4 concepts…' : 'Research channel + generate 4 concepts'}
+        </button>
+      </div>
+
+      {err && <div className="mkt-agents__error">{err}</div>}
+
+      {/* Results — with channel mock preview */}
+      {channelVisuals.length > 0 && (
+        <div className="mkt-brand__grid">
+          {channelVisuals.map(v => (
+            <ChannelMockTile key={v.id} v={v} channel={channel} copy={chosenCopy} onPick={() => pickVisual(v)} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ChannelMockTile({ v, channel, copy, onPick }) {
+  const driveThumb = v.kind === 'ai-image' && v.drive_file_id
+    ? `https://lh3.googleusercontent.com/d/${v.drive_file_id}=s400`
+    : null
+  const img = v.thumbnail || driveThumb
+
+  const headline = v.concept_meta?.headline_text || copy?.hook || ''
+  const cta = v.concept_meta?.cta_text || copy?.cta || ''
+  const angle = v.concept_meta?.angle || ''
+
+  return (
+    <article className="mkt-mock" style={{
+      borderColor: v.chosen ? 'rgba(34,197,94,0.5)' : undefined,
+      background: v.chosen ? 'rgba(34,197,94,0.08)' : undefined,
+    }}>
+      <div className={`mkt-mock__frame mkt-mock__frame--${channel}`}>
+        {channel === 'email' ? (
+          <>
+            <div className="mkt-mock__email-subject">From: AltroAI · Subject: {headline}</div>
+            {img ? <img src={img} alt="" className="mkt-mock__img" /> : <div className="mkt-mock__loading">⏳</div>}
+            <div className="mkt-mock__email-body">{v.concept_meta?.body_text}</div>
+            <div className="mkt-mock__cta-btn">{cta}</div>
+          </>
+        ) : (
+          <>
+            <div className="mkt-mock__avatar">
+              <div className="mkt-mock__avatar-img">al</div>
+              <div>
+                <strong>AltroAI</strong>
+                <div className="mkt-mock__time">Sponsored · {channel === 'linkedin' ? 'LinkedIn' : 'Meta'}</div>
+              </div>
+            </div>
+            <div className="mkt-mock__headline">{headline}</div>
+            {v.concept_meta?.body_text && <div className="mkt-mock__body">{v.concept_meta.body_text}</div>}
+            {img ? <img src={img} alt="" className="mkt-mock__img" /> : <div className="mkt-mock__loading">⏳</div>}
+            <div className="mkt-mock__cta-btn">{cta}</div>
+          </>
+        )}
+      </div>
+      <div className="mkt-mock__meta">
+        <div><strong>{v.kind === 'canva-autofill' ? '🎨 Canva' : '🤖 AI fallback'}</strong> · {angle}</div>
+        <div className="mkt-int__sub">{v.cost_usd ? `$${Number(v.cost_usd).toFixed(2)}` : 'free (Canva plan)'}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 4 }}>
+        {v.edit_url && <a className="mkt-agents__btn" href={v.edit_url} target="_blank" rel="noreferrer">Open</a>}
+        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={onPick}>
+          {v.chosen ? '✓ Chosen' : 'Pick'}
+        </button>
+      </div>
+    </article>
+  )
+}
+
+// Stub kept so existing wizard code referencing template-only spawn keeps working
+function _unusedLegacyVisuals({ c, patch, busy }) {
   const visuals = c.visuals || []
   const [available, setAvailable] = useState(null)
   const [loadingList, setLoadingList] = useState(false)

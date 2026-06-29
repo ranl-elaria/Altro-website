@@ -217,6 +217,47 @@ export default async function handler(req, res) {
     }
   }
 
+  // ── TEMPLATE-INSPECT ──────────────────────────────
+  // GET ?template_id=... — fetches Canva brand template dataset (field names).
+  if (action === 'template-inspect') {
+    if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
+    const templateId = req.query.template_id
+    if (!templateId) return res.status(400).json({ error: 'missing_template_id' })
+    try {
+      const token = await getCanvaAccessToken(supabase)
+      const canva = createCanva({ access_token: token })
+      const ds = await canva.getDataset(templateId)
+      if (!ds) return res.status(404).json({ error: 'no_dataset' })
+      const fields = ds.dataset?.fields || ds.fields || {}
+      const fieldList = Object.entries(fields).map(([name, def]) => ({
+        name,
+        type: def?.type || 'unknown',
+        sample: def?.value || def?.text || null,
+      }))
+      const required = ['headline', 'body', 'cta', 'hero_image']
+      const present = fieldList.map(f => f.name)
+      const missing = required.filter(r => !present.includes(r))
+      return res.status(200).json({ fields: fieldList, required, missing, ready: missing.length === 0 })
+    } catch (err) {
+      return res.status(500).json({ error: String(err?.message || err) })
+    }
+  }
+
+  // ── COST-DAILY ────────────────────────────────────
+  // GET — sum cost_usd of all marketing_runs in last 24h
+  if (action === 'cost-daily') {
+    if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data, error } = await supabase
+      .from('marketing_runs')
+      .select('cost_usd')
+      .gte('started_at', since)
+    if (error) return res.status(500).json({ error: error.message })
+    const total = (data || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0)
+    const cap = Number(process.env.DAILY_COST_CAP_USD || 10)
+    return res.status(200).json({ total_usd: total, cap_usd: cap, remaining_usd: Math.max(0, cap - total), exceeded: total >= cap })
+  }
+
   // ── BRANDBOOK-UPLOAD ──────────────────────────────
   // POST multipart-ish: { name, base64, mime_type, tags? }
   // Uploads to Canva as an asset. CMO tags it as 'logo' / 'brand-asset' / etc.
