@@ -424,6 +424,7 @@ function SingleChannelGenerator({ c, channel, patch }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState(null)
   const [dayCost, setDayCost] = useState(null)
+  const [conceptCount, setConceptCount] = useState(4)
 
   useEffect(() => { loadTemplates(); loadDayCost() }, [])
   useEffect(() => { if (templateId) inspectTemplate(templateId); else setTemplateCheck(null) }, [templateId])
@@ -477,6 +478,7 @@ function SingleChannelGenerator({ c, channel, patch }) {
           template_id: templateId || null,
           reference_analysis: refAnalysis || null,
           allow_fallback: true,
+          count: conceptCount,
         }),
       })
       await patch({})
@@ -575,13 +577,27 @@ function SingleChannelGenerator({ c, channel, patch }) {
           )}
         </div>
 
-        <button
-          className="mkt-agents__btn mkt-agents__btn--primary"
-          onClick={generate}
-          disabled={busy || !chosenCopy || (dayCost?.exceeded)}
-          style={{ alignSelf: 'flex-end' }}>
-          {busy ? 'Researching + generating 4 concepts…' : 'Research channel + generate 4 concepts'}
-        </button>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <label className="mkt-agents__field" style={{ width: 200 }}>
+            <span className="mkt-agents__field-label">Number of concepts: {conceptCount}</span>
+            <input
+              type="range" min={1} max={10} step={1}
+              value={conceptCount}
+              onChange={e => setConceptCount(Number(e.target.value))}
+              disabled={busy}
+              style={{ width: '100%' }}
+            />
+            <div style={{ fontSize: 10, color: 'rgba(237,234,227,0.5)', display: 'flex', justifyContent: 'space-between' }}>
+              <span>1</span><span>10</span>
+            </div>
+          </label>
+          <button
+            className="mkt-agents__btn mkt-agents__btn--primary"
+            onClick={generate}
+            disabled={busy || !chosenCopy || (dayCost?.exceeded)}>
+            {busy ? `Researching + generating ${conceptCount} concepts…` : `Research channel + generate ${conceptCount} concepts`}
+          </button>
+        </div>
       </div>
 
       {err && <div className="mkt-agents__error">{err}</div>}
