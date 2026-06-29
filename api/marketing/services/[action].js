@@ -385,5 +385,101 @@ Produce 10-15 competitors. Mix direct + adjacent. Use real, verifiable companies
     return res.status(200).json({ ok: true, captured })
   }
 
+  // ── PACING-ALERT ──────────────────────────────────
+  // GET: traffic-light snapshot of marketing pipeline vs targets.
+  if (action === 'pacing-alert') {
+    if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
+    const DAILY_LEAD = Number(process.env.DAILY_LEAD_TARGET || 5)
+    const WEEKLY_CAMPAIGN = Number(process.env.WEEKLY_CAMPAIGN_TARGET || 2)
+    const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
+    const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - 7)
+
+    const { data: leadsToday } = await supabase.from('hubspot_contacts')
+      .select('id', { count: 'exact', head: true }).gte('created_at', dayStart.toISOString())
+    const { data: campaignsWeek } = await supabase.from('marketing_campaigns')
+      .select('id, state').gte('created_at', weekStart.toISOString())
+    const { data: runsToday } = await supabase.from('marketing_runs')
+      .select('cost_usd, status').gte('started_at', dayStart.toISOString())
+
+    const leadsCount = leadsToday?.length || 0
+    const campsCount = campaignsWeek?.length || 0
+    const activeCount = (campaignsWeek || []).filter(c => c.state === 'active' || c.state === 'in_progress').length
+    const runErrors = (runsToday || []).filter(r => r.status === 'error').length
+    const dayCost = (runsToday || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0)
+    const cap = Number(process.env.DAILY_COST_CAP_USD || 10)
+
+    let pipeline_score = 0
+    if (leadsCount === 0) pipeline_score += 2
+    else if (leadsCount < DAILY_LEAD / 2) pipeline_score += 1
+
+    let campaign_score = 0
+    if (activeCount === 0) campaign_score += 2
+    else if (campsCount < WEEKLY_CAMPAIGN) campaign_score += 1
+
+    let cost_score = 0
+    if (dayCost >= cap) cost_score += 2
+    else if (dayCost >= cap * 0.8) cost_score += 1
+
+    let error_score = 0
+    if (runErrors >= 3) error_score += 2
+    else if (runErrors >= 1) error_score += 1
+
+    const icon = (s) => s === 0 ? '🟢' : s === 1 ? '🟡' : '🔴'
+    const alerts = []
+    if (pipeline_score >= 2) alerts.push({ severity: 'red', area: 'pipeline', msg: `No new leads today (target ${DAILY_LEAD})` })
+    else if (pipeline_score === 1) alerts.push({ severity: 'yellow', area: 'pipeline', msg: `Below pace: ${leadsCount} leads vs target ${DAILY_LEAD}` })
+    if (campaign_score >= 2) alerts.push({ severity: 'red', area: 'campaigns', msg: 'No active campaigns this week' })
+    if (cost_score >= 2) alerts.push({ severity: 'red', area: 'cost', msg: `Daily cost cap hit: $${dayCost.toFixed(2)}/$${cap}` })
+    else if (cost_score === 1) alerts.push({ severity: 'yellow', area: 'cost', msg: `Cost at 80% of cap: $${dayCost.toFixed(2)}/$${cap}` })
+    if (error_score >= 1) alerts.push({ severity: error_score >= 2 ? 'red' : 'yellow', area: 'runs', msg: `${runErrors} failed runs today` })
+
+    return res.status(200).json({
+      timestamp: new Date().toISOString(),
+      pipeline: { leads_today: leadsCount, target: DAILY_LEAD, icon: icon(pipeline_score) },
+      campaigns: { week_total: campsCount, active: activeCount, target: WEEKLY_CAMPAIGN, icon: icon(campaign_score) },
+      cost: { day_usd: dayCost, cap_usd: cap, icon: icon(cost_score) },
+      errors: { count: runErrors, icon: icon(error_score) },
+      alerts,
+    })
+  }
+
+  // ── WEEKLY-SCORECARD ──────────────────────────────
+  // GET: markdown summary of last 7 days. Lives in Reports tab.
+  if (action === 'weekly-scorecard') {
+    if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
+    const since = new Date(); since.setDate(since.getDate() - 7)
+    const sinceISO = since.toISOString()
+
+    const { data: camps } = await supabase.from('marketing_campaigns').select('*').gte('updated_at', sinceISO)
+    const { data: runs } = await supabase.from('marketing_runs').select('*').gte('started_at', sinceISO)
+    const { data: contacts } = await supabase.from('hubspot_contacts').select('id', { count: 'exact', head: true }).gte('created_at', sinceISO)
+
+    const byState = {}
+    for (const c of (camps || [])) byState[c.state] = (byState[c.state] || 0) + 1
+    const totalCost = (runs || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0)
+    const runByAgent = {}
+    for (const r of (runs || [])) runByAgent[r.agent_slug] = (runByAgent[r.agent_slug] || 0) + 1
+    const topAgents = Object.entries(runByAgent).sort((a, b) => b[1] - a[1]).slice(0, 5)
+
+    const md = `# Weekly Scorecard — ${new Date().toISOString().slice(0, 10)}
+
+## Summary
+- New leads: ${contacts?.length || 0}
+- Campaigns touched: ${camps?.length || 0}
+- AI runs: ${runs?.length || 0}
+- Total cost: $${totalCost.toFixed(2)}
+
+## Campaign States
+${Object.entries(byState).map(([s, n]) => `- ${s}: ${n}`).join('\n') || '- none'}
+
+## Top Agents
+${topAgents.map(([a, n]) => `- ${a}: ${n} runs`).join('\n') || '- none'}
+
+## Errors
+${(runs || []).filter(r => r.status === 'error').length} failed runs.
+`
+    return res.status(200).json({ markdown: md, totals: { leads: contacts?.length || 0, campaigns: camps?.length || 0, runs: runs?.length || 0, cost: totalCost } })
+  }
+
   return res.status(404).json({ error: 'unknown_action' })
 }

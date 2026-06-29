@@ -945,6 +945,37 @@
 .mkt-mock__loading {
   aspect-ratio: 4/3; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 24px;
 }
+/* Channel-accurate aspect ratios — render as if viewed in the channel */
+.mkt-mock__frame--linkedin .mkt-mock__img,
+.mkt-mock__frame--linkedin .mkt-mock__loading { aspect-ratio: 1200/627; }
+.mkt-mock__frame--meta .mkt-mock__img,
+.mkt-mock__frame--meta .mkt-mock__loading { aspect-ratio: 1/1; }
+.mkt-mock__frame--meta-story .mkt-mock__img,
+.mkt-mock__frame--meta-story .mkt-mock__loading { aspect-ratio: 9/16; max-height: 360px; }
+.mkt-mock__frame--x .mkt-mock__img,
+.mkt-mock__frame--x .mkt-mock__loading { aspect-ratio: 16/9; }
+.mkt-mock__frame--email .mkt-mock__img,
+.mkt-mock__frame--email .mkt-mock__loading { aspect-ratio: 3/1; }
+.mkt-mock__frame--youtube .mkt-mock__img,
+.mkt-mock__frame--youtube .mkt-mock__loading { aspect-ratio: 16/9; }
+
+/* Narrative summary banner */
+.mkt-wiz__narrative {
+  background: linear-gradient(135deg, rgba(60,110,113,0.08), rgba(60,110,113,0.02));
+  border: 1px solid rgba(60,110,113,0.25);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+  font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.78);
+}
+.mkt-wiz__narrative strong { color: #3C6E71; }
+.mkt-wiz__narrative-progress {
+  display: flex; gap: 4px; margin-top: 8px;
+}
+.mkt-wiz__narrative-pill {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,0.08);
+}
+.mkt-wiz__narrative-pill--done { background: #3C6E71; }
+.mkt-wiz__narrative-pill--current { background: #fde68a; }
 .mkt-mock__cta-btn {
   align-self: flex-start; background: #3C6E71; color: white;
   padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;
