@@ -94,7 +94,11 @@ export function createCanva({ access_token }) {
     // Brand kit: only brand templates + their datasets are exposed via Canva Connect API.
     // No public /colors /fonts /logos endpoints. Derive from template datasets + tagged assets.
     getDataset(brandTemplateId) {
-      return req(`/brand-templates/${brandTemplateId}/dataset`).catch(() => null)
+      return req(`/brand-templates/${brandTemplateId}/dataset`)
+    },
+    // Get the brand template metadata itself (includes thumbnail, urls, etc.)
+    getBrandTemplate(brandTemplateId) {
+      return req(`/brand-templates/${brandTemplateId}`)
     },
     // Generic asset search
     listAssets({ query, tag, continuation, limit = 50 } = {}) {
