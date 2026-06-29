@@ -70,6 +70,7 @@ export default function MarketingDashboard() {
 
   return (
     <section className="marketing-panel mkt-dash">
+      <PacingWidget />
       <header className="marketing-panel__header">
         <h2>Funnel</h2>
         <p>Awareness → Visitor → Lead → MQL → SQL → Proposal → Client</p>
@@ -136,5 +137,58 @@ export default function MarketingDashboard() {
         </div>
       )}
     </section>
+  )
+}
+
+function PacingWidget() {
+  const [data, setData] = useState(null)
+  const [err, setErr] = useState(null)
+  useEffect(() => { load() }, [])
+  async function load() {
+    try {
+      const { data: sess } = await supabase.auth.getSession()
+      const token = sess?.session?.access_token
+      const r = await fetch('/api/marketing/services/pacing-alert', { headers: { Authorization: `Bearer ${token}` } })
+      const j = await r.json()
+      if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`)
+      setData(j)
+    } catch (e) { setErr(e.message) }
+  }
+  if (err) return <div className="mkt-agents__error" style={{ marginBottom: 12 }}>Pacing: {err}</div>
+  if (!data) return null
+  const cards = [
+    { label: 'Pipeline', icon: data.pipeline.icon, val: `${data.pipeline.leads_today}/${data.pipeline.target}`, sub: 'leads today' },
+    { label: 'Campaigns', icon: data.campaigns.icon, val: `${data.campaigns.active} active`, sub: `${data.campaigns.week_total} this week` },
+    { label: 'Cost', icon: data.cost.icon, val: `$${data.cost.day_usd.toFixed(2)}`, sub: `cap $${data.cost.cap_usd}` },
+    { label: 'Errors', icon: data.errors.icon, val: data.errors.count, sub: 'failed runs 24h' },
+  ]
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+        {cards.map(c => (
+          <div key={c.label} style={{ padding: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 11, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.5 }}>{c.label}</span>
+              <span style={{ fontSize: 18 }}>{c.icon}</span>
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 600, marginTop: 4 }}>{c.val}</div>
+            <div style={{ fontSize: 11, opacity: 0.5 }}>{c.sub}</div>
+          </div>
+        ))}
+      </div>
+      {data.alerts?.length > 0 && (
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {data.alerts.map((a, i) => (
+            <div key={i} style={{
+              fontSize: 12, padding: '6px 10px', borderRadius: 4,
+              background: a.severity === 'red' ? 'rgba(220,38,38,0.12)' : 'rgba(245,158,11,0.12)',
+              border: `1px solid ${a.severity === 'red' ? 'rgba(220,38,38,0.3)' : 'rgba(245,158,11,0.3)'}`,
+            }}>
+              <strong>{a.area}:</strong> {a.msg}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
