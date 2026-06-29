@@ -909,3 +909,48 @@
 }
 .mkt-post__advanced summary { cursor: pointer; font-size: 11px; color: rgba(237,234,227,0.55); }
 .mkt-post__advanced .mkt-post__config { margin-top: 8px; }
+
+/* ── Channel-mock preview tiles ─────────────────────── */
+.mkt-mock {
+  display: flex; flex-direction: column; gap: 8px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 10px;
+}
+.mkt-mock__frame {
+  background: #ffffff; color: #1f2937;
+  border-radius: 6px; overflow: hidden;
+  display: flex; flex-direction: column; gap: 6px; padding: 10px;
+  font-size: 11px; min-height: 200px;
+}
+.mkt-mock__frame--linkedin { background: #f4f2ee; }
+.mkt-mock__frame--meta { background: #ffffff; }
+.mkt-mock__frame--email { background: #fafafa; }
+.mkt-mock__frame--x { background: #f7f9f9; }
+
+.mkt-mock__avatar { display: flex; gap: 6px; align-items: center; }
+.mkt-mock__avatar-img {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #353535; color: #3C6E71;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 11px;
+}
+.mkt-mock__avatar strong { color: #1f2937; font-size: 11px; }
+.mkt-mock__time { font-size: 9px; color: #6b7280; }
+.mkt-mock__headline { font-size: 12px; font-weight: 600; color: #1f2937; }
+.mkt-mock__body { font-size: 10px; color: #4b5563; }
+.mkt-mock__img {
+  width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 4px;
+  background: #e5e7eb;
+}
+.mkt-mock__loading {
+  aspect-ratio: 4/3; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 24px;
+}
+.mkt-mock__cta-btn {
+  align-self: flex-start; background: #3C6E71; color: white;
+  padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;
+}
+.mkt-mock__email-subject { font-size: 10px; color: #6b7280; padding-bottom: 4px; border-bottom: 1px solid #e5e7eb; }
+.mkt-mock__email-body { font-size: 10px; color: #4b5563; }
+
+.mkt-mock__meta { font-size: 10px; color: rgba(237,234,227,0.6); }
+.mkt-mock__meta strong { color: #edeae3; }

@@ -309,6 +309,219 @@ export default async function handler(req, res) {
     }
   }
 
+  // ── SINGLE-CHANNEL-GENERATE ───────────────────────
+  // Full orchestrated flow: research → 4 distinct concepts → spawn each via Canva Autofill (or OpenAI fallback).
+  // POST body: { channel, template_id?, reference_analysis?, allow_fallback?: true }
+  if (action === 'single-channel-generate') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    const id = req.query.id
+    if (!id) return res.status(400).json({ error: 'missing_id' })
+    let body = req.body
+    if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+    const { channel, template_id, reference_analysis = null, allow_fallback = true } = body || {}
+    if (!channel) return res.status(400).json({ error: 'missing_channel' })
+
+    // Cost cap check
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data: dayRuns } = await supabase.from('marketing_runs').select('cost_usd').gte('started_at', since)
+    const dayCost = (dayRuns || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0)
+    const cap = Number(process.env.DAILY_COST_CAP_USD || 10)
+    if (dayCost >= cap) return res.status(429).json({ error: 'daily_cost_cap_exceeded', total: dayCost, cap })
+
+    const { data: c } = await supabase.from('marketing_campaigns').select('*').eq('id', id).single()
+    if (!c) return res.status(404).json({ error: 'not_found' })
+    const chVariants = c.copy_variants?.variants?.[channel] || []
+    const chosenCopy = chVariants.find(v => v.chosen) || chVariants[0]
+    if (!chosenCopy) return res.status(400).json({ error: 'no_copy_variant', hint: 'Pick a copy variant in Step 4 first.' })
+
+    // STEP 1 — Research winning posts + craft 4 distinct concepts
+    let concepts = []
+    let researchCost = 0
+    try {
+      const r = await runCampaignStep({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+        system: `You research what wins on social channels then output 4 distinct visual concepts. Return ONLY valid JSON. No prose.
+Schema: { "research_summary": "string (2-3 sentences on what's working on this channel for B2B AI right now)",
+  "concepts": [{ "id": "string", "angle": "string", "visual_idea": "string", "headline_text": "string (≤90 chars)", "body_text": "string (≤140 chars)", "cta_text": "string (≤20 chars)", "image_brief": "string (precise instructions to render hero_image area: layout/subject/mood/composition — for AltroAI brand: Charcoal #353535 / Teal #3C6E71 / White / Helvetica. No faces, no logos, no gradients except organic mesh, no emoji, strong negative space, single focal subject)" }] }
+Produce exactly 4 concepts. Each must be wildly different in angle + visual idea.`,
+        user: `Channel: ${channel}
+Campaign: ${c.name}
+Goal: ${c.goal}
+Audience: ${c.audience?.text}
+Chosen concept: ${JSON.stringify((c.concepts?.concepts || []).find(x => x.chosen) || null)}
+Chosen copy variant (use as basis but you can refine): ${JSON.stringify(chosenCopy)}
+${reference_analysis ? `\nReference image notes: ${reference_analysis}\n` : ''}
+
+First research what's winning on ${channel} for B2B AI agencies in 2026. Then output 4 distinct visual concepts.`,
+      })
+      researchCost = r.cost_usd
+      const parsed = tryParseJson(r.text)
+      concepts = parsed?.concepts || []
+      if (concepts.length === 0) throw new Error('No concepts parsed')
+    } catch (e) {
+      return res.status(500).json({ error: 'research_failed', message: String(e?.message || e) })
+    }
+
+    // STEP 2 — Spawn 4 designs. Canva Autofill primary. OpenAI fallback if template missing or autofill fails.
+    const spawned = []
+    const errors = []
+    let totalGenCost = 0
+
+    // Drive setup for fallback
+    const driveToken = await getGoogleAccessToken(supabase).catch(() => null)
+    const drive = driveToken ? createDrive({ access_token: driveToken }) : null
+    let campaignFolder = null
+    if (drive) {
+      const integ = await loadTokens(supabase, 'google')
+      const campaignsRoot = integ?.metadata?.subfolders?.['07_Campaigns']
+      if (campaignsRoot) campaignFolder = await drive.ensureFolder(c.slug, campaignsRoot)
+    }
+
+    const canvaToken = await getCanvaAccessToken(supabase).catch(() => null)
+    const canva = canvaToken ? createCanva({ access_token: canvaToken }) : null
+
+    for (let i = 0; i < concepts.length; i++) {
+      const concept = concepts[i]
+      let success = false
+
+      // Primary: Canva Autofill
+      if (canva && template_id) {
+        try {
+          const fillData = {
+            headline:    { type: 'text', text: concept.headline_text || chosenCopy.hook },
+            title:       { type: 'text', text: concept.headline_text || chosenCopy.hook },
+            body:        { type: 'text', text: concept.body_text || chosenCopy.body || '' },
+            subhead:     { type: 'text', text: concept.body_text || chosenCopy.body || '' },
+            cta:         { type: 'text', text: concept.cta_text || chosenCopy.cta || '' },
+            button_text: { type: 'text', text: concept.cta_text || chosenCopy.cta || '' },
+          }
+          const job = await canva.createFromBrandTemplate({
+            brand_template_id: template_id,
+            title: `${c.name} — ${channel} v${i + 1}`,
+            data: fillData,
+          })
+          const jobId = job.job?.id || job.id
+
+          let designId = null, thumbnail = null, editUrl = null, jobStatus = 'in_progress'
+          for (let p = 0; p < 20; p++) {
+            await new Promise(r => setTimeout(r, 1500))
+            const j = await canva.getAutofillJob(jobId).catch(() => null)
+            if (!j) continue
+            jobStatus = j.job?.status || j.status
+            if (jobStatus === 'success') {
+              const d = j.job?.result?.design || j.result?.design || j.design
+              designId = d?.id
+              thumbnail = d?.thumbnail?.url || null
+              editUrl = d?.urls?.edit_url || null
+              break
+            }
+            if (jobStatus === 'failed') break
+          }
+
+          if (jobStatus === 'success' && designId) {
+            spawned.push({
+              id: designId, kind: 'canva-autofill',
+              channel, variant_id: chosenCopy.id,
+              title: `${c.name} — ${channel} v${i + 1}`,
+              thumbnail, edit_url: editUrl,
+              concept_meta: concept,
+              cost_usd: 0, // Canva autofill = no Anthropic cost (in your Canva plan)
+              chosen: false, created_at: new Date().toISOString(),
+            })
+            success = true
+          } else {
+            errors.push({ i, kind: 'canva', error: `autofill ${jobStatus}` })
+          }
+        } catch (e) {
+          errors.push({ i, kind: 'canva', error: String(e?.message || e) })
+        }
+      }
+
+      // Fallback: OpenAI image gen + push to Drive
+      if (!success && allow_fallback && drive && campaignFolder) {
+        try {
+          const sizeKey = channel === 'linkedin' ? 'linkedin_post' : channel === 'meta' ? 'meta_post' : channel === 'email' ? 'email_header' : 'meta_post'
+          const sizes = (await import('../../../src/lib/marketing/imagegen.js')).listSizes()
+          const size = sizes[sizeKey]
+          const prompt = `Premium B2B marketing visual. Style: ${concept.image_brief}. Headline conveyed (do NOT render text in image): "${concept.headline_text}". AltroAI brand: Charcoal #353535 dominant, Teal #3C6E71 accent, White, Helvetica Neue. No faces, no hands, no logos, no CSS gradients, no drop shadows, no emoji, no watermarks. Strong negative space. Magazine-grade lighting.`
+          const gen = await generateImage({ provider: 'openai', prompt, w: size.w, h: size.h })
+          totalGenCost += gen.cost_usd || 0
+
+          const fileName = `${c.slug}_${channel}_v${i + 1}_${Date.now()}.png`
+          const upload = await drive.uploadFile({ name: fileName, bytes: gen.bytes, mime_type: gen.mime_type, parentId: campaignFolder.id })
+          try { await drive.makeLinkVisible(upload.id) } catch (e) {}
+
+          spawned.push({
+            id: upload.id, kind: 'ai-image',
+            provider: gen.provider, model: gen.model,
+            channel, variant_id: chosenCopy.id,
+            title: fileName,
+            thumbnail: null, // lh3 thumbnail used in UI via drive_file_id
+            edit_url: upload.webViewLink,
+            drive_file_id: upload.id,
+            size: { w: size.w, h: size.h, key: sizeKey },
+            concept_meta: concept,
+            cost_usd: gen.cost_usd,
+            chosen: false, created_at: new Date().toISOString(),
+          })
+          success = true
+        } catch (e) {
+          errors.push({ i, kind: 'openai-fallback', error: String(e?.message || e) })
+        }
+      }
+    }
+
+    // Persist visuals + log run
+    const visuals = Array.isArray(c.visuals) ? c.visuals : []
+    visuals.push(...spawned)
+    await supabase.from('marketing_campaigns').update({ visuals }).eq('id', id)
+    await supabase.from('marketing_runs').insert({
+      user_email: user.email,
+      agent_slug: `single-channel-${channel}`,
+      status: spawned.length === concepts.length ? 'done' : (spawned.length === 0 ? 'error' : 'partial'),
+      inputs: { campaign_id: id, channel, template_id, has_reference: !!reference_analysis },
+      outputs: { research_cost: researchCost, gen_cost: totalGenCost, spawned: spawned.length, errors },
+      cost_usd: researchCost + totalGenCost,
+      finished_at: new Date().toISOString(), campaign_id: id,
+    })
+
+    return res.status(200).json({
+      ok: true, channel, spawned: spawned.length, errors, concepts,
+      total_cost_usd: researchCost + totalGenCost, day_total: dayCost + researchCost + totalGenCost,
+    })
+  }
+
+  // ── REFERENCE-ANALYZE ─────────────────────────────
+  // POST: { image_base64, mime_type } — analyzes uploaded reference via Claude vision
+  if (action === 'reference-analyze') {
+    if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).end() }
+    let body = req.body
+    if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
+    const { image_base64, mime_type = 'image/png' } = body || {}
+    if (!image_base64) return res.status(400).json({ error: 'missing_image' })
+
+    try {
+      const Anthropic = (await import('@anthropic-ai/sdk')).default
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+      const msg = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mime_type, data: image_base64 } },
+            { type: 'text', text: 'Analyze this reference image for ad design style. Output 4-6 sentences covering: (1) dominant palette + accent colors, (2) typography style + weights, (3) composition (rule of thirds / negative space / hero element), (4) visual mood + style (editorial / brutalist / minimal / playful), (5) subject type (illustration / photo / typography / abstract), (6) any signature stylistic moves. Be specific and prescriptive. This will be injected into image-gen prompts to make new ads in this style.' },
+          ],
+        }],
+      })
+      const analysis = msg.content?.filter(c => c.type === 'text').map(c => c.text).join('\n') || ''
+      const cost = (msg.usage?.input_tokens * 3 + msg.usage?.output_tokens * 15) / 1_000_000
+      return res.status(200).json({ analysis, cost_usd: cost })
+    } catch (err) {
+      return res.status(500).json({ error: String(err?.message || err) })
+    }
+  }
+
   // ── VISUALS-GENERATE-AI ───────────────────────────
   // POST body: { channel, variant_idx?: 0, provider?: 'openai'|'ideogram',
   //   size_key?, chosen_copy_id?, use_brand?: false, brief?, total?: 4 }
