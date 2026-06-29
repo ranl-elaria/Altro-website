@@ -342,10 +342,31 @@ function StepInspire({ c, patch, runStep, busy }) {
 // ── Step 3 ─────────────────────────────────────────────────
 function StepConcepts({ c, patch, runStep, busy }) {
   const concepts = c.concepts?.concepts || []
+  const [evolving, setEvolving] = useState(false)
+  const [evolveResult, setEvolveResult] = useState(null)
+  const [evolveErr, setEvolveErr] = useState(null)
   function chose(id) {
     const next = concepts.map(x => ({ ...x, chosen: x.id === id }))
     // Auto-advance to COPY on choice
     patch({ concepts: { ...c.concepts, concepts: next }, state: 'COPY' })
+  }
+  async function evolveChosen() {
+    const chosen = concepts.find(x => x.chosen)
+    if (!chosen) { setEvolveErr('Pick a concept first.'); return }
+    setEvolving(true); setEvolveErr(null); setEvolveResult(null)
+    try {
+      const j = await authedFetch(`/api/marketing/campaigns/concepts-evolve?id=${c.id}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          kind: 'visual_concept',
+          text: chosen.hook,
+          brandContext: 'AltroAI: premium, direct, technically credible, zero hype',
+          variantsPerRound: 8, maxRounds: 2, minScore: 85,
+        }),
+      })
+      setEvolveResult(j)
+    } catch (e) { setEvolveErr(e.message) }
+    setEvolving(false)
   }
   return (
     <div className="mkt-wiz__panel">
@@ -356,9 +377,22 @@ function StepConcepts({ c, patch, runStep, busy }) {
           {busy === 'CONCEPTS' ? 'Generating…' : (concepts.length ? 'Re-generate' : 'Generate 3 concepts')}
         </button>
         {concepts.some(x => x.chosen) && (
+          <button className="mkt-agents__btn" onClick={evolveChosen} disabled={evolving}>
+            {evolving ? 'Evolving…' : '🧬 Evolve chosen hook (8 variants × expert score)'}
+          </button>
+        )}
+        {concepts.some(x => x.chosen) && (
           <button className="mkt-agents__btn" onClick={() => patch({ state: 'COPY' })}>Next: Copy →</button>
         )}
       </div>
+      {evolveErr && <div className="mkt-agents__error">{evolveErr}</div>}
+      {evolveResult && (
+        <div className="mkt-wiz__narrative" style={{ marginTop: 12 }}>
+          <strong>Evolved hook (score {evolveResult.finalScore}/100):</strong>
+          <div style={{ marginTop: 6, fontSize: 14 }}>{Object.values(evolveResult.elements || {})[0]?.winner}</div>
+          <div className="mkt-int__sub" style={{ marginTop: 6 }}>{evolveResult.rounds} rounds · cost ${(evolveResult.totalCost || 0).toFixed(3)}</div>
+        </div>
+      )}
       <div className="mkt-wiz__cards">
         {concepts.map(con => (
           <article key={con.id} className={`mkt-wiz__concept${con.chosen ? ' mkt-wiz__concept--chosen' : ''}`}>
@@ -1086,9 +1120,39 @@ function PostAiPanel({ channel, c, busy, onGenerate }) {
 function StepReview({ c, runStep, patch, busy }) {
   const notes = c.polish_notes?.notes || []
   const timing = c.timing?.timing || {}
+  const [paneling, setPaneling] = useState(false)
+  const [panelResult, setPanelResult] = useState(null)
+  const [panelErr, setPanelErr] = useState(null)
   function toggleAccept(i) {
     const next = notes.map((n, idx) => idx === i ? { ...n, accepted: !n.accepted } : n)
     patch({ polish_notes: { ...c.polish_notes, notes: next } })
+  }
+  async function runPanel() {
+    setPaneling(true); setPanelErr(null); setPanelResult(null)
+    try {
+      const chosenConcept = (c.concepts?.concepts || []).find(x => x.chosen)
+      const variants = c.copy_variants?.variants || {}
+      const chosenCopy = Object.entries(variants).map(([ch, vs]) => {
+        const v = vs.find(x => x.chosen)
+        return v ? `[${ch}] ${v.hook} — ${v.body || ''} — CTA: ${v.cta || ''}` : null
+      }).filter(Boolean).join('\n')
+      const artifact = `Campaign: ${c.name}
+Goal: ${c.goal}
+Concept: ${chosenConcept?.name || '—'} — ${chosenConcept?.hook || '—'}
+Copy:
+${chosenCopy || '(none)'}`
+      const j = await authedFetch(`/api/marketing/campaigns/review-panel?id=${c.id}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          kind: 'campaign',
+          artifact,
+          target: 90, maxRounds: 2,
+          brandContext: 'AltroAI: premium, direct, technically credible, zero hype',
+        }),
+      })
+      setPanelResult(j)
+    } catch (e) { setPanelErr(e.message) }
+    setPaneling(false)
   }
   return (
     <div className="mkt-wiz__panel">
@@ -1098,10 +1162,30 @@ function StepReview({ c, runStep, patch, busy }) {
         <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={() => runStep('REVIEW')} disabled={busy === 'REVIEW'}>
           {busy === 'REVIEW' ? 'Reviewing…' : (notes.length ? 'Re-review' : 'Generate review')}
         </button>
+        <button className="mkt-agents__btn" onClick={runPanel} disabled={paneling}>
+          {paneling ? 'Panel scoring…' : '🎯 Run expert panel (target 90+)'}
+        </button>
         {notes.length > 0 && (
           <button className="mkt-agents__btn" onClick={() => patch({ state: 'PUBLISH_READY' })}>Next: Publish →</button>
         )}
       </div>
+      {panelErr && <div className="mkt-agents__error">{panelErr}</div>}
+      {panelResult && (
+        <div className="mkt-wiz__narrative" style={{ marginTop: 12 }}>
+          <strong>Expert panel score: {panelResult.final_score}/100</strong>
+          <div className="mkt-int__sub" style={{ marginTop: 4 }}>{panelResult.rounds?.length || 0} round(s) · cost ${(panelResult.cost_usd || 0).toFixed(3)}</div>
+          {panelResult.rounds?.[panelResult.rounds.length - 1]?.scores && (
+            <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 6 }}>
+              {Object.entries(panelResult.rounds[panelResult.rounds.length - 1].scores).map(([expert, s]) => (
+                <div key={expert} style={{ fontSize: 11, padding: 6, background: 'rgba(255,255,255,0.04)', borderRadius: 4 }}>
+                  <strong>{expert}</strong>: {s.score}/100
+                  <div style={{ opacity: 0.6, marginTop: 2 }}>{s.feedback}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {notes.length > 0 && <h4>Critique notes</h4>}
       {notes.map((n, i) => (
