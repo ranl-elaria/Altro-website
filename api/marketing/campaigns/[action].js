@@ -318,8 +318,9 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'missing_id' })
     let body = req.body
     if (typeof body === 'string') { try { body = JSON.parse(body) } catch { body = {} } }
-    const { channel, template_id, reference_analysis = null, allow_fallback = true } = body || {}
+    const { channel, template_id, reference_analysis = null, allow_fallback = true, count = 4 } = body || {}
     if (!channel) return res.status(400).json({ error: 'missing_channel' })
+    const N = Math.max(1, Math.min(10, Number(count) || 4))
 
     // Cost cap check
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -343,7 +344,7 @@ export default async function handler(req, res) {
         system: `You research what wins on social channels then output 4 distinct visual concepts. Return ONLY valid JSON. No prose.
 Schema: { "research_summary": "string (2-3 sentences on what's working on this channel for B2B AI right now)",
   "concepts": [{ "id": "string", "angle": "string", "visual_idea": "string", "headline_text": "string (≤90 chars)", "body_text": "string (≤140 chars)", "cta_text": "string (≤20 chars)", "image_brief": "string (precise instructions to render hero_image area: layout/subject/mood/composition — for AltroAI brand: Charcoal #353535 / Teal #3C6E71 / White / Helvetica. No faces, no logos, no gradients except organic mesh, no emoji, strong negative space, single focal subject)" }] }
-Produce exactly 4 concepts. Each must be wildly different in angle + visual idea.`,
+Produce exactly ${N} concepts. Each must be wildly different in angle + visual idea.`,
         user: `Channel: ${channel}
 Campaign: ${c.name}
 Goal: ${c.goal}
