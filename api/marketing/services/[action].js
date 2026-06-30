@@ -57,13 +57,33 @@ export default async function handler(req, res) {
     const event = EVENT_MAP[type]
     if (!event) return res.status(200).json({ ok: true, ignored: type })
     const email = Array.isArray(data.to) ? data.to[0] : data.to || null
+    // Extract campaign_slug from Resend tags if present
+    const tags = Array.isArray(data.tags) ? data.tags : []
+    const tagMap = {}
+    for (const t of tags) { if (t?.name) tagMap[t.name] = t.value }
+    const campaignSlug = tagMap.campaign_slug || tagMap.campaign || null
+
     const row = {
       event, email,
       resend_id: data.email_id || body.email_id || null,
-      metadata: { type, subject: data.subject, from: data.from },
+      metadata: { type, subject: data.subject, from: data.from, tags: tagMap, campaign_slug: campaignSlug },
     }
     const { error } = await supabase.from('email_events').insert(row)
     if (error) return res.status(500).json({ error: 'insert_failed' })
+
+    // Mirror into analytics_events so MEASURE can attribute
+    try {
+      await supabase.from('analytics_events').insert({
+        event_type: `email_${event}`,
+        source: 'resend',
+        properties: JSON.stringify({
+          email, resend_id: data.email_id || null,
+          campaign_slug: campaignSlug,
+          subject: data.subject, tags: tagMap,
+        }),
+      })
+    } catch (e) { console.error('analytics_events mirror failed:', e?.message) }
+
     return res.status(200).json({ ok: true })
   }
 
