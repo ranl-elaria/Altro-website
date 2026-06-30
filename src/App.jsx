@@ -103,7 +103,7 @@ export default function App() {
           <Route path="/he/*" />
         </Route>
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <Suspense fallback={<div className="admin-loading">Loading…</div>}>
               <AdminPage />

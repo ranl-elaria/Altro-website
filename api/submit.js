@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { createHubspot } from '../src/lib/marketing/hubspot.js'
 import { getHubspotAccessToken } from '../src/lib/marketing/hubspot-token.js'
+import { logActivity } from '../src/lib/cockpit/activity.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -106,6 +107,15 @@ export default async function handler(req, res) {
       })
     }
   } catch (e) { console.error('HubSpot upsert failed:', e?.message) }
+
+  // Log to Cockpit activity feed
+  await logActivity(supabase, {
+    suite: 'sales',
+    actor: email,
+    action: 'lead_created',
+    target: attribution.utm_campaign || null,
+    meta: { name, company, has_utm: !!attribution.utm_campaign },
+  })
 
   if (dbError) {
     console.error('Supabase insert error:', dbError)
