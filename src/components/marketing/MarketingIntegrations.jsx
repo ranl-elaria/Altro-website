@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const META = {
-  hubspot:   { label: 'HubSpot',      purpose: 'CRM source of truth',           oauth: true,  needsApp: true },
+  hubspot:   { label: 'HubSpot',      purpose: 'CRM source of truth',           oauth: false, note: 'Set HUBSPOT_API_KEY env (Private App token pat-eu1-…). Scopes: crm.objects.contacts.read/write + crm.schemas.contacts.read.' },
   apollo:    { label: 'Apollo',       purpose: 'Lead enrichment',               oauth: false, note: 'Set APOLLO_API_KEY env.' },
   canva:     { label: 'Canva',        purpose: 'Brand assets + AI design',      oauth: true,  needsApp: true },
   google:    { label: 'Google Drive', purpose: 'Brand-asset archive',           oauth: true },
