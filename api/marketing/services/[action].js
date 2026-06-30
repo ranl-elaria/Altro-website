@@ -85,6 +85,21 @@ export default async function handler(req, res) {
       })
     } catch (e) { console.error('analytics_events mirror failed:', e?.message) }
 
+    // If tagged with deal_id → log a sales activity (delivered/opened/clicked)
+    const dealId = tagMap.deal_id
+    if (dealId) {
+      try {
+        const { data: deal } = await supabase.from('sales_deals').select('lead_id').eq('id', dealId).single()
+        if (deal) {
+          await supabase.from('sales_activities').insert({
+            deal_id: dealId, lead_id: deal.lead_id,
+            kind: 'email_sent', actor: 'system',
+            body: { event, to: email, subject: data.subject || null, resend_id: data.email_id || null },
+          })
+        }
+      } catch (e) { console.error('sales_activities email_sent insert failed:', e?.message) }
+    }
+
     return res.status(200).json({ ok: true })
   }
 

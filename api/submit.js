@@ -3,6 +3,8 @@ import { Resend } from 'resend'
 import { createHubspot } from '../src/lib/marketing/hubspot.js'
 import { getHubspotAccessToken } from '../src/lib/marketing/hubspot-token.js'
 import { logActivity } from '../src/lib/cockpit/activity.js'
+import { scoreLead } from '../src/lib/sales/scoring.js'
+import { notifyNewLead } from '../src/lib/sales/notify.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -107,6 +109,35 @@ export default async function handler(req, res) {
       })
     }
   } catch (e) { console.error('HubSpot upsert failed:', e?.message) }
+
+  // Insert into sales_leads (best-effort) + AI score + Slack ping
+  try {
+    const leadRow = {
+      email, name, company, message,
+      source: 'website',
+      utm_source: attribution.utm_source || null,
+      utm_medium: attribution.utm_medium || null,
+      utm_campaign: attribution.utm_campaign || null,
+      utm_content: attribution.utm_content || null,
+      utm_term: attribution.utm_term || null,
+      referrer: attribution.referrer || null,
+      landing_path: attribution.landing_path || null,
+    }
+    const { data: lead, error: leadErr } = await supabase.from('sales_leads').insert(leadRow).select('*').single()
+    if (!leadErr && lead) {
+      // Best-effort scoring (don't block submit)
+      try {
+        const { score, reasoning } = await scoreLead(lead)
+        await supabase.from('sales_leads').update({ ai_score: score, ai_score_reason: reasoning }).eq('id', lead.id)
+        lead.ai_score = score
+        lead.ai_score_reason = reasoning
+      } catch (e) { console.error('lead scoring failed:', e?.message) }
+      // Slack ping (no-op if SLACK_WEBHOOK_URL missing)
+      notifyNewLead(lead).catch(e => console.error('slack notify failed:', e?.message))
+    } else if (leadErr) {
+      console.error('sales_leads insert failed:', leadErr.message)
+    }
+  } catch (e) { console.error('sales_leads pipeline error:', e?.message) }
 
   // Log to Cockpit activity feed
   await logActivity(supabase, {

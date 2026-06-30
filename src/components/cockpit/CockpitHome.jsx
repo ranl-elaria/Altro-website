@@ -32,10 +32,11 @@ export default function CockpitHome() {
       }).then(r => r.json()).catch(() => null)
       if (p && !p.error) setPacing(p)
 
-      // Today's inbox: unread submissions
+      // Today's inbox: latest sales_leads (status='new')
       const { data: subs } = await supabase
-        .from('submissions')
-        .select('id, name, email, message, attribution, read, created_at')
+        .from('sales_leads')
+        .select('id, name, email, message, utm_campaign, ai_score, status, created_at')
+        .eq('status', 'new')
         .order('created_at', { ascending: false })
         .limit(5)
       setSubmissions(subs || [])
@@ -104,23 +105,21 @@ export default function CockpitHome() {
       </div>
 
       {/* c) Today's inbox */}
-      <h2 className="cockpit-h2">Today's inbox</h2>
+      <h2 className="cockpit-h2">Today's inbox ({submissions.length})</h2>
       <div className="cockpit-inbox">
-        {submissions.length === 0 && <div className="cockpit-kpi__sub" style={{ padding: 12 }}>No submissions yet.</div>}
-        {submissions.map(s => {
-          const utm = s.attribution?.utm_campaign
-          return (
-            <div key={s.id} className={`cockpit-inbox__row${!s.read ? ' cockpit-inbox__row--unread' : ''}`} onClick={() => navigate('/admin/sales')} style={{ cursor: 'pointer' }}>
-              <div className="cockpit-inbox__name">
-                {s.name}
-                {utm && <span className="cockpit-inbox__utm">{utm}</span>}
-              </div>
-              <div className="cockpit-inbox__preview">{s.email}</div>
-              <div className="cockpit-inbox__preview">{s.message}</div>
-              <div className="cockpit-inbox__time">{timeAgo(s.created_at)}</div>
+        {submissions.length === 0 && <div className="cockpit-kpi__sub" style={{ padding: 12 }}>No new leads.</div>}
+        {submissions.map(s => (
+          <div key={s.id} className="cockpit-inbox__row cockpit-inbox__row--unread" onClick={() => navigate('/admin/sales')} style={{ cursor: 'pointer' }}>
+            <div className="cockpit-inbox__name">
+              {s.name || s.email}
+              {s.utm_campaign && <span className="cockpit-inbox__utm">{s.utm_campaign}</span>}
+              {s.ai_score != null && <span className="cockpit-inbox__utm" style={{ marginLeft: 6 }}>score {s.ai_score}</span>}
             </div>
-          )
-        })}
+            <div className="cockpit-inbox__preview">{s.email}</div>
+            <div className="cockpit-inbox__preview">{s.message}</div>
+            <div className="cockpit-inbox__time">{timeAgo(s.created_at)}</div>
+          </div>
+        ))}
       </div>
 
       {/* d) Activity feed */}
