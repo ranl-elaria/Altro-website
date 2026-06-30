@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { createHubspot } from '../src/lib/marketing/hubspot.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -55,6 +56,7 @@ export default async function handler(req, res) {
   const company = body.company?.trim() || null
   const email   = body.email?.trim().toLowerCase()
   const message = body.message?.trim()
+  const attribution = body.attribution || {}
 
   if (!name || !email || !message) {
     return res.status(400).json({ error: 'Name, email and message are required.' })
@@ -65,7 +67,43 @@ export default async function handler(req, res) {
 
   const { error: dbError } = await supabase
     .from('submissions')
-    .insert({ name, company, email, message })
+    .insert({ name, company, email, message, attribution })
+
+  // Log conversion event tagged with utm_campaign so MEASURE can attribute
+  if (attribution.utm_campaign) {
+    try {
+      await supabase.from('analytics_events').insert({
+        event_type: 'lead',
+        source: 'contact_form',
+        properties: JSON.stringify({
+          email, utm_campaign: attribution.utm_campaign,
+          utm_source: attribution.utm_source, utm_medium: attribution.utm_medium,
+          utm_content: attribution.utm_content, referrer: attribution.referrer,
+          landing_path: attribution.landing_path,
+        }),
+      })
+    } catch (e) { console.error('analytics_events insert failed:', e?.message) }
+  }
+
+  // Push to HubSpot with UTM attribution attached
+  if (process.env.HUBSPOT_API_KEY) {
+    try {
+      const hs = createHubspot({ apiKey: process.env.HUBSPOT_API_KEY })
+      const [firstname, ...rest] = String(name).split(' ')
+      await hs.upsertByEmail(email, {
+        firstname,
+        lastname: rest.join(' ') || null,
+        company,
+        message,
+        utm_source:   attribution.utm_source   || null,
+        utm_medium:   attribution.utm_medium   || null,
+        utm_campaign: attribution.utm_campaign || null,
+        utm_content:  attribution.utm_content  || null,
+        utm_term:     attribution.utm_term     || null,
+        referrer:     attribution.referrer     || null,
+      })
+    } catch (e) { console.error('HubSpot upsert failed:', e?.message) }
+  }
 
   if (dbError) {
     console.error('Supabase insert error:', dbError)

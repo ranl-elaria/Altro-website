@@ -50,6 +50,19 @@ function LocaleLayout() {
     switchLang(langFromUrl)
   }, [pathname, switchLang])
 
+  // Persist UTM params to first-touch cookies (30d) so attribution survives navigation.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
+    const has = keys.some(k => params.get(k))
+    if (!has) return
+    const exp = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString()
+    for (const k of keys) {
+      const v = params.get(k)
+      if (v) document.cookie = `${k}=${encodeURIComponent(v)}; expires=${exp}; path=/; SameSite=Lax`
+    }
+  }, [])
+
   return <Site />
 }
 
