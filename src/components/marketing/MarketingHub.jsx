@@ -6,6 +6,7 @@ import MarketingBrand from './MarketingBrand'
 import MarketingCompetitors from './MarketingCompetitors'
 import MarketingIntegrations from './MarketingIntegrations'
 import MarketingLogs from './MarketingLogs'
+import MarketingReports from './MarketingReports'
 
 const SUB_TABS = [
   { id: 'dashboard',    label: 'Funnel' },
@@ -13,6 +14,7 @@ const SUB_TABS = [
   { id: 'agents',       label: 'Agents' },
   { id: 'brand',        label: 'Brand' },
   { id: 'competitors',  label: 'Competitors' },
+  { id: 'reports',      label: 'Reports' },
   { id: 'integrations', label: 'Integrations' },
   { id: 'logs',         label: 'Logs' },
 ]
@@ -42,6 +44,7 @@ export default function MarketingHub() {
         {sub === 'agents'       && <MarketingAgents />}
         {sub === 'brand'        && <MarketingBrand />}
         {sub === 'competitors'  && <MarketingCompetitors />}
+        {sub === 'reports'      && <MarketingReports />}
         {sub === 'integrations' && <MarketingIntegrations />}
         {sub === 'logs'         && <MarketingLogs />}
       </div>
