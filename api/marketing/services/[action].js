@@ -6,6 +6,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { createHubspot, normalizeContact } from '../../../src/lib/marketing/hubspot.js'
+import { getHubspotAccessToken } from '../../../src/lib/marketing/hubspot-token.js'
 import { createApollo } from '../../../src/lib/marketing/apollo.js'
 import { computeFunnel } from '../../../src/lib/marketing/funnel.js'
 import { createCanva } from '../../../src/lib/marketing/canva.js'
@@ -126,11 +127,16 @@ export default async function handler(req, res) {
 
   if (action === 'hubspot-sync') {
     if (req.method !== 'POST' && req.method !== 'GET') { res.setHeader('Allow', 'POST, GET'); return res.status(405).end() }
-    const apiKey = process.env.HUBSPOT_API_KEY
-    if (!apiKey) return res.status(500).json({ error: 'HUBSPOT_API_KEY missing' })
+    let token
+    try {
+      const t = await getHubspotAccessToken(supabase)
+      token = t.token
+    } catch (e) {
+      return res.status(500).json({ error: 'hubspot_not_connected', message: e.message })
+    }
     const apolloKey = process.env.APOLLO_API_KEY
     const apollo = apolloKey ? createApollo({ apiKey: apolloKey }) : null
-    const hs = createHubspot({ apiKey })
+    const hs = createHubspot({ apiKey: token })
 
     await supabase.from('hubspot_sync_state').update({ status: 'running', last_error: null }).eq('id', 1)
 

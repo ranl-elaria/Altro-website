@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { createHubspot } from '../src/lib/marketing/hubspot.js'
+import { getHubspotAccessToken } from '../src/lib/marketing/hubspot-token.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -85,10 +86,11 @@ export default async function handler(req, res) {
     } catch (e) { console.error('analytics_events insert failed:', e?.message) }
   }
 
-  // Push to HubSpot with UTM attribution attached
-  if (process.env.HUBSPOT_API_KEY) {
-    try {
-      const hs = createHubspot({ apiKey: process.env.HUBSPOT_API_KEY })
+  // Push to HubSpot with UTM attribution attached (OAuth preferred, API key fallback)
+  try {
+    const { token } = await getHubspotAccessToken(supabase)
+    if (token) {
+      const hs = createHubspot({ apiKey: token })
       const [firstname, ...rest] = String(name).split(' ')
       await hs.upsertByEmail(email, {
         firstname,
@@ -102,8 +104,8 @@ export default async function handler(req, res) {
         utm_term:     attribution.utm_term     || null,
         referrer:     attribution.referrer     || null,
       })
-    } catch (e) { console.error('HubSpot upsert failed:', e?.message) }
-  }
+    }
+  } catch (e) { console.error('HubSpot upsert failed:', e?.message) }
 
   if (dbError) {
     console.error('Supabase insert error:', dbError)

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 
 const META = {
-  hubspot:   { label: 'HubSpot',      purpose: 'CRM source of truth',           oauth: false, note: 'Set HUBSPOT_API_KEY env (Private App).' },
+  hubspot:   { label: 'HubSpot',      purpose: 'CRM source of truth',           oauth: true,  needsApp: true },
   apollo:    { label: 'Apollo',       purpose: 'Lead enrichment',               oauth: false, note: 'Set APOLLO_API_KEY env.' },
   canva:     { label: 'Canva',        purpose: 'Brand assets + AI design',      oauth: true,  needsApp: true },
   google:    { label: 'Google Drive', purpose: 'Brand-asset archive',           oauth: true },
@@ -123,11 +123,19 @@ export default function MarketingIntegrations() {
                   {m.note && r.status === 'disconnected' && (
                     <div className="mkt-int__hint">{m.note}</div>
                   )}
-                  {m.needsApp && r.status === 'disconnected' && (
+                  {m.needsApp && r.status === 'disconnected' && r.provider === 'canva' && (
                     <div className="mkt-int__hint">
                       Register a Canva Connect app at <a href="https://www.canva.com/developers/" target="_blank" rel="noreferrer">canva.com/developers</a>,
-                      add redirect URI <code>{`${typeof window !== 'undefined' ? window.location.origin : ''}/api/marketing/oauth/callback?provider=canva`}</code>,
+                      add redirect URI <code>{`${typeof window !== 'undefined' ? window.location.origin : ''}/api/marketing/oauth/callback`}</code>,
                       then set <code>CANVA_CLIENT_ID</code> + <code>CANVA_CLIENT_SECRET</code> in Vercel env.
+                    </div>
+                  )}
+                  {m.needsApp && r.status === 'disconnected' && r.provider === 'hubspot' && (
+                    <div className="mkt-int__hint">
+                      Create a HubSpot public app at <a href="https://developers.hubspot.com/" target="_blank" rel="noreferrer">developers.hubspot.com</a> → Apps → Create app.
+                      Add redirect URL <code>{`${typeof window !== 'undefined' ? window.location.origin : ''}/api/marketing/oauth/callback`}</code>,
+                      scopes <code>crm.objects.contacts.read crm.objects.contacts.write crm.schemas.contacts.read oauth</code>,
+                      then set <code>HUBSPOT_CLIENT_ID</code> + <code>HUBSPOT_CLIENT_SECRET</code> in Vercel env. <code>HUBSPOT_API_KEY</code> still works as fallback during transition.
                     </div>
                   )}
                 </div>
