@@ -81,6 +81,17 @@ export default async function handler(req, res) {
         state,
       })
       authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
+    } else if (provider === 'hubspot') {
+      if (!process.env.HUBSPOT_CLIENT_ID) {
+        return res.status(501).send('HubSpot OAuth not configured. Set HUBSPOT_CLIENT_ID + HUBSPOT_CLIENT_SECRET.')
+      }
+      const params = new URLSearchParams({
+        client_id: process.env.HUBSPOT_CLIENT_ID,
+        redirect_uri,
+        scope: 'crm.objects.contacts.read crm.objects.contacts.write crm.schemas.contacts.read oauth',
+        state,
+      })
+      authUrl = `https://app.hubspot.com/oauth/authorize?${params.toString()}`
     } else if (provider === 'canva') {
       if (!process.env.CANVA_CLIENT_ID) {
         return res.status(501).send('Canva not configured.')
@@ -141,6 +152,41 @@ export default async function handler(req, res) {
           metadata: { token_type: tok.token_type, scope: tok.scope },
         })
         return done(res, base, true, 'google connected')
+      }
+
+      if (provider === 'hubspot') {
+        const body = new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: process.env.HUBSPOT_CLIENT_ID,
+          client_secret: process.env.HUBSPOT_CLIENT_SECRET,
+          redirect_uri,
+          code,
+        })
+        const r = await fetch('https://api.hubapi.com/oauth/v1/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
+        })
+        const j = await r.json()
+        if (!r.ok) throw new Error(`HubSpot token: ${j.message || JSON.stringify(j)}`)
+        // Fetch portal info for account_label
+        let label = null
+        try {
+          const ai = await fetch(`https://api.hubapi.com/oauth/v1/access-tokens/${j.access_token}`)
+          if (ai.ok) {
+            const meta = await ai.json()
+            label = meta.hub_domain || `portal_${meta.hub_id}`
+          }
+        } catch {}
+        await saveTokens(supabase, 'hubspot', {
+          access_token: j.access_token,
+          refresh_token: j.refresh_token,
+          expires_in: j.expires_in,
+          scopes: (j.scope || '').split(' ').filter(Boolean),
+          account_label: label,
+          metadata: { token_type: j.token_type },
+        })
+        return done(res, base, true, 'hubspot connected')
       }
 
       if (provider === 'canva') {
