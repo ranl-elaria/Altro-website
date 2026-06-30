@@ -808,6 +808,111 @@ Produce ${creativeCount} distinct visual concepts that respect AltroAI brand (pr
     return res.status(200).json({ visuals })
   }
 
+  // ── MEASURE ───────────────────────────────────────
+  // GET ?id=  Aggregate post-launch metrics:
+  //   - leads (hubspot_contacts created since publish, with campaign tag if available)
+  //   - email events (Resend webhook events for this campaign)
+  //   - analytics events (page_view / conversion) tagged with utm_campaign=slug
+  //   - AI cost spent on this campaign (marketing_runs)
+  // Persists snapshot to campaign.metrics for trend comparison.
+  if (action === 'measure') {
+    if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).end() }
+    const id = req.query.id
+    if (!id) return res.status(400).json({ error: 'missing_id' })
+
+    const { data: c } = await supabase.from('marketing_campaigns').select('*').eq('id', id).single()
+    if (!c) return res.status(404).json({ error: 'not_found' })
+
+    // Window: from earliest 'PUBLISHED' transition (or created_at if never published)
+    const hist = Array.isArray(c.state_history) ? c.state_history : []
+    const publishedAt = hist.find(h => h.state === 'PUBLISHED' || h.state === 'PUBLISH_READY')?.at || c.created_at
+    const since = new Date(publishedAt).toISOString()
+    const now = new Date().toISOString()
+
+    // 1. Leads attributable to this campaign (slug match on tag or utm)
+    let leads = 0
+    try {
+      const { count } = await supabase.from('hubspot_contacts')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', since)
+        .ilike('properties', `%${c.slug}%`)
+      leads = count || 0
+    } catch (e) {}
+
+    // Fallback: leads in window without slug filter (treat as upper bound)
+    let leadsAllInWindow = 0
+    try {
+      const { count } = await supabase.from('hubspot_contacts')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', since)
+      leadsAllInWindow = count || 0
+    } catch (e) {}
+
+    // 2. Email events from Resend webhook
+    let emailEvents = { sent: 0, delivered: 0, opened: 0, clicked: 0, bounced: 0, complained: 0 }
+    try {
+      const { data: evts } = await supabase.from('analytics_events')
+        .select('event_type, properties')
+        .gte('created_at', since)
+        .eq('source', 'resend')
+        .ilike('properties', `%${c.slug}%`)
+      for (const e of (evts || [])) {
+        const t = String(e.event_type || '').toLowerCase()
+        if (t.includes('sent')) emailEvents.sent++
+        else if (t.includes('delivered')) emailEvents.delivered++
+        else if (t.includes('opened')) emailEvents.opened++
+        else if (t.includes('clicked')) emailEvents.clicked++
+        else if (t.includes('bounced')) emailEvents.bounced++
+        else if (t.includes('complained')) emailEvents.complained++
+      }
+    } catch (e) {}
+
+    // 3. Site analytics events tagged with utm_campaign=slug
+    let visits = 0, conversions = 0
+    try {
+      const { data: evts } = await supabase.from('analytics_events')
+        .select('event_type')
+        .gte('created_at', since)
+        .ilike('properties', `%${c.slug}%`)
+      for (const e of (evts || [])) {
+        const t = String(e.event_type || '').toLowerCase()
+        if (t === 'page_view' || t === 'pageview') visits++
+        else if (t === 'conversion' || t === 'lead' || t === 'submit') conversions++
+      }
+    } catch (e) {}
+
+    // 4. AI runs cost on this campaign
+    const { data: runs } = await supabase.from('marketing_runs')
+      .select('cost_usd, status').eq('campaign_id', id)
+    const aiCost = (runs || []).reduce((s, r) => s + Number(r.cost_usd || 0), 0)
+    const aiRuns = runs?.length || 0
+    const aiErrors = (runs || []).filter(r => r.status === 'error').length
+
+    // Derived
+    const openRate = emailEvents.delivered ? Math.round((emailEvents.opened / emailEvents.delivered) * 1000) / 10 : 0
+    const ctr = emailEvents.opened ? Math.round((emailEvents.clicked / emailEvents.opened) * 1000) / 10 : 0
+    const convRate = visits ? Math.round((conversions / visits) * 1000) / 10 : 0
+    const costPerLead = leads ? Math.round((aiCost / leads) * 100) / 100 : null
+
+    const snapshot = {
+      taken_at: now, window_start: since,
+      leads, leads_window_total: leadsAllInWindow,
+      email: emailEvents, open_rate_pct: openRate, ctr_pct: ctr,
+      visits, conversions, conv_rate_pct: convRate,
+      ai: { runs: aiRuns, cost_usd: aiCost, errors: aiErrors },
+      cost_per_lead_usd: costPerLead,
+    }
+
+    // Persist with history
+    const prior = c.metrics?.history || []
+    const newHistory = [...prior, snapshot].slice(-20) // keep last 20 snapshots
+    await supabase.from('marketing_campaigns').update({
+      metrics: { latest: snapshot, history: newHistory },
+    }).eq('id', id)
+
+    return res.status(200).json({ ok: true, snapshot, history_count: newHistory.length })
+  }
+
   // ── CONCEPTS-EVOLVE ───────────────────────────────
   // POST { kind: 'copy'|'concept', text, brandContext?, variantsPerRound?, maxRounds?, minScore? }
   // Karpathy-style: gen N variants → expert score → keep top → evolve. Returns winner + log.
