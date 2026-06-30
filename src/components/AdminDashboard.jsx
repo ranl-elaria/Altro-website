@@ -37,8 +37,8 @@ const panelVariants = {
   exit:    { x: '100%', opacity: 0, transition: { duration: 0.22, ease: 'easeIn' } },
 }
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('submissions')
+export default function AdminDashboard({ initialTab = 'submissions', hideTabs = false } = {}) {
+  const [activeTab, setActiveTab] = useState(initialTab)
 
   // Submissions
   const [submissions, setSubmissions] = useState([])
@@ -187,7 +187,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin">
-      {/* Header */}
+      {/* Header — hidden when mounted inside Cockpit */}
+      {!hideTabs && (
       <header className="admin-header">
         <div className="admin-header__left">
           <Logo />
@@ -200,8 +201,10 @@ export default function AdminDashboard() {
           Sign out
         </button>
       </header>
+      )}
 
       {/* Tabs */}
+      {!hideTabs && (
       <div className="admin-tabs">
         <button
           className={`admin-tab${activeTab === 'submissions' ? ' admin-tab--active' : ''}`}
@@ -232,6 +235,7 @@ export default function AdminDashboard() {
           Marketing
         </button>
       </div>
+      )}
 
       <div className="admin-body">
         {/* ── Detail panels ── */}
