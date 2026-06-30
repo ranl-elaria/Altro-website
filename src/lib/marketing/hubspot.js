@@ -53,6 +53,23 @@ export function createHubspot({ apiKey }) {
         body: JSON.stringify({ properties }),
       })
     },
+
+    // Upsert by email. Uses HubSpot's "idProperty=email" endpoint.
+    async upsertByEmail(email, properties) {
+      const payload = { properties: { email, ...properties } }
+      try {
+        return await req(`/crm/v3/objects/contacts/${encodeURIComponent(email)}?idProperty=email`, {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        })
+      } catch (e) {
+        // 404 → create
+        if (String(e.message).includes('404')) {
+          return req('/crm/v3/objects/contacts', { method: 'POST', body: JSON.stringify(payload) })
+        }
+        throw e
+      }
+    },
   }
 }
 

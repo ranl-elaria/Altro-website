@@ -25,10 +25,25 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
     setStatus('loading')
     setErrorMsg('')
     try {
+      // Capture attribution: UTM params from URL + referrer + cookies set by analytics
+      const url = new URL(window.location.href)
+      const cookieGet = (k) => {
+        const m = document.cookie.match(new RegExp('(?:^|; )' + k + '=([^;]*)'))
+        return m ? decodeURIComponent(m[1]) : null
+      }
+      const attribution = {
+        utm_source:   url.searchParams.get('utm_source')   || cookieGet('utm_source'),
+        utm_medium:   url.searchParams.get('utm_medium')   || cookieGet('utm_medium'),
+        utm_campaign: url.searchParams.get('utm_campaign') || cookieGet('utm_campaign'),
+        utm_content:  url.searchParams.get('utm_content')  || cookieGet('utm_content'),
+        utm_term:     url.searchParams.get('utm_term')     || cookieGet('utm_term'),
+        referrer: document.referrer || null,
+        landing_path: url.pathname,
+      }
       const res = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, attribution }),
       })
       const data = await res.json()
       if (!res.ok) {
