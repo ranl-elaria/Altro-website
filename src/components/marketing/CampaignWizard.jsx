@@ -1254,13 +1254,75 @@ function StepArchive({ c, patch, busy }) {
 
 // ── Step 9 ─────────────────────────────────────────────────
 function StepMeasure({ c }) {
+  const [snap, setSnap] = useState(c?.metrics?.latest || null)
+  const [history, setHistory] = useState(c?.metrics?.history || [])
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(null)
+
+  async function pull() {
+    setBusy(true); setErr(null)
+    try {
+      const j = await authedFetch(`/api/marketing/campaigns/measure?id=${c.id}`)
+      setSnap(j.snapshot)
+      setHistory(h => [...h, j.snapshot].slice(-20))
+    } catch (e) { setErr(e.message) }
+    setBusy(false)
+  }
+
+  const prior = history.length > 1 ? history[history.length - 2] : null
+  function delta(curr, prev) {
+    if (prev == null || curr == null) return null
+    const d = curr - prev
+    if (d === 0) return null
+    return { d, up: d > 0 }
+  }
+
+  const tiles = snap ? [
+    { label: 'Leads',              val: snap.leads,                       prev: prior?.leads,                       hint: 'tagged with campaign slug' },
+    { label: 'Visits',             val: snap.visits,                      prev: prior?.visits,                      hint: 'utm_campaign=slug' },
+    { label: 'Conversions',        val: snap.conversions,                 prev: prior?.conversions,                 hint: 'submit / lead events' },
+    { label: 'Conv. rate',         val: `${snap.conv_rate_pct}%`,         prev: prior?.conv_rate_pct,               hint: 'conversions / visits' },
+    { label: 'Email opened',       val: snap.email?.opened ?? 0,          prev: prior?.email?.opened,               hint: `${snap.open_rate_pct}% open rate` },
+    { label: 'Email clicked',      val: snap.email?.clicked ?? 0,         prev: prior?.email?.clicked,              hint: `${snap.ctr_pct}% CTR` },
+    { label: 'AI cost',            val: `$${(snap.ai?.cost_usd || 0).toFixed(2)}`, prev: prior?.ai?.cost_usd,        hint: `${snap.ai?.runs ?? 0} runs` },
+    { label: 'Cost / lead',        val: snap.cost_per_lead_usd != null ? `$${snap.cost_per_lead_usd}` : '—',         prev: prior?.cost_per_lead_usd,      hint: 'AI cost / attributed leads' },
+  ] : []
+
   return (
     <div className="mkt-wiz__panel">
       <h3>Measure</h3>
-      <p className="mkt-int__sub">Post-launch metrics. Pending Meta/LinkedIn insights integrations.</p>
-      <div className="marketing-panel__placeholder">
-        Will show impressions, CTR, leads attributed to this campaign once metric pull endpoints exist.
+      <p className="mkt-int__sub">Post-launch metrics. Pulls from HubSpot, Resend, analytics, AI run logs.</p>
+      <div className="mkt-agents__actions">
+        <button className="mkt-agents__btn mkt-agents__btn--primary" onClick={pull} disabled={busy}>
+          {busy ? 'Pulling…' : (snap ? 'Refresh snapshot' : 'Pull metrics now')}
+        </button>
+        {snap && <span className="mkt-int__sub">Last snapshot: {new Date(snap.taken_at).toLocaleString()} · {history.length} total</span>}
       </div>
+      {err && <div className="mkt-agents__error">{err}</div>}
+      {snap && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginTop: 12 }}>
+          {tiles.map(t => {
+            const numCurr = typeof t.val === 'string' ? parseFloat(String(t.val).replace(/[^0-9.\-]/g, '')) : t.val
+            const numPrev = typeof t.prev === 'string' ? parseFloat(String(t.prev).replace(/[^0-9.\-]/g, '')) : t.prev
+            const d = delta(numCurr, numPrev)
+            return (
+              <div key={t.label} style={{ padding: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8 }}>
+                <div style={{ fontSize: 11, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t.label}</div>
+                <div style={{ fontSize: 22, fontWeight: 600, marginTop: 4 }}>
+                  {t.val}
+                  {d && <span style={{ fontSize: 12, marginLeft: 8, color: d.up ? '#22c55e' : '#ef4444' }}>{d.up ? '▲' : '▼'} {Math.abs(d.d)}</span>}
+                </div>
+                <div style={{ fontSize: 10, opacity: 0.5, marginTop: 2 }}>{t.hint}</div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+      {snap && (
+        <div className="mkt-int__sub" style={{ marginTop: 12 }}>
+          Window since: {new Date(snap.window_start).toLocaleString()} · Leads in window total (all sources): {snap.leads_window_total}
+        </div>
+      )}
     </div>
   )
 }
