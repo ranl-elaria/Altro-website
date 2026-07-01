@@ -18,6 +18,7 @@ export default function CockpitHome() {
   const [finance, setFinance] = useState(null)
   const [submissions, setSubmissions] = useState([])
   const [activity, setActivity] = useState([])
+  const [recentDocs, setRecentDocs] = useState([])
   const [err, setErr] = useState(null)
 
   useEffect(() => { loadAll() }, [])
@@ -55,6 +56,14 @@ export default function CockpitHome() {
         .order('ts', { ascending: false })
         .limit(10)
       setActivity(acts || [])
+
+      // Recent knowledge docs
+      const { data: docs } = await supabase
+        .from('knowledge_docs')
+        .select('id, title, doc_type, updated_at')
+        .order('updated_at', { ascending: false })
+        .limit(5)
+      setRecentDocs(docs || [])
     } catch (e) { setErr(e.message) }
   }
 
@@ -128,6 +137,22 @@ export default function CockpitHome() {
           </div>
         ))}
       </div>
+
+      {/* Recent docs */}
+      {recentDocs.length > 0 && (
+        <>
+          <h2 className="cockpit-h2">Recent docs</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, marginBottom: 20 }}>
+            {recentDocs.map(d => (
+              <div key={d.id} onClick={() => navigate(`/admin/knowledge/view/${d.id}`)}
+                style={{ padding: 10, background: 'rgba(255,255,255,0.03)', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
+                <div style={{ fontWeight: 500 }}>{d.title}</div>
+                <div style={{ opacity: 0.5, fontSize: 10, marginTop: 2 }}>{d.doc_type} · {timeAgo(d.updated_at)}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* d) Activity feed */}
       <h2 className="cockpit-h2">Recent activity</h2>
