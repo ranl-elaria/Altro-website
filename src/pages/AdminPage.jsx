@@ -6,7 +6,7 @@ import Cockpit from '../components/cockpit/Cockpit'
 import CockpitHome from '../components/cockpit/CockpitHome'
 import SalesSuite from '../components/sales/SalesSuite'
 import MarketingHub from '../components/marketing/MarketingHub'
-import AnalyticsSuite from '../components/cockpit/AnalyticsSuite'
+import AnalyticsHub from '../components/analytics/AnalyticsHub'
 import ComingSoon from '../components/cockpit/ComingSoon'
 import SettingsPanel from '../components/cockpit/SettingsPanel'
 import '../admin.css'
@@ -46,7 +46,7 @@ export default function AdminPage() {
         <Route index element={<CockpitHome />} />
         <Route path="sales/*"     element={<SalesSuite />} />
         <Route path="marketing/*" element={<MarketingHub />} />
-        <Route path="analytics"   element={<AnalyticsSuite />} />
+        <Route path="analytics/*" element={<AnalyticsHub />} />
         <Route path="settings"    element={<SettingsPanel />} />
         <Route path="finance"     element={<ComingSoon title="Finance" lead="Invoices, expenses, AI cost, P&L, runway, MRR." subtabs={['Invoices', 'Expenses', 'AI Cost', 'P&L', 'Runway', 'MRR']} />} />
         <Route path="product"     element={<ComingSoon title="Product / Engineering" lead="Internal AltroAI features, bugs, roadmap, client project status." subtabs={['Roadmap', 'Bugs', 'Releases', 'Client Projects']} />} />
