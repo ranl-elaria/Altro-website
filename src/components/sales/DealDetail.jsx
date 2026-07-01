@@ -84,6 +84,13 @@ export default function DealDetail() {
       <button className="cockpit-actions__btn" onClick={() => navigate('/admin/sales')} style={{ marginBottom: 12, fontSize: 12 }}>← Back to Sales</button>
       <h2 className="cockpit-h2" style={{ marginTop: 0 }}>{deal.name}</h2>
 
+      {deal.stage === 'won' && (
+        <div style={{ padding: 12, marginBottom: 14, background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: 13 }}>🎉 Deal won. Create invoice from this deal?</div>
+          <button className="cockpit-actions__btn cockpit-actions__btn--primary" style={{ fontSize: 12 }} onClick={() => navigate(`/admin/finance/invoices/new?deal_id=${deal.id}`)}>Create invoice →</button>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
         {/* Left: stage + proposal */}
         <div>

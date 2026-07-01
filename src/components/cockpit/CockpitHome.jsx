@@ -15,6 +15,7 @@ function timeAgo(iso) {
 export default function CockpitHome() {
   const navigate = useNavigate()
   const [pacing, setPacing] = useState(null)
+  const [finance, setFinance] = useState(null)
   const [submissions, setSubmissions] = useState([])
   const [activity, setActivity] = useState([])
   const [err, setErr] = useState(null)
@@ -31,6 +32,12 @@ export default function CockpitHome() {
         headers: { Authorization: `Bearer ${token}` },
       }).then(r => r.json()).catch(() => null)
       if (p && !p.error) setPacing(p)
+
+      // Finance overview
+      const fin = await fetch('/api/finance/overview', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(r => r.json()).catch(() => null)
+      if (fin && !fin.error) setFinance(fin)
 
       // Today's inbox: latest sales_leads (status='new')
       const { data: subs } = await supabase
@@ -52,7 +59,7 @@ export default function CockpitHome() {
   }
 
   const kpis = [
-    { label: 'Revenue MTD',     val: '—',                                                 sub: 'Finance suite coming',     muted: true },
+    { label: 'Revenue MTD',     val: finance ? `$${Math.round(finance.revenue_mtd_usd).toLocaleString()}` : '—',   sub: finance ? `cash $${Math.round(finance.cash_on_hand_usd).toLocaleString()}` : 'Set balance in Finance',     muted: !finance },
     { label: 'Leads today',     val: pacing?.pipeline?.leads_today ?? '—',                sub: `target ${pacing?.pipeline?.target ?? '—'}`, muted: false },
     { label: 'Active campaigns', val: pacing?.campaigns?.active ?? '—',                   sub: `${pacing?.campaigns?.week_total ?? '—'} this week`, muted: false },
     { label: 'AI cost 24h',      val: pacing ? `$${pacing.cost.day_usd.toFixed(2)}` : '—', sub: `cap $${pacing?.cost?.cap_usd ?? '—'}`, muted: false },

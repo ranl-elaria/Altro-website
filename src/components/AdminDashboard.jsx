@@ -126,9 +126,11 @@ export default function AdminDashboard({ initialTab = 'submissions', hideTabs = 
     setGenerating(true)
     setProposal(null)
     try {
-      const res = await fetch('/api/generate-proposal', {
+      const { data: sess } = await supabase.auth.getSession()
+      const token = sess?.session?.access_token
+      const res = await fetch('/api/sales/xplace-proposal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           title: selectedProject.title,
           description: selectedProject.description,

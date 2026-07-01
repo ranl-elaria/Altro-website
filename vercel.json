@@ -4,7 +4,9 @@
   "framework": "vite",
   "crons": [
     { "path": "/api/sync-xplace", "schedule": "0 8 * * *" },
-    { "path": "/api/marketing/services/competitors-snapshot-all", "schedule": "0 6 * * 0" }
+    { "path": "/api/marketing/services/competitors-snapshot-all", "schedule": "0 6 * * 0" },
+    { "path": "/api/finance/fx-refresh", "schedule": "0 5 * * *" },
+    { "path": "/api/finance/overdue-check", "schedule": "0 7 * * *" }
   ],
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "headers": [
