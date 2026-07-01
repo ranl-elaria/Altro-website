@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { salesFetch } from '../../lib/sales/api'
+import AttachDocButton from '../knowledge/AttachDocButton'
 
 const STAGES = ['qualified','discovery','proposal_sent','negotiation','won','lost']
 const LOST_REASONS = ['no_budget','no_fit','competitor','no_response','other']
@@ -166,6 +167,13 @@ export default function DealDetail() {
               <div>Source: {deal.source || '—'}</div>
               {deal.utm_campaign && <div>UTM: <span className="cockpit-inbox__utm">{deal.utm_campaign}</span></div>}
               <div>Expected close: {deal.expected_close_date || '—'}</div>
+            </div>
+          </div>
+
+          <div className="cockpit-card" style={{ marginBottom: 16 }}>
+            <div className="cockpit-card__title">Attached docs</div>
+            <div style={{ marginTop: 8 }}>
+              <AttachDocButton targetType="deal" targetId={deal.id} linkedDocs={deal.linked_docs || []} onChange={(ld) => setDeal(d => ({ ...d, linked_docs: ld }))} />
             </div>
           </div>
 
