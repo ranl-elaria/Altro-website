@@ -17,6 +17,7 @@ import { createClient } from '@supabase/supabase-js'
 import { scoreLead } from '../../src/lib/sales/scoring.js'
 import { generateProposal } from '../../src/lib/sales/proposal.js'
 import { sendDealProposal, notifyNewLead } from '../../src/lib/sales/notify.js'
+import { fireLeadRoutine } from '../../src/lib/sales/fire-routine.js'
 import { createOrUpdateHubspotDeal, updateHubspotDealStage } from '../../src/lib/sales/hubspot-sync.js'
 import { logActivity } from '../../src/lib/cockpit/activity.js'
 
@@ -63,6 +64,26 @@ export default async function handler(req, res) {
     if (updErr) return res.status(500).json({ error: updErr.message })
     const notify = await notifyNewLead(lead).catch(e => ({ ok: false, error: e?.message }))
     return res.status(200).json({ ok: true, notify })
+  }
+
+  // ── ROUTINE-FIRETEST (diagnostic) ──────────────────
+  // Reports whether fire env vars are visible and what Anthropic returns.
+  // Secret-gated. Remove after the pipeline is confirmed working.
+  if (action === 'routine-firetest') {
+    const secret = process.env.ROUTINE_SECRET
+    if (!secret || req.headers['x-routine-secret'] !== secret) {
+      return res.status(401).json({ error: 'unauthorized' })
+    }
+    const env = {
+      ROUTINE_FIRE_URL: process.env.ROUTINE_FIRE_URL ? 'set' : 'MISSING',
+      ROUTINE_FIRE_TOKEN: process.env.ROUTINE_FIRE_TOKEN ? 'set' : 'MISSING',
+    }
+    const result = await fireLeadRoutine({
+      id: 'firetest', email: 't@t.com', name: 'Fire Test',
+      company: 'Test', message: 'diagnostic fire', source: 'website',
+      ai_score: 50, ai_score_reason: 'test',
+    })
+    return res.status(200).json({ env, fireResult: result })
   }
 
   const user = await authCheck(req)
