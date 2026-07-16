@@ -72,7 +72,7 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         {!isModal && (
           <>
             <FadeIn delay={0} duration={0.8} y={40}>
-              <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance' }}>
+              <h2 className="hero-heading font-black uppercase tracking-tight leading-none text-center mb-4 sm:mb-6" style={{ fontSize: 'clamp(2rem, 8vw, 100px)', textWrap: 'balance', color: 'var(--color-accent)' }}>
                 {t('contact.heading')}
               </h2>
             </FadeIn>

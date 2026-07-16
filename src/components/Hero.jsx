@@ -10,9 +10,10 @@ export default function Hero() {
   return (
     <section
       id="home"
-      className="section--dark min-h-screen px-8 sm:px-12 md:px-24 lg:px-40 pt-24 pb-16 sm:pt-28 sm:pb-20 overflow-x-clip"
+      className="section--dark px-8 sm:px-12 md:px-20 lg:px-32 pb-20 sm:pb-24 overflow-x-clip"
+      style={{ paddingTop: 'calc(var(--nav-height) + 96px)' }}
     >
-      <div className="max-w-7xl mx-auto min-h-[calc(100vh-112px)] flex flex-col justify-center">
+      <div className="max-w-7xl mx-auto flex flex-col">
 
         {/* Mobile: GIF appears first via DOM order; Desktop: visually hidden, desktop GIF lives in right column. */}
         <div className="flex flex-col sm:hidden gap-8">
@@ -30,11 +31,14 @@ export default function Hero() {
         {/* Heading: single H1 across all viewports, responsive sizing */}
         <FadeIn delay={0.15} duration={0.8} y={40}>
           <h1
-            className="hero-heading font-black uppercase tracking-tight leading-snug sm:leading-[1.05] mb-6 sm:mb-0"
+            className="hero-heading font-black uppercase tracking-tight leading-[1.18] sm:leading-[1.14] mb-6 sm:mb-0"
             style={{
-              fontSize: 'clamp(1.5rem, 7.5vw, 72px)',
+              fontSize: 'clamp(1.625rem, 4.4vw, 52px)',
               textAlign: 'start',
-              textWrap: 'balance'
+              textWrap: 'balance',
+              letterSpacing: '-0.015em',
+              paddingBlock: '0.1em',
+              maxWidth: '18ch'
             }}
           >
             {t('hero.heading')}
@@ -65,39 +69,39 @@ export default function Hero() {
         </div>
 
         {/* Desktop layout: 60/40 split — H1 (above) sits in left column visually via grid below */}
-        <div className="hidden sm:grid sm:grid-cols-[3fr_2fr] gap-8 md:gap-12 lg:gap-16 items-start mt-8 md:mt-10">
-          <div className="flex flex-col gap-8">
+        <div className="hidden sm:grid sm:grid-cols-[3fr_2fr] gap-10 md:gap-16 lg:gap-20 items-start mt-10 md:mt-14">
+          <div className="flex flex-col gap-10">
             <FadeIn delay={0.35} duration={0.8} y={20}>
               <p
-                className="text-secondary font-light leading-relaxed opacity-75"
-                style={{ fontSize: 'clamp(0.9rem, 1.4vw, 1.05rem)', textAlign: 'start', maxWidth: '520px' }}
+                className="text-secondary font-light opacity-80"
+                style={{ fontSize: 'clamp(0.95rem, 1.35vw, 1.125rem)', textAlign: 'start', maxWidth: '540px', lineHeight: 1.6 }}
               >
                 {t('hero.subtitle')}
               </p>
             </FadeIn>
+
+            <FadeIn delay={0.5} duration={0.8} y={20}>
+              <div className="flex flex-col items-start gap-3">
+                <ContactButton size="2xl" onClick={openModal}>
+                  {t('hero.cta')}
+                </ContactButton>
+                <p className="text-secondary text-sm font-light opacity-60" style={{ textAlign: 'start' }}>
+                  {t('hero.ctaHint')}
+                </p>
+              </div>
+            </FadeIn>
           </div>
 
-          <div className="flex flex-col items-center gap-6 sm:gap-10">
+          <div className="flex flex-col items-center justify-center">
             <FadeIn delay={0.05} duration={0.9} y={30}>
               <img
                 src="/altroai-animation.gif"
                 alt="Animated altro mark looping in the brand teal — geometric monogram"
                 className="w-full mx-auto"
-                style={{ maxWidth: '100%' }}
+                style={{ maxWidth: '360px' }}
                 loading="eager"
                 decoding="async"
               />
-            </FadeIn>
-
-            <FadeIn delay={0.5} duration={0.8} y={20}>
-              <div className="flex flex-col items-center gap-4">
-                <ContactButton size="2xl" onClick={openModal}>
-                  {t('hero.cta')}
-                </ContactButton>
-                <p className="text-secondary text-sm sm:text-base font-light opacity-60 text-center max-w-xs sm:max-w-sm">
-                  {t('hero.ctaHint')}
-                </p>
-              </div>
             </FadeIn>
           </div>
         </div>
