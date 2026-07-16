@@ -6,9 +6,9 @@ import { ContactModalProvider } from './context/ContactModalContext'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import Marquee from './components/Marquee'
+import LogoStrip from './components/LogoStrip'
 import Challenges from './components/Challenges'
 import Services from './components/Services'
-import Outcomes from './components/Outcomes'
 import Testimonials from './components/Testimonials'
 import Process from './components/Process'
 import FAQ from './components/FAQ'
@@ -76,12 +76,12 @@ function Site() {
         <FloatingCTA />
         <main id="main-content">
           <Hero />
+          <Reveal><LogoStrip /></Reveal>
           <Reveal><Marquee /></Reveal>
           <Reveal><Challenges /></Reveal>
           <Reveal><Services /></Reveal>
-          <Reveal><Outcomes /></Reveal>
-          {/* <Testimonials /> */}
           <Reveal><Process /></Reveal>
+          <Reveal><Testimonials /></Reveal>
           <Reveal><FAQ /></Reveal>
       </main>
       <Footer />
