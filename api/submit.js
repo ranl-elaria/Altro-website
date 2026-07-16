@@ -5,6 +5,7 @@ import { getHubspotAccessToken } from '../src/lib/marketing/hubspot-token.js'
 import { logActivity } from '../src/lib/cockpit/activity.js'
 import { scoreLead } from '../src/lib/sales/scoring.js'
 import { notifyNewLead } from '../src/lib/sales/notify.js'
+import { fireLeadRoutine } from '../src/lib/sales/fire-routine.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -134,6 +135,8 @@ export default async function handler(req, res) {
       } catch (e) { console.error('lead scoring failed:', e?.message) }
       // Slack ping (no-op if SLACK_WEBHOOK_URL missing)
       notifyNewLead(lead).catch(e => console.error('slack notify failed:', e?.message))
+      // Fire Claude routine with lead as context (no-op if routine env missing)
+      fireLeadRoutine(lead).catch(e => console.error('fire routine failed:', e?.message))
     } else if (leadErr) {
       console.error('sales_leads insert failed:', leadErr.message)
     }
