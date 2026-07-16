@@ -16,7 +16,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { scoreLead } from '../../src/lib/sales/scoring.js'
 import { generateProposal } from '../../src/lib/sales/proposal.js'
-import { sendDealProposal } from '../../src/lib/sales/notify.js'
+import { sendDealProposal, notifyNewLead } from '../../src/lib/sales/notify.js'
 import { createOrUpdateHubspotDeal, updateHubspotDealStage } from '../../src/lib/sales/hubspot-sync.js'
 import { logActivity } from '../../src/lib/cockpit/activity.js'
 
@@ -41,6 +41,30 @@ async function logDealActivity({ deal_id, lead_id = null, kind, actor = 'cmo', b
 
 export default async function handler(req, res) {
   const action = req.query.action
+
+  // ── ROUTINE-PROCESSED ──────────────────────────────
+  // Callback from the Claude Code lead routine. Authed by x-routine-secret
+  // (not the CMO Bearer token), so it runs before authCheck. Saves the
+  // drafted reply, flips status→'contacted', pings Slack.
+  if (action === 'routine-processed') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' })
+    const secret = process.env.ROUTINE_SECRET
+    if (!secret || req.headers['x-routine-secret'] !== secret) {
+      return res.status(401).json({ error: 'unauthorized' })
+    }
+    const { id, draft_reply } = req.body ?? {}
+    if (!id) return res.status(400).json({ error: 'id is required' })
+    const { data: lead, error: updErr } = await supabase
+      .from('sales_leads')
+      .update({ notes: draft_reply ?? null, status: 'contacted' })
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (updErr) return res.status(500).json({ error: updErr.message })
+    const notify = await notifyNewLead(lead).catch(e => ({ ok: false, error: e?.message }))
+    return res.status(200).json({ ok: true, notify })
+  }
+
   const user = await authCheck(req)
   if (!user) return res.status(401).json({ error: 'unauthorized' })
 
