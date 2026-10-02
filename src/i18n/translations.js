@@ -16,15 +16,20 @@ export const TRANSLATIONS = {
     'navbar.skipToMain': 'Skip to main content',
 
     // meta
-    'meta.title': 'altro — ship a working automation in 2–4 weeks',
-    'meta.description': 'altro ships custom internal tools, automations, and AI agents for 10–200 person ops teams. Fixed scope, working deliverable in 2–4 weeks.',
+    'meta.title': 'altro — automations and systems for your business',
+    'meta.description': 'We build automations, management systems and connections between your tools. Fixed price and scope, first working version within 4 weeks.',
 
     // hero
-    'hero.badge': 'Enterprise Solutions',
-    'hero.heading': 'Your team is doing work that should be running itself.',
-    'hero.subtitle': 'We build the internal tools, automations, and AI workflows that replace the manual work your team repeats every day. Custom-built around how your business actually works.',
+    'hero.badge': 'Automation and systems for business',
+    'hero.heading': 'The manual work in your business can run by itself.',
+    'hero.subtitle': 'We build automations, management systems and connections between your tools. Price and scope agreed up front, first working version within 4 weeks.',
     'hero.cta': 'Tell us what\'s slowing you down',
-    'hero.ctaHint': 'Free first call. No commitment.',
+    'hero.ctaHint': 'Free first call. We reply within one business day.',
+    'hero.wa': 'Or message us on WhatsApp',
+    'hero.line.in': 'Incoming data',
+    'hero.line.auto': 'Automation',
+    'hero.line.done': 'Done',
+    'designed.cta': "Sound like your business? Let's talk.",
 
     // marquee
     'marquee.items': [
@@ -39,13 +44,13 @@ export const TRANSLATIONS = {
     ],
 
     // designed for (pain points)
-    'designed.heading': 'Sound Familiar?',
-    'designed.01.title': 'Your team keeps doing the same thing manually',
-    'designed.01.text': 'Data entry, copy-pasting between tools, pulling the same reports every week. It works until it doesn\'t. We replace these routines with automated processes that run on their own.',
+    'designed.heading': 'Sound familiar?',
+    'designed.01.title': 'Copying data from sheet to sheet every week',
+    'designed.01.text': 'Reports, leads, invoices: the same steps again and again. It works until someone makes a mistake or goes on vacation.',
     'designed.02.title': 'Your tools don\'t talk to each other',
-    'designed.02.text': 'You use a CRM, a billing system, a spreadsheet, and three Slack channels. None of them sync. We connect everything so your data flows automatically where it needs to go.',
-    'designed.03.title': 'Every person does it differently',
-    'designed.03.text': 'When the process lives in someone\'s head instead of the system, things break when that person is out. We build systems that make the right way the only way.',
+    'designed.02.text': 'CRM, invoicing, spreadsheets and a WhatsApp group. Each holds part of the picture, and you connect them by hand.',
+    'designed.03.title': 'Only one person knows how it works',
+    'designed.03.text': 'When the process lives in someone\'s head and not in a system, everything depends on them. We make the right way the only way.',
 
     // services
     'services.heading': 'What We Build',
@@ -187,8 +192,8 @@ export const TRANSLATIONS = {
 
   he: {
     // meta
-    'meta.title': 'altro — פתרונות ווב וAI מותאמים אישית',
-    'meta.description': 'altro בונה כלים פנימיים, אוטומציות וסוכני AI לצוותי אופרציה בגודל 10–200 איש. היקף קבוע, אספקה תוך 2–4 שבועות.',
+    'meta.title': 'אוטומציה ומערכות לעסקים | altro',
+    'meta.description': 'בונים אוטומציות, מערכות ניהול וחיבורים בין הכלים של העסק. מחיר והיקף קבועים מראש, גרסה ראשונה עובדת תוך 4 שבועות.',
 
     // stats bar
     'stats.hoursSaved': 'שעות נחסכות בשבוע',
@@ -206,11 +211,16 @@ export const TRANSLATIONS = {
     'navbar.skipToMain': 'דלג לתוכן הראשי',
 
     // hero
-    'hero.badge': 'פתרונות ארגוניים',
-    'hero.heading': 'מערכות ווב וסוכני ⁨AI⁩ שנבנים במיוחד עבור האופרציה שלכם.',
-    'hero.subtitle': 'אנחנו מתכננים ומפתחים תוכנה מותאמת אישית, אוטומציות חזקות ואינטגרציות קוד שמחברות את כל המערכות שלכם לרשת אחת חלקה ואוטונומית. בלי פשרות של מוצרי מדף, בלי קוד שמתפרק.',
-    'hero.cta': 'בואו נדבר על מה שתוקע אתכם',
-    'hero.ctaHint': 'שיחה ראשונה חינם. ללא התחייבות.',
+    'hero.badge': 'אוטומציה ומערכות לעסקים',
+    'hero.heading': 'העבודה הידנית בעסק שלכם יכולה לרוץ לבד.',
+    'hero.subtitle': 'אנחנו בונים אוטומציות, מערכות ניהול וחיבורים בין הכלים שלכם. מחיר והיקף מוסכמים מראש, וגרסה ראשונה עובדת תוך 4 שבועות.',
+    'hero.cta': 'ספרו לנו מה תוקע אתכם',
+    'hero.ctaHint': 'שיחה ראשונה בחינם. עונים תוך יום עסקים.',
+    'hero.wa': 'או כתבו לנו בוואטסאפ',
+    'hero.line.in': 'מידע נכנס',
+    'hero.line.auto': 'אוטומציה',
+    'hero.line.done': 'זה כבר מוכן',
+    'designed.cta': 'זה קורה גם אצלכם? בואו נבין מה צריך לבנות.',
 
     // marquee
     'marquee.items': [
@@ -226,12 +236,12 @@ export const TRANSLATIONS = {
 
     // designed for (pain points)
     'designed.heading': 'נשמע מוכר?',
-    'designed.01.title': 'הצוות שלכם עושה ידנית את אותם דברים שוב ושוב',
-    'designed.01.text': 'הזנת נתונים, העתקה בין כלים, הוצאת אותם דוחות כל שבוע. זה עובד עד שזה נשבר. אנחנו מחליפים את השגרה הזו בתהליכים אוטומטיים שרצים לבד.',
-    'designed.02.title': 'הכלים שלכם לא מדברים אחד עם השני',
-    'designed.02.text': 'אתם משתמשים ב-⁨CRM⁩, מערכת חיוב, אקסל ושלושה ערוצי סלאק. אף אחד מהם לא מסונכרן. אנחנו מחברים הכל כדי שהמידע יזרום אוטומטית לאן שצריך.',
-    'designed.03.title': 'כל אחד עושה את זה אחרת',
-    'designed.03.text': 'כשהתהליך חי בראש של מישהו ולא במערכת, דברים נשברים כשהוא לא שם. אנחנו בונים מערכות שהופכות את הדרך הנכונה לדרך היחידה.',
+    'designed.01.title': 'מעתיקים נתונים מאקסל לאקסל כל שבוע',
+    'designed.01.text': 'הדוחות, הפניות, החשבוניות: אותן פעולות שוב ושוב, וזה עובד עד שמישהו טועה או נעלם לחופשה.',
+    'designed.02.title': 'הכלים לא מדברים אחד עם השני',
+    'designed.02.text': 'CRM, חשבוניות, אקסל וקבוצת וואטסאפ. כל אחד מחזיק חלק מהתמונה, ואתם מחברים ידנית.',
+    'designed.03.title': 'רק אחד יודע איך זה עובד',
+    'designed.03.text': 'כשהתהליך נמצא בראש של מישהו ולא במערכת, הכול תלוי בו. אנחנו הופכים את הדרך הנכונה לדרך היחידה.',
 
     // services
     'services.heading': 'מה אנחנו בונים',
