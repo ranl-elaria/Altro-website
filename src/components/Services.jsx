@@ -1,171 +1,77 @@
-import { useT, useLanguage } from '../i18n/LanguageContext'
-import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'motion/react'
-import ContactCTA from './ContactCTA'
+import { useT } from '../i18n/LanguageContext'
+import { useContactModal } from '../context/ContactModalContext'
+import FadeIn from './FadeIn'
 
-function ServiceSlide({ service, index, scrollProgress, lang, totalServices }) {
-  const isHe = lang === 'he'
-  const slideStart = Math.max(0, index / totalServices)
-  const slideMid = (index + 0.5) / totalServices
-  const slideEnd = Math.min(1, (index + 1) / totalServices)
-
-  // Y parallax: slides move up as you scroll
-  const yParallax = useTransform(scrollProgress,
-    [slideStart, slideEnd],
-    [50, -50]
-  )
-
-  // Opacity: fade in/out smoothly
-  const opacity = useTransform(scrollProgress,
-    [Math.max(0, slideStart - 0.05), slideStart + 0.05, slideEnd - 0.05, Math.min(1, slideEnd + 0.05)],
-    [0, 1, 1, 0]
-  )
-
-  return (
-    <motion.div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        opacity,
-        y: yParallax,
-        zIndex: totalServices - index,
-        backgroundColor: 'transparent',
-        willChange: 'transform, opacity'
-      }}
-      className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 p-6 sm:p-12 md:p-16 h-full"
-    >
-      {/* Video */}
-      {service.gif && (
-        <div
-          className="w-full sm:w-[40%] flex-shrink-0"
-          style={{ backgroundColor: 'transparent' }}
-        >
-          <video
-            src={service.gif}
-            className="w-full h-auto rounded-2xl"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            style={{
-              display: 'block',
-              backgroundColor: 'transparent'
-            }}
-          />
-        </div>
-      )}
-
-      {/* Text content */}
-      <div className="flex-1 flex flex-col justify-center">
-        <h2
-          className="uppercase font-black leading-tight mb-4 sm:mb-6"
-          style={{
-            fontSize: 'clamp(1.75rem, 5vw, 3rem)',
-            color: 'var(--color-accent)',
-            textWrap: 'balance'
-          }}
-        >
-          {service.title}
-        </h2>
-        <p
-          className="leading-relaxed opacity-80"
-          style={{
-            fontSize: 'clamp(0.95rem, 2vw, 1.125rem)',
-            color: 'var(--color-text-primary)',
-            maxWidth: '600px'
-          }}
-        >
-          {service.text}
-        </p>
-      </div>
-    </motion.div>
-  )
+/* Three small line illustrations. Decorative only. */
+const ART = {
+  automation: (
+    <svg viewBox="0 0 240 120" fill="none" aria-hidden="true">
+      <path d="M20 60h46M96 60h48M174 60h46" className="svc2-stroke" />
+      <rect x="66" y="40" width="30" height="40" rx="9" className="svc2-box" />
+      <rect x="144" y="40" width="30" height="40" rx="9" className="svc2-box svc2-box--hot" />
+      <circle cx="20" cy="60" r="5" className="svc2-dot" />
+      <circle cx="220" cy="60" r="5" className="svc2-dot svc2-dot--hot" />
+      <circle r="4" className="svc2-pulse"><animateMotion dur="3.2s" repeatCount="indefinite" path="M20 60H220" /></circle>
+    </svg>
+  ),
+  system: (
+    <svg viewBox="0 0 240 120" fill="none" aria-hidden="true">
+      <rect x="30" y="16" width="180" height="88" rx="12" className="svc2-box" />
+      <path d="M30 40h180" className="svc2-stroke" />
+      <rect x="46" y="54" width="46" height="36" rx="6" className="svc2-fill" />
+      <rect x="102" y="54" width="92" height="10" rx="5" className="svc2-fill" />
+      <rect x="102" y="74" width="62" height="10" rx="5" className="svc2-fill svc2-fill--hot" />
+      <circle cx="46" cy="28" r="3" className="svc2-dot" /><circle cx="58" cy="28" r="3" className="svc2-dot" /><circle cx="70" cy="28" r="3" className="svc2-dot svc2-dot--hot" />
+    </svg>
+  ),
+  connect: (
+    <svg viewBox="0 0 240 120" fill="none" aria-hidden="true">
+      <path d="M52 30 120 60 52 90M188 30 120 60 188 90" className="svc2-stroke" />
+      <circle cx="52" cy="30" r="12" className="svc2-box" /><circle cx="52" cy="90" r="12" className="svc2-box" />
+      <circle cx="188" cy="30" r="12" className="svc2-box" /><circle cx="188" cy="90" r="12" className="svc2-box" />
+      <circle cx="120" cy="60" r="18" className="svc2-box svc2-box--hot" />
+      <circle cx="120" cy="60" r="6" className="svc2-dot svc2-dot--hot" />
+    </svg>
+  ),
 }
 
 export default function Services() {
   const t = useT()
-  const { lang } = useLanguage()
-  const outerRef = useRef(null)
-
-  const { scrollYProgress } = useScroll({
-    target: outerRef,
-    offset: ['start start', 'end end']
-  })
-
-  const services = [
-    {
-      title: t('services.01.title'),
-      text: t('services.01.text'),
-      gif: '/webapps.mp4'
-    },
-    {
-      title: t('services.02.title'),
-      text: t('services.02.text'),
-      gif: '/ai-agent.mp4'
-    },
-    {
-      title: t('services.03.title'),
-      text: t('services.03.text'),
-      gif: '/systems.mp4'
-    },
-  ]
+  const { openModal } = useContactModal()
+  const items = [
+    { n: '01', art: ART.automation },
+    { n: '02', art: ART.system },
+    { n: '03', art: ART.connect },
+  ].map((it, i) => ({ ...it, title: t(`services.0${i + 1}.title`), text: t(`services.0${i + 1}.text`) }))
 
   return (
-    <section
-      ref={outerRef}
-      className="section--dark"
-      style={{
-        height: '500vh'
-      }}
-    >
-      {/* Sticky carousel viewport */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-          overflow: 'hidden',
-          backgroundColor: 'var(--color-bg-dark)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        {/* Slide stage - takes full height */}
-        <div
-          style={{
-            flex: 1,
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center'
-          }}
-        >
-          {services.map((service, idx) => (
-            <ServiceSlide
-              key={idx}
-              service={service}
-              index={idx}
-              scrollProgress={scrollYProgress}
-              lang={lang}
-              totalServices={services.length}
-            />
-          ))}
-        </div>
-      </div>
+    <section className="services2" id="services">
+      <div className="services2__inner">
+        <FadeIn delay={0} duration={0.8} y={32}>
+          <h2 className="services2__heading">{t('services.heading')}</h2>
+        </FadeIn>
 
-      {/* CTA Section */}
-      <div
-        className="px-5 sm:px-8 md:px-10 py-16 sm:py-20 md:py-24 flex flex-col items-center justify-center"
-        style={{
-          backgroundImage: 'linear-gradient(to bottom, var(--color-bg-dark), var(--color-bg-elevated))'
-        }}
-      >
-        <p className="text-secondary text-center mb-8 font-light text-lg">
-          {t('services.cta')}
-        </p>
-        <ContactCTA label={t('services.ctaButton')} variant="primary" />
+        <ul className="services2__grid">
+          {items.map((it, i) => (
+            <li key={it.n}>
+              <FadeIn delay={0.08 * i} duration={0.8} y={40}>
+                <article className="svc2-card">
+                  <div className="svc2-card__art">{it.art}</div>
+                  <span className="svc2-card__num" aria-hidden="true">{it.n}</span>
+                  <h3 className="svc2-card__title">{it.title}</h3>
+                  <p className="svc2-card__text">{it.text}</p>
+                </article>
+              </FadeIn>
+            </li>
+          ))}
+        </ul>
+
+        <FadeIn delay={0.2} duration={0.8} y={30}>
+          <div className="services2__cta">
+            <p>{t('services.cta')}</p>
+            <button type="button" className="btn btn--amber" onClick={openModal}><span>{t('hero.cta')}</span></button>
+          </div>
+        </FadeIn>
       </div>
     </section>
   )
