@@ -12,13 +12,16 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g
 // and link previews see Hebrew without running JS. Vercel serves the file before the SPA rewrite.
 function hebrewEntry() {
   let outDir = 'dist'
+  let isSsr = false
   return {
     name: 'hebrew-entry-html',
     apply: 'build',
     configResolved(config) {
       outDir = config.build.outDir
+      isSsr = !!config.build.ssr
     },
     closeBundle() {
+      if (isSsr) return
       const he = TRANSLATIONS.he
       const title = esc(he['meta.title'])
       const desc = esc(he['meta.description'])

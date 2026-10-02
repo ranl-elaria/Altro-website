@@ -65,7 +65,7 @@ function LocaleLayout() {
   return <Site />
 }
 
-function Site() {
+export function Site() {
   const t = useT()
 
   return (
