@@ -10,7 +10,9 @@ export default function FloatingCTA() {
   useEffect(() => {
     const check = () => {
       const pastHero = window.scrollY > window.innerHeight * 0.8
-      setVisible(pastHero)
+      const contact = document.getElementById('contact')
+      const atForm = contact ? contact.getBoundingClientRect().top < window.innerHeight * 0.6 : false
+      setVisible(pastHero && !atForm)
     }
     window.addEventListener('scroll', check, { passive: true })
     check()
