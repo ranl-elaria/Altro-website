@@ -177,7 +177,7 @@ export const TRANSLATIONS = {
     'a11y.closeModal': 'Close modal',
 
     // floatingCTA
-    'floatingCta.text': 'Start a project',
+    'floatingCta.text': 'Tell us what\'s slowing you down',
 
     // cookieBanner
     'cookie.text': 'We use analytics cookies to understand how visitors use this site and improve the experience. Essential cookies (used for admin login) are always active.',
@@ -319,9 +319,9 @@ export const TRANSLATIONS = {
     'footer.companyHead': 'חברה',
     'footer.companyProcess': 'איך אנחנו עובדים',
     'footer.companyFaq': 'שאלות נפוצות',
-    'footer.companyStart': 'התחילו פרויקט',
+    'footer.companyStart': 'ספרו לנו מה תוקע אתכם',
     'footer.contactHead': 'צור קשר',
-    'footer.contactStart': 'התחילו פרויקט',
+    'footer.contactStart': 'ספרו לנו מה תוקע אתכם',
     'footer.legalHead': 'משפטי',
     'footer.privacy': 'מדיניות פרטיות',
     'footer.terms': 'תנאי שירות',
@@ -372,7 +372,7 @@ export const TRANSLATIONS = {
     'a11y.closeModal': 'סגירת חלון',
 
     // floatingCTA
-    'floatingCta.text': 'התחילו פרויקט',
+    'floatingCta.text': 'ספרו לנו מה תוקע אתכם',
 
     // cookieBanner
     'cookie.text': 'אנו משתמשים בעוגיות אנליטיקה כדי להבין כיצד מבקרים משתמשים באתר זה ולשפר את החוויה. עוגיות חיוניות (המשמשות לכניסת מנהלים) תמיד פעילות.',

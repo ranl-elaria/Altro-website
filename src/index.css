@@ -3773,3 +3773,8 @@ html[dir="rtl"] .process2__list::before { background: linear-gradient(270deg, rg
 .form2--modal { padding: 40px 28px 32px; }
 @media (min-width: 640px) { .form2--modal { padding: 48px 44px 40px; } }
 .form2__modal-heading { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; letter-spacing: -0.02em; color: var(--color-text-primary); margin-bottom: 24px; padding-inline-end: 40px; }
+
+/* Floating CTA: amber (single action color), compact on mobile */
+@media (max-width: 640px) {
+  .floating-cta { bottom: 16px; padding: 11px 18px; font-size: 13px; }
+}

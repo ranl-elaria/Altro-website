@@ -8,15 +8,27 @@ export default function FloatingCTA() {
   const { openModal } = useContactModal()
 
   useEffect(() => {
-    const check = () => {
-      const pastHero = window.scrollY > window.innerHeight * 0.8
-      const contact = document.getElementById('contact')
-      const atForm = contact ? contact.getBoundingClientRect().top < window.innerHeight * 0.6 : false
-      setVisible(pastHero && !atForm)
+    // Hide while another amber CTA or the closing form is on screen, so the
+    // floating button never covers content or duplicates a visible action.
+    const onScreen = new Set()
+    let pastHero = false
+    const update = () => setVisible(pastHero && onScreen.size === 0)
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => (e.isIntersecting ? onScreen.add(e.target) : onScreen.delete(e.target)))
+      update()
+    }, { rootMargin: '0px 0px -10% 0px' })
+
+    const targets = [...document.querySelectorAll('main .btn--amber, #contact')]
+    targets.forEach((el) => io.observe(el))
+
+    const onScroll = () => {
+      pastHero = window.scrollY > window.innerHeight * 0.8
+      update()
     }
-    window.addEventListener('scroll', check, { passive: true })
-    check()
-    return () => window.removeEventListener('scroll', check)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => { io.disconnect(); window.removeEventListener('scroll', onScroll) }
   }, [])
 
   return (
