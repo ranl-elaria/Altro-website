@@ -9,6 +9,7 @@ import {
   useAnimationFrame,
 } from 'motion/react'
 import { wrap } from 'motion'
+import { useT } from '../i18n/LanguageContext'
 
 const clients = [
   { name: 'Ximus',            src: '/Ximus.png',                    dark: true },
@@ -54,6 +55,7 @@ function VelocityRow({ baseVelocity = 3, children }) {
 }
 
 export default function LogoStrip() {
+  const t = useT()
   const items = clients.map((c) => (
     <div key={c.name} className={`logostrip__item${c.dark ? ' logostrip__item--dark' : ''}`}>
       <img src={encodeURI(c.src)} alt={`${c.name} logo`} loading="lazy" />
@@ -63,7 +65,7 @@ export default function LogoStrip() {
   return (
     <section className="logostrip" aria-label="Trusted by">
       <div className="container">
-        <p className="logostrip__eyebrow">Trusted by teams building with us</p>
+        <p className="logostrip__eyebrow">{t('logos.eyebrow')}</p>
       </div>
       <VelocityRow baseVelocity={2}>{items}</VelocityRow>
     </section>
