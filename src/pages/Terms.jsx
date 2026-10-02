@@ -15,7 +15,7 @@ export default function Terms() {
 
       <Section title="1. Acceptance of Terms">
         <p>
-          By accessing or using the altro website at <strong>altro.build</strong> ("the
+          By accessing or using the altro website at <strong>www.altroai.net</strong> ("the
           Site"), you agree to be bound by these Terms of Service ("Terms"). If you do
           not agree to these Terms, please do not use the Site.
         </p>
