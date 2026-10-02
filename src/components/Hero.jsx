@@ -19,7 +19,7 @@ export default function Hero() {
         <div className="flex flex-col sm:hidden gap-8">
           <FadeIn delay={0.05} duration={0.9} y={30}>
             <img
-              src="/altroai-animation.gif"
+              src="/altroai-animation.webp"
               alt="Animated altro mark looping in the brand teal — geometric monogram"
               className="w-[260px] mx-auto"
               loading="eager"
@@ -95,7 +95,7 @@ export default function Hero() {
           <div className="flex flex-col items-center justify-center">
             <FadeIn delay={0.05} duration={0.9} y={30}>
               <img
-                src="/altroai-animation.gif"
+                src="/altroai-animation.webp"
                 alt="Animated altro mark looping in the brand teal — geometric monogram"
                 className="w-full mx-auto"
                 style={{ maxWidth: '360px' }}

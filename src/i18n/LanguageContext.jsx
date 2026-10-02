@@ -35,8 +35,10 @@ function updateDocumentMeta(lang) {
 
 const LanguageContext = createContext(null)
 
-export function LanguageProvider({ children }) {
+export function LanguageProvider({ children, initialLang }) {
   const [lang, setLang] = useState(() => {
+    // Build-time prerender: fixed language, no browser APIs.
+    if (initialLang && typeof document === 'undefined') return initialLang
     // Priority: URL path → localStorage → default. IP geo runs only if none of those resolved.
     const fromUrl = detectFromUrl()
     if (fromUrl) {
