@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://altro.build/sitemap.xml
+Sitemap: https://www.altroai.net/sitemap.xml

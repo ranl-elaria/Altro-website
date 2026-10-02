@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
         </p>
         <p>
           This Privacy Policy explains how we collect, use, and protect your personal
-          information when you visit <strong>altro.build</strong> or submit an inquiry
+          information when you visit <strong>www.altroai.net</strong> or submit an inquiry
           through our contact form. It is governed by the Israeli Protection of Privacy
           Law, 1981 (PPL) and its amendments.
         </p>

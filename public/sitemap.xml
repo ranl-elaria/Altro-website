@@ -2,28 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://altro.build/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://altro.build/" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://altro.build/he/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://altro.build/" />
+    <loc>https://www.altroai.net/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.altroai.net/" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.altroai.net/he/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.altroai.net/" />
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://altro.build/he/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://altro.build/" />
-    <xhtml:link rel="alternate" hreflang="he" href="https://altro.build/he/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://altro.build/" />
+    <loc>https://www.altroai.net/he/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.altroai.net/" />
+    <xhtml:link rel="alternate" hreflang="he" href="https://www.altroai.net/he/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.altroai.net/" />
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://altro.build/privacy</loc>
+    <loc>https://www.altroai.net/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://altro.build/terms</loc>
+    <loc>https://www.altroai.net/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

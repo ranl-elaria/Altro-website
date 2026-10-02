@@ -21,7 +21,7 @@ function updateDocumentMeta(lang) {
   const t = (key) => TRANSLATIONS[lang]?.[key] ?? key
   const title = t('meta.title')
   const description = t('meta.description')
-  const url = lang === 'he' ? 'https://altro.build/he/' : 'https://altro.build/'
+  const url = lang === 'he' ? 'https://www.altroai.net/he/' : 'https://www.altroai.net/'
 
   document.title = title
   document.querySelector('meta[name="description"]')?.setAttribute('content', description)
