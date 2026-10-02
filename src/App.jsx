@@ -11,6 +11,7 @@ import Services from './components/Services'
 import Testimonials from './components/Testimonials'
 import Process from './components/Process'
 import FAQ from './components/FAQ'
+import Contact from './components/Contact'
 import ContactModal from './components/ContactModal'
 import Footer from './components/Footer'
 import FloatingCTA from './components/FloatingCTA'
@@ -81,6 +82,7 @@ export function Site() {
           <Reveal><Process /></Reveal>
           <Reveal><Testimonials /></Reveal>
           <Reveal><FAQ /></Reveal>
+          <Reveal><Contact /></Reveal>
       </main>
       <Footer />
       <CookieBanner />
