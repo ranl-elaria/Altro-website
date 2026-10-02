@@ -5,7 +5,6 @@ import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
 import { ContactModalProvider } from './context/ContactModalContext'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-import Marquee from './components/Marquee'
 import LogoStrip from './components/LogoStrip'
 import Challenges from './components/Challenges'
 import Services from './components/Services'
@@ -77,7 +76,6 @@ export function Site() {
         <main id="main-content">
           <Hero />
           <Reveal><LogoStrip /></Reveal>
-          <Reveal><Marquee /></Reveal>
           <Reveal><Challenges /></Reveal>
           <Reveal><Services /></Reveal>
           <Reveal><Process /></Reveal>
