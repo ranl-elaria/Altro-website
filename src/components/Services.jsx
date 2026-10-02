@@ -47,6 +47,7 @@ function ServiceSlide({ service, index, scrollProgress, lang, totalServices }) {
             muted
             loop
             playsInline
+            preload="metadata"
             style={{
               display: 'block',
               backgroundColor: 'transparent'
