@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>טיוטת כיוון · altro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #f4f7f6;
+      --ink: #14211c;
+      --muted: #5c6b66;
+      --line: #d5deda;
+      --teal: #0f6e68;
+      --mark: #1aa59a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Heebo, sans-serif;
+      font-size: 18px;
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    .draft {
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 14px;
+      padding: 8px 20px;
+      text-align: center;
+    }
+    header, main { width: min(1080px, calc(100% - 40px)); margin-inline: auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .logo { font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .logo i { width: 14px; height: 14px; border-radius: 50%; background: var(--mark); display: block; }
+    nav { display: flex; gap: 18px; align-items: center; }
+    nav a { color: var(--muted); text-decoration: none; font-size: 16px; }
+    .btn {
+      background: var(--ink); color: var(--paper); text-decoration: none;
+      border-radius: 999px; padding: 10px 16px; font-weight: 500;
+    }
+    section { padding: 64px 0; border-bottom: 1px solid var(--line); }
+    h1, h2, h3 { font-family: "Frank Ruhl Libre", serif; font-weight: 700; letter-spacing: 0; }
+    h1 { font-size: clamp(40px, 6vw, 68px); line-height: 1.15; margin: 0 0 16px; max-width: 14ch; }
+    h2 { font-size: clamp(32px, 4vw, 44px); line-height: 1.2; margin: 0 0 12px; }
+    h3 { font-size: 26px; margin: 0 0 8px; }
+    .lede { max-width: 38em; color: var(--muted); margin: 0 0 22px; }
+    .note { color: var(--teal); font-size: 14px; margin: 0 0 8px; }
+    .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; }
+    .span { grid-column: 1 / -1; }
+    article { border-top: 1px solid var(--line); padding-top: 14px; }
+    .placeholder {
+      min-height: 160px;
+      border: 1px dashed var(--line);
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      margin-bottom: 12px;
+      text-align: center;
+      padding: 16px;
+    }
+    .steps, .people, .offers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; list-style: none; margin: 24px 0 0; padding: 0; }
+    .offers { grid-template-columns: repeat(3, 1fr); }
+    .people { grid-template-columns: 1fr 1fr; }
+    .steps li, .offers article { border-top: 1px solid var(--line); padding-top: 12px; }
+    .when { color: var(--teal); font-size: 14px; }
+    details { border-top: 1px solid var(--line); padding: 12px 0; }
+    details:last-of-type { border-bottom: 1px solid var(--line); }
+    summary { cursor: pointer; font-size: 20px; }
+    form { display: grid; gap: 12px; max-width: 420px; }
+    label { display: grid; gap: 6px; font-size: 14px; color: var(--muted); }
+    input, textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); background: white; color: var(--ink); }
+    textarea { min-height: 110px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    footer { width: min(1080px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 48px; color: var(--muted); font-size: 14px; }
+    :focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+    @media (max-width: 800px) {
+      .grid, .split, .steps, .offers, .people { grid-template-columns: 1fr; }
+      nav a:not(.btn) { display: none; }
+      section { padding: 40px 0; }
+    }
+    @media (max-width: 390px) {
+      header, main, footer { width: min(1080px, calc(100% - 32px)); }
+      h1 { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <p class="draft">טיוטה לאישור. לא האתר החי. הכותרת מסומנת כטיוטה. אין כאן עובדות, תוצאות או אנשים שלא אושרו.</p>
+  <header>
+    <a class="logo" href="#top"><i></i> altro</a>
+    <nav>
+      <a href="#work">עבודות</a>
+      <a href="#process">איך עובדים</a>
+      <a href="#faq">שאלות</a>
+      <a class="btn" href="#contact">דברו איתנו</a>
+    </nav>
+  </header>
+  <main id="top">
+    <section>
+      <p class="note">טיוטת כותרת</p>
+      <h1>קודם מבינים את העסק. אחר כך בונים את מה שחסר.</h1>
+      <p class="lede">אנחנו בונים אוטומציות, מערכות ניהול וחיבורים בין הכלים שכבר בשימוש. הפתרון נבחר אחרי היכרות עם הצורך, לא לפניה.</p>
+      <a class="btn" href="#contact">דברו איתנו</a>
+    </section>
+
+    <section id="work">
+      <h2>עבודות נבחרות</h2>
+      <p class="lede">המסגרות ריקות עד שתאשרו פרויקט, צילום מסך וניסוח.</p>
+      <div class="grid">
+        <article class="span">
+          <div class="placeholder">מקום לצילום מסך מאושר</div>
+          <p class="note">סוג העבודה יופיע כאן</p>
+          <h3>שם הלקוח לאישור</h3>
+          <p>משפט אחד על מה נבנה ומה השתנה. לא ממולא.</p>
+        </article>
+        <article>
+          <div class="placeholder">מקום לצילום מסך מאושר</div>
+          <h3>פרויקט שני לאישור</h3>
+        </article>
+        <article>
+          <div class="placeholder">מקום לצילום מסך מאושר</div>
+          <h3>פרויקט שלישי לאישור</h3>
+        </article>
+      </div>
+    </section>
+
+    <section id="services">
+      <h2>מה בונים</h2>
+      <p class="lede">שלושת השירותים שכבר כתובים באתר. בלי שם חדש ובלי הבטחה חדשה.</p>
+      <div class="offers">
+        <article>
+          <h3>אוטומציות</h3>
+          <p>פעולות שחוזרות בצוות, והופכות לתהליך שרץ ברקע.</p>
+        </article>
+        <article>
+          <h3>מערכת ניהול</h3>
+          <p>דשבורד, פורטל או כלי פנימי, לפי איך שהעסק עובד.</p>
+        </article>
+        <article>
+          <h3>חיבור בין הכלים</h3>
+          <p>CRM, חשבוניות ומסדי נתונים, כך שהמידע לא מועתק ידנית.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="process">
+      <h2>איך עובדים</h2>
+      <p class="lede">ארבעת השלבים הקיימים. ההיכרות קודמת לפתרון.</p>
+      <ol class="steps">
+        <li><div class="when">1–2 פגישות</div><h3>שיחה</h3><p>מקשיבים לאיך העסק עובד לפני שמחליטים מה לבנות.</p></li>
+        <li><div class="when">כשבוע</div><h3>תוכנית</h3><p>מה נבנה, מה כלול ומתי. כתוב לפני שורת קוד.</p></li>
+        <li><div class="when">לפי ההיקף שסוכם</div><h3>בנייה</h3><p>מחזורים קצרים ותוכנה עובדת מוקדם.</p></li>
+        <li><div class="when">אחרי העלייה</div><h3>ליווי</h3><p>נשארים זמינים למי שמבקש. בלי התחייבות חדשה בטיוטה הזו.</p></li>
+      </ol>
+    </section>
+
+    <section id="people">
+      <h2>האנשים</h2>
+      <p class="lede">שמות בלבד. אין תפקיד ואין ביוגרפיה עד שתאשרו.</p>
+      <div class="people">
+        <article>
+          <div class="placeholder">תמונה של רן</div>
+          <h3>רן</h3>
+          <p>תפקיד ושתי שורות. לא ממולא.</p>
+        </article>
+        <article>
+          <div class="placeholder">תמונה של אלעד</div>
+          <h3>אלעד</h3>
+          <p>תפקיד ושתי שורות. לא ממולא.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="partners">
+      <h2>שותפים</h2>
+      <p class="lede">אזור נפרד מלקוחות. ריק עד שיהיו לוגו, סוג קשר ואישור שימוש.</p>
+      <div class="placeholder">אין כאן לוגואים</div>
+    </section>
+
+    <section id="reviews">
+      <h2>מה לקוחות אמרו</h2>
+      <p class="lede">ההמלצות הקיימות באנגלית לא מוצגות כאן. טקסט עברי יופיע רק אחרי אישור, בלי שינוי משמעות.</p>
+      <article>
+        <p>מקום להמלצה מאושרת, עם שם, תפקיד וחברה.</p>
+      </article>
+    </section>
+
+    <section id="faq">
+      <h2>שאלות</h2>
+      <details>
+        <summary>צריך להחליף את המערכות שיש לנו?</summary>
+        <p>התשובה הקיימת באתר תישאר עד שתאשרו ניסוח מדויק יותר.</p>
+      </details>
+      <details>
+        <summary>המידע העסקי שלנו מאובטח?</summary>
+        <p>התשובה הקיימת תישאר עד אישור. לא נוסף כאן ניסוח חדש על אחסון מידע.</p>
+      </details>
+      <details>
+        <summary>נהיה תלויים בכם לתמיד?</summary>
+        <p>התשובה הקיימת תישאר עד אישור.</p>
+      </details>
+      <details>
+        <summary>כמה זה עולה?</summary>
+        <p>התשובה הקיימת תישאר עד אישור. אין מחיר חדש בטיוטה.</p>
+      </details>
+    </section>
+
+    <section id="contact">
+      <div class="split">
+        <div>
+          <h2>דברו איתנו</h2>
+          <p class="lede">טופס אחד, אותו יעד פניות כמו היום. הוואטסאפ נשאר הקישור הקיים. אין כאן הבטחת זמן מענה חדשה.</p>
+          <p><a href="https://wa.me/972546894192">וואטסאפ</a></p>
+        </div>
+        <form action="#contact" onsubmit="event.preventDefault(); this.querySelector('button').textContent='זו טיוטה, לא נשלח';">
+          <label>שם <input name="name" required /></label>
+          <label>אימייל <input name="email" type="email" required /></label>
+          <label>טלפון או וואטסאפ <input name="phone" placeholder="050-0000000" /></label>
+          <label>מה תרצו שנבין? <textarea name="message" required></textarea></label>
+          <button class="btn" type="submit">שלחו</button>
+          <p class="note">הטופס בטיוטה לא שולח.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <footer>טיוטת מבנה לעמוד העברי. האנגלית תישאר תרגום של אותו מבנה, לא עמוד נפרד עם מסר אחר.</footer>
+</body>
+</html>
