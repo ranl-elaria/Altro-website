@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import { motion } from 'motion/react'
 import { useLanguage } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
+import CtaButton from './CtaButton'
 
 export default function Contact({ isModal = false, onSubmitSuccess, headingId }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
@@ -94,9 +95,9 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
       </div>
 
       <div className="form2__actions">
-        <button type="submit" className="btn btn--amber" disabled={status === 'loading'} aria-describedby={statusId}>
+        <CtaButton type="submit" disabled={status === 'loading'}>
           {status === 'loading' ? t('contact.submitting') : t('contact.submit')}
-        </button>
+        </CtaButton>
         <p className="form2__hint">{t('contact.ctaHint')}</p>
       </div>
     </form>
@@ -120,6 +121,10 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         </FadeIn>
         <FadeIn delay={0.15} duration={0.8} y={32}>
           <div className="closing2__card">{formEl}</div>
+          <ul className="closing2__ways">
+            <li><a href="https://wa.me/972546894192" target="_blank" rel="noopener noreferrer">{t('hero.wa')}</a></li>
+            <li><a href="mailto:altroaiteam@gmail.com">altroaiteam@gmail.com</a></li>
+          </ul>
         </FadeIn>
       </div>
     </section>

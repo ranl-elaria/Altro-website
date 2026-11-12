@@ -5,11 +5,13 @@ import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
 import { ContactModalProvider } from './context/ContactModalContext'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
-import LogoStrip from './components/LogoStrip'
 import Challenges from './components/Challenges'
+import LogoStrip from './components/LogoStrip'
+import Work from './components/Work'
 import Services from './components/Services'
 import Testimonials from './components/Testimonials'
 import Process from './components/Process'
+import SystemBehind from './components/SystemBehind'
 import FAQ from './components/FAQ'
 import Contact from './components/Contact'
 import ContactModal from './components/ContactModal'
@@ -76,11 +78,13 @@ export function Site() {
         <FloatingCTA />
         <main id="main-content">
           <Hero />
-          <Reveal><LogoStrip /></Reveal>
           <Reveal><Challenges /></Reveal>
-          <Reveal><Services /></Reveal>
-          <Reveal><Process /></Reveal>
+          <Reveal><LogoStrip /></Reveal>
+          <Reveal><Work /></Reveal>
           <Reveal><Testimonials /></Reveal>
+          <Reveal><Process /></Reveal>
+          <Reveal><SystemBehind /></Reveal>
+          <Reveal><Services /></Reveal>
           <Reveal><FAQ /></Reveal>
           <Reveal><Contact /></Reveal>
       </main>

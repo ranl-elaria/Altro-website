@@ -1,6 +1,7 @@
 import { useT } from '../i18n/LanguageContext'
 import { useContactModal } from '../context/ContactModalContext'
 import FadeIn from './FadeIn'
+import CtaButton from './CtaButton'
 
 /* Three small line illustrations. Decorative only. */
 const ART = {
@@ -69,7 +70,7 @@ export default function Services() {
         <FadeIn delay={0.2} duration={0.8} y={30}>
           <div className="services2__cta">
             <p>{t('services.cta')}</p>
-            <button type="button" className="btn btn--amber" onClick={openModal}><span>{t('hero.cta')}</span></button>
+            <CtaButton onClick={openModal}>{t('hero.cta')}</CtaButton>
           </div>
         </FadeIn>
       </div>

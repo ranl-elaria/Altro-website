@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Logo from './Logo'
 import LangSwitcher from './LangSwitcher'
+import CtaButton from './CtaButton'
 import useActiveSection from '../hooks/useActiveSection'
 import { useT } from '../i18n/LanguageContext'
 import { useContactModal } from '../context/ContactModalContext'
@@ -8,7 +9,7 @@ import { useContactModal } from '../context/ContactModalContext'
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const active = useActiveSection(['home', 'services', 'process', 'faq'])
+  const active = useActiveSection(['home', 'work', 'process', 'system', 'services', 'testimonials', 'about', 'faq'])
   const { openModal } = useContactModal()
   const t = useT()
 
@@ -26,17 +27,21 @@ export default function Navbar() {
   return (
     <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
       <div className="navbar__inner">
-        <a href="#" className="navbar__logo" onClick={closeMenu}>
+        <a href="#home" className="navbar__logo" onClick={closeMenu}>
           <Logo />
         </a>
 
         <nav className={`navbar__nav${menuOpen ? ' navbar__nav--open' : ''}`}>
-          <a href="#services" className={linkClass('services')} onClick={closeMenu}>{t('navbar.services')}</a>
+          <a href="#work" className={linkClass('work')} onClick={closeMenu}>{t('navbar.work')}</a>
           <a href="#process" className={linkClass('process')} onClick={closeMenu}>{t('navbar.process')}</a>
+          <a href="#testimonials" className={linkClass('testimonials')} onClick={closeMenu}>{t('navbar.reviews')}</a>
           <a href="#faq" className={linkClass('faq')} onClick={closeMenu}>{t('navbar.faq')}</a>
           <LangSwitcher />
-          <button className="navbar__cta" onClick={() => { openModal(); closeMenu(); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', color: 'inherit' }}>{t('navbar.cta')}</button>
         </nav>
+
+        <CtaButton className="navbar__cta-slot" onClick={() => { openModal(); closeMenu(); }}>
+          {t('navbar.cta')}
+        </CtaButton>
 
         <button
           className="navbar__hamburger"
