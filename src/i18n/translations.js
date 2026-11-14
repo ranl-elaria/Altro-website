@@ -145,6 +145,8 @@ export const TRANSLATIONS = {
     'contact.successBody': "We'll be in touch within one business day.",
     'contact.errorDefault': 'Something went wrong. Please try again.',
     'contact.errorNetwork': 'Network error. Please check your connection and try again.',
+    'contact.invalidRequired': 'Please fill in this field.',
+    'contact.invalidEmail': 'Please enter a valid email address.',
 
     // footer
     'footer.tagline': 'Built in Israel. Shipped to teams worldwide.',
@@ -371,6 +373,8 @@ export const TRANSLATIONS = {
     'contact.successBody': "נחזור אליכם תוך יום עסקים.",
     'contact.errorDefault': 'משהו השתבש. אנא נסו שוב.',
     'contact.errorNetwork': 'שגיאת רשת. אנא בדקו את החיבור ונסו שוב.',
+    'contact.invalidRequired': 'יש למלא את השדה הזה.',
+    'contact.invalidEmail': 'יש להזין כתובת אימייל תקינה.',
 
     // footer
     'footer.tagline': 'נבנה בישראל. נשלח לצוותים בעולם.',

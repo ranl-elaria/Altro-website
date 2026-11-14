@@ -1,36 +1,31 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useLanguage, useT } from '../i18n/LanguageContext'
 
 export default function LangSwitcher() {
   const { lang } = useLanguage()
   const t = useT()
-  const navigate = useNavigate()
-
-  const handleLangChange = (newLang) => {
-    navigate(newLang === 'he' ? '/he/' : '/')
-  }
 
   return (
     <div className="lang-switcher" role="group" aria-label={t('a11y.langSelector')}>
-      <button
-        type="button"
-        className={`lang-switcher__btn${lang === 'en' ? ' lang-switcher__btn--active' : ''}`}
-        onClick={() => handleLangChange('en')}
-        aria-pressed={lang === 'en'}
+      <Link
+        to="/"
+        hrefLang="en"
         lang="en"
+        className={`lang-switcher__btn${lang === 'en' ? ' lang-switcher__btn--active' : ''}`}
+        aria-current={lang === 'en' ? 'page' : undefined}
       >
         EN
-      </button>
+      </Link>
       <span className="lang-switcher__sep" aria-hidden="true">/</span>
-      <button
-        type="button"
-        className={`lang-switcher__btn${lang === 'he' ? ' lang-switcher__btn--active' : ''}`}
-        onClick={() => handleLangChange('he')}
-        aria-pressed={lang === 'he'}
+      <Link
+        to="/he/"
+        hrefLang="he"
         lang="he"
+        className={`lang-switcher__btn${lang === 'he' ? ' lang-switcher__btn--active' : ''}`}
+        aria-current={lang === 'he' ? 'page' : undefined}
       >
         עב
-      </button>
+      </Link>
     </div>
   )
 }

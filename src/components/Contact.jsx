@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { useLanguage } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
@@ -15,11 +15,30 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
   const phoneId = useId()
   const messageId = useId()
   const statusId = useId()
+  const submittingRef = useRef(false)
 
-  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  const handleChange = (e) => {
+    e.target.setCustomValidity('')
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  const handleInvalid = (e) => {
+    e.preventDefault()
+    const field = e.target
+    const msg = field.type === 'email' && field.validity.typeMismatch
+      ? t('contact.invalidEmail')
+      : t('contact.invalidRequired')
+    field.setCustomValidity(msg)
+    setErrorMsg(msg)
+    setStatus('error')
+    field.focus()
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    e.stopPropagation()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setStatus('loading')
     setErrorMsg('')
     try {
@@ -76,6 +95,8 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
     } catch {
       setErrorMsg(t('contact.errorNetwork'))
       setStatus('error')
+    } finally {
+      submittingRef.current = false
     }
   }
 
@@ -92,7 +113,15 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
   )
 
   const formEl = (
-    <form onSubmit={handleSubmit} className={`form2${isModal ? ' form2--on-light' : ' form2--on-dark'}`} noValidate={false} aria-busy={status === 'loading'}>
+    <form
+      method="post"
+      action="/api/submit"
+      onSubmit={handleSubmit}
+      onInvalid={handleInvalid}
+      className={`form2${isModal ? ' form2--on-light' : ' form2--on-dark'}`}
+      noValidate={false}
+      aria-busy={status === 'loading'}
+    >
       {field(nameId, 'name', 'text', t('contact.labelName'), t('contact.placeholderName'), true, { autoComplete: 'name' })}
       <div className="form2__row">
         {field(phoneId, 'phone', 'tel', t('contact.labelPhone'), t('contact.placeholderPhone'), false, { autoComplete: 'tel', dir: 'ltr', inputMode: 'tel' })}

@@ -18,7 +18,7 @@ export default function Work() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <div className="work-card__art">
+                <div className={`work-card__art${c.art ? ` work-card__art--${c.art}` : ''}`}>
                   <img src={encodeURI(c.src)} alt="" width="160" height="80" loading="lazy" decoding="async" />
                 </div>
                 <p className="work-card__name" translate="no">{c.name}</p>

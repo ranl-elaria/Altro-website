@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import Logo from '../components/Logo'
 
@@ -7,6 +8,16 @@ export default function LegalLayout({ title, lastUpdated, children }) {
   const home = isHePath ? '/he/' : '/'
   const privacy = isHePath ? '/he/privacy' : '/privacy'
   const terms = isHePath ? '/he/terms' : '/terms'
+  const pageTitle = `${title} | altro`
+
+  useEffect(() => {
+    document.title = pageTitle
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', pageTitle)
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', pageTitle)
+    const html = document.documentElement
+    html.setAttribute('lang', 'en')
+    html.setAttribute('dir', 'ltr')
+  }, [pageTitle])
 
   return (
     <div className="legal-page" dir="ltr" lang="en">
@@ -22,7 +33,7 @@ export default function LegalLayout({ title, lastUpdated, children }) {
 
       <main id="legal-main" className="legal-main">
         <div className="container">
-          <div className="legal-content">
+          <div className="legal-content" lang="en" dir="ltr">
             <header className="legal-content__header">
               <h1 className="legal-title">{title}</h1>
               {lastUpdated && (

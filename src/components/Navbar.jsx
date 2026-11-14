@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Logo from './Logo'
 import LangSwitcher from './LangSwitcher'
 import CtaButton from './CtaButton'
@@ -9,6 +9,7 @@ import { useContactModal } from '../context/ContactModalContext'
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const hamburgerRef = useRef(null)
   const active = useActiveSection(['home', 'work', 'process', 'system', 'services', 'testimonials', 'about', 'faq'])
   const { openModal } = useContactModal()
   const t = useT()
@@ -18,6 +19,18 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleKey = (e) => {
+      if (e.key !== 'Escape') return
+      e.stopPropagation()
+      setMenuOpen(false)
+      hamburgerRef.current?.focus()
+    }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [menuOpen])
 
   const closeMenu = () => setMenuOpen(false)
 
@@ -31,7 +44,7 @@ export default function Navbar() {
           <Logo />
         </a>
 
-        <nav className={`navbar__nav${menuOpen ? ' navbar__nav--open' : ''}`}>
+        <nav id="site-menu" className={`navbar__nav${menuOpen ? ' navbar__nav--open' : ''}`}>
           <a href="#work" className={linkClass('work')} onClick={closeMenu}>{t('navbar.work')}</a>
           <a href="#process" className={linkClass('process')} onClick={closeMenu}>{t('navbar.process')}</a>
           <a href="#testimonials" className={linkClass('testimonials')} onClick={closeMenu}>{t('navbar.reviews')}</a>
@@ -45,10 +58,12 @@ export default function Navbar() {
 
         <button
           type="button"
+          ref={hamburgerRef}
           className="navbar__hamburger"
           onClick={() => setMenuOpen(o => !o)}
           aria-label={menuOpen ? t('navbar.ariaClose') : t('navbar.ariaOpen')}
           aria-expanded={menuOpen}
+          aria-controls="site-menu"
         >
           <span style={menuOpen ? { transform: 'rotate(45deg) translate(5px, 5px)' } : {}} />
           <span style={menuOpen ? { opacity: 0 } : {}} />

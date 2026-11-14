@@ -152,6 +152,17 @@ test.describe('Hebrew preview readability', () => {
     await openHe(page, { width: 1280, height: 800, storage: 'dismissed' })
     await page.goto('/he/privacy')
     await expect(page.locator('.legal-lang-note')).toBeVisible()
+    await expect(page.locator('.legal-page')).toHaveAttribute('lang', 'en')
+    await expect(page.locator('.legal-page')).toHaveAttribute('dir', 'ltr')
+    await expect(page.locator('.legal-content')).toHaveAttribute('lang', 'en')
+    await expect(page.locator('.legal-content')).toHaveAttribute('dir', 'ltr')
+    await expect(page).toHaveTitle(/Privacy Policy/)
+    const html = await page.evaluate(() => ({
+      lang: document.documentElement.lang,
+      dir: document.documentElement.getAttribute('dir'),
+    }))
+    expect(html.lang).toBe('en')
+    expect(html.dir).toBe('ltr')
     await expect(page.getByRole('link', { name: /Hebrew home/i })).toHaveAttribute('href', '/he/')
     await page.getByRole('link', { name: /Hebrew home/i }).click()
     await expect(page).toHaveURL(/\/he\/?$/)
@@ -226,4 +237,280 @@ test.describe('Hebrew preview readability', () => {
     await expect(dialog.getByRole('alert')).toBeVisible()
     expect(hitLive).toBe(false)
   })
+
+  test('designed heading mark does not paint over the first line', async ({ page }) => {
+    for (const width of [320, 390, 820, 1280, 1440]) {
+      await openHe(page, { width, height: width < 900 ? 844 : 900, storage: 'dismissed' })
+      await page.locator('.problem__heading').scrollIntoViewIfNeeded()
+      await page.waitForTimeout(250)
+      const overlap = await page.locator('.problem__heading').evaluate((h2) => {
+        const first = h2.childNodes[0]
+        const mark = h2.querySelector('mark')
+        const range = document.createRange()
+        range.selectNodeContents(first)
+        const r1 = range.getBoundingClientRect()
+        const r2 = mark.getBoundingClientRect()
+        const overlapY = Math.min(r1.bottom, r2.bottom) - Math.max(r1.top, r2.top)
+        const lh = parseFloat(getComputedStyle(h2).lineHeight) / parseFloat(getComputedStyle(h2).fontSize)
+        return { overlapY, lh, firstBottom: r1.bottom, markTop: r2.top }
+      })
+      expect(overlap.lh, `${width} line-height`).toBeGreaterThanOrEqual(1.25)
+      expect(overlap.overlapY, `${width} line overlap`).toBeLessThanOrEqual(6)
+      await page.screenshot({ path: `${OUT}/${width}-heading.png`, fullPage: false })
+    }
+  })
+
+  test('Escape closes the mobile menu and restores hamburger focus', async ({ page }) => {
+    await openHe(page, { width: 390, height: 844, storage: 'dismissed' })
+    const burger = page.locator('.navbar__hamburger')
+    await burger.click()
+    await expect(burger).toHaveAttribute('aria-expanded', 'true')
+    await expect(page.locator('#site-menu')).toHaveClass(/navbar__nav--open/)
+    await page.keyboard.press('Escape')
+    await expect(burger).toHaveAttribute('aria-expanded', 'false')
+    await expect(burger).toBeFocused()
+    await expect(burger).toHaveAttribute('aria-label', 'פתח תפריט')
+  })
+
+  test('form never native-GETs personal data and mocked paths stay local', async ({ page }) => {
+    const seen = []
+    await page.route('**/api/submit', async (route) => {
+      seen.push({
+        method: route.request().method(),
+        url: route.request().url(),
+        post: route.request().postData() || '',
+      })
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
+    })
+
+    await openHe(page, { width: 390, height: 844, storage: 'dismissed' })
+    await page.getByRole('button', { name: 'לתיאום שיחה' }).first().click()
+    const form = page.locator('#contact-modal-form form')
+    await expect(form).toHaveAttribute('method', /post/i)
+    await expect(form).toHaveAttribute('action', /\/api\/submit/)
+
+    await page.locator('#contact-modal-form input[name="name"]').fill('Dana Cohen')
+    await page.locator('#contact-modal-form input[name="email"]').fill('dana@example.com')
+    await page.locator('#contact-modal-form textarea[name="message"]').fill('secret message')
+
+    await page.evaluate(() => {
+      const live = document.querySelector('#contact-modal-form form')
+      const clone = live.cloneNode(true)
+      live.replaceWith(clone)
+      clone.submit()
+    })
+    await page.waitForTimeout(500)
+    expect(page.url()).not.toMatch(/Dana|dana@example|secret message/i)
+    expect(seen.some((r) => r.method === 'GET')).toBe(false)
+    expect(seen.every((r) => r.method === 'POST')).toBe(true)
+  })
+
+  test('network failure and double-submit stay mocked and off the URL', async ({ page }) => {
+    let posts = 0
+    await page.route('**/api/submit', async (route) => {
+      posts += 1
+      await route.abort('failed')
+    })
+    await openHe(page, { width: 390, height: 844, storage: 'dismissed' })
+    await page.getByRole('button', { name: 'לתיאום שיחה' }).first().click()
+    const dialog = page.getByRole('dialog')
+    await dialog.locator('input[name="name"]').fill('Test User')
+    await dialog.locator('input[name="email"]').fill('test@example.com')
+    await dialog.locator('textarea[name="message"]').fill('Local mock only')
+    await page.evaluate(() => {
+      const form = document.querySelector('#contact-modal-form form')
+      form.requestSubmit()
+      form.requestSubmit()
+    })
+    await expect(dialog.getByRole('alert')).toBeVisible()
+    expect(posts).toBe(1)
+    expect(page.url()).not.toMatch(/Test User|test@example|Local mock/i)
+  })
+
+  test('mockForm=ok succeeds without hitting /api/submit', async ({ page }) => {
+    let hit = false
+    await page.route('**/api/submit', async (route) => {
+      hit = true
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) })
+    })
+    await openHe(page, { width: 390, height: 844, storage: 'dismissed' })
+    await page.goto('/he/?mockForm=ok')
+    await page.getByRole('button', { name: 'לתיאום שיחה' }).first().click()
+    const dialog = page.getByRole('dialog')
+    await dialog.locator('input[name="name"]').fill('Test User')
+    await dialog.locator('input[name="email"]').fill('test@example.com')
+    await dialog.locator('textarea[name="message"]').fill('Local mock only')
+    await dialog.getByRole('button', { name: 'שלחו' }).click()
+    await expect(page.locator('.form2__msg--ok')).toBeVisible()
+    expect(hit).toBe(false)
+  })
+
+  test('required widths, landscape cookie, tap targets, and no intersecting text', async ({ page }) => {
+    const shots = [
+      { width: 320, height: 720, name: '320' },
+      { width: 390, height: 844, name: '390' },
+      { width: 820, height: 1180, name: '820' },
+      { width: 1280, height: 800, name: '1280' },
+      { width: 1440, height: 900, name: '1440' },
+    ]
+    for (const vp of shots) {
+      await openHe(page, { ...vp, storage: 'fresh' })
+      await page.screenshot({ path: `${OUT}/${vp.name}-hero-cookie.png`, fullPage: false })
+      await openHe(page, { ...vp, storage: 'dismissed' })
+      await page.screenshot({ path: `${OUT}/${vp.name}-hero.png`, fullPage: false })
+      await page.locator('#work').scrollIntoViewIfNeeded()
+      await page.waitForTimeout(200)
+      await page.screenshot({ path: `${OUT}/${vp.name}-work.png`, fullPage: false })
+      const hits = await intersectingTextBoxes(page)
+      expect(hits, `${vp.name} overlaps ${JSON.stringify(hits.slice(0, 5))}`).toEqual([])
+    }
+
+    await openHe(page, { width: 667, height: 375, storage: 'fresh' })
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: `${OUT}/667x375-hero-cookie.png`, fullPage: false })
+    const landscape = await page.evaluate(() => {
+      const banner = document.querySelector('.cookie-banner')
+      const cta = document.querySelector('.hero2__actions .cta')
+      const wa = document.querySelector('.hero2__wa')
+      const b = banner.getBoundingClientRect()
+      const overlap = (a, x) => a && x && Math.min(a.bottom, x.bottom) - Math.max(a.top, x.top) > 10 && Math.min(a.right, x.right) - Math.max(a.left, x.left) > 10
+      const c = cta.getBoundingClientRect()
+      const w = wa.getBoundingClientRect()
+      return {
+        bannerH: b.height,
+        ctaCovered: overlap(c, b),
+        waCovered: overlap(w, b),
+        ctaBottom: c.bottom,
+        bannerTop: b.top,
+      }
+    })
+    expect(landscape.bannerH).toBeLessThan(130)
+    expect(landscape.ctaCovered).toBe(false)
+    expect(landscape.waCovered).toBe(false)
+
+    await openHe(page, { width: 390, height: 844, storage: 'fresh' })
+    const taps = await page.evaluate(() => {
+      const box = (sel) => {
+        const el = document.querySelector(sel)
+        const r = el.getBoundingClientRect()
+        return { w: r.width, h: r.height }
+      }
+      return {
+        logo: box('.navbar__logo'),
+        wa: box('.hero2__wa'),
+        learn: box('.cookie-banner__link'),
+      }
+    })
+    expect(taps.logo.h).toBeGreaterThanOrEqual(44)
+    expect(taps.wa.h).toBeGreaterThanOrEqual(44)
+    expect(taps.learn.h).toBeGreaterThanOrEqual(44)
+
+    await page.goto('/he/privacy')
+    await expect(page).toHaveTitle(/Privacy Policy/)
+    await page.screenshot({ path: `${OUT}/390-privacy.png`, fullPage: false })
+    await page.goto('/he/terms')
+    await expect(page).toHaveTitle(/Terms of Service/)
+    await page.screenshot({ path: `${OUT}/1280-terms.png`, fullPage: false })
+    await page.goto('/en/')
+    await expect(page).toHaveURL(/\/$/)
+  })
+
+  test('section headings at 320px do not clip wrapped Hebrew lines', async ({ page }) => {
+    await openHe(page, { width: 320, height: 720, storage: 'dismissed' })
+    const selectors = [
+      '.hero2__title',
+      '.problem__heading',
+      '.work__heading',
+      '.testimonials .display-heading',
+      '.process2__heading',
+      '.system__heading',
+      '.services2__heading',
+      '.faq2__heading',
+      '.closing2__heading',
+    ]
+    const report = []
+    for (const sel of selectors) {
+      const loc = page.locator(sel).first()
+      await loc.scrollIntoViewIfNeeded()
+      await page.waitForTimeout(120)
+      const info = await loc.evaluate((el) => {
+        const cs = getComputedStyle(el)
+        const lh = parseFloat(cs.lineHeight)
+        const fs = parseFloat(cs.fontSize)
+        const ratio = lh / fs
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+        let maxOverlap = 0
+        let lines = 0
+        while (walker.nextNode()) {
+          const node = walker.currentNode
+          if (!node.textContent.trim()) continue
+          const range = document.createRange()
+          range.selectNodeContents(node)
+          const rects = [...range.getClientRects()].filter((r) => r.width > 2 && r.height > 2)
+          lines += rects.length
+          for (let i = 0; i < rects.length - 1; i++) {
+            const oy = Math.min(rects[i].bottom, rects[i + 1].bottom) - Math.max(rects[i].top, rects[i + 1].top)
+            if (oy > maxOverlap) maxOverlap = oy
+          }
+        }
+        return { ratio, maxOverlap, lines, text: el.textContent.trim().slice(0, 40) }
+      })
+      report.push({ sel, ...info })
+      await page.screenshot({ path: `${OUT}/320-${sel.replace(/[^a-z0-9]+/gi, '-')}.png`, fullPage: false })
+      if (info.lines > 1) {
+        expect(info.maxOverlap, `${sel} ${info.text}`).toBeLessThan(12)
+      }
+    }
+  })
 })
+
+async function intersectingTextBoxes(page) {
+  return page.evaluate(() => {
+    const skip = (el) => {
+      if (!el) return true
+      if (el.closest('.cookie-banner, .navbar, .contact-modal, [aria-hidden="true"]')) return true
+      const cs = getComputedStyle(el)
+      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return true
+      if (cs.position === 'fixed' || cs.position === 'sticky') return true
+      return false
+    }
+    const nested = (a, b) => a === b || a.contains(b) || b.contains(a)
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.textContent || !node.textContent.trim()) return NodeFilter.FILTER_REJECT
+        return skip(node.parentElement) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+      },
+    })
+    const boxes = []
+    while (walker.nextNode()) {
+      const node = walker.currentNode
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      for (const r of range.getClientRects()) {
+        if (r.width < 1.5 || r.height < 1.5) continue
+        boxes.push({
+          t: node.textContent.trim().slice(0, 48),
+          el: node.parentElement,
+          node,
+          x: r.left,
+          y: r.top,
+          r: r.right,
+          b: r.bottom,
+        })
+      }
+    }
+    const hits = []
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i]
+        const b = boxes[j]
+        if (a.node === b.node) continue
+        if (nested(a.el, b.el)) continue
+        const overlapX = Math.min(a.r, b.r) - Math.max(a.x, b.x)
+        const overlapY = Math.min(a.b, b.b) - Math.max(a.y, b.y)
+        if (overlapX > 3 && overlapY > 4) hits.push({ a: a.t, b: b.t, overlapX, overlapY })
+      }
+    }
+    return hits
+  })
+}

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
 import { ContactModalProvider } from './context/ContactModalContext'
@@ -115,6 +115,8 @@ export default function App() {
             </Suspense>
           }
         />
+        <Route path="/en" element={<Navigate to="/" replace />} />
+        <Route path="/en/*" element={<Navigate to="/" replace />} />
         <Route
           path="/privacy"
           element={<Suspense fallback={legalFallback}><PrivacyPage /></Suspense>}
