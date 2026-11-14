@@ -24,8 +24,8 @@ export const TRANSLATIONS = {
     // hero
     'hero.badge': 'Automation and systems for business',
     'hero.heading': 'Start with what the business needs.',
-    'hero.headingLine': 'Start with what\nthe business needs.',
-    'hero.headingRest': 'Automations and systems\nbehind it.',
+    'hero.headingLine': 'Start with what the business needs.',
+    'hero.headingRest': 'Automations and systems behind it.',
     'hero.subtitle': "We're Elad and Ran from Altro. We build automations, management systems and connections between your tools.",
     'hero.cta': 'Book a call',
     'hero.ctaHint': 'Free first call. We reply within one business day.',
@@ -86,6 +86,8 @@ export const TRANSLATIONS = {
     'process.04.text': 'We go live and stay. Real use shows things tests do not, and we handle them fast. Monthly support is available for those who want peace of mind.',
 
     'work.heading': 'Work',
+    'work.note': 'Live sites we shipped. Written case studies are not published yet.',
+    'work.visit': 'Visit site',
     'reviews.heading': 'What clients wrote',
     'reviews.prev': 'Previous review',
     'reviews.next': 'Next review',
@@ -248,8 +250,8 @@ export const TRANSLATIONS = {
     // hero
     'hero.badge': 'אוטומציה ומערכות לעסקים',
     'hero.heading': 'מתחילים במה שהעסק צריך.',
-    'hero.headingLine': 'מתחילים במה\nשהעסק צריך.',
-    'hero.headingRest': 'אוטומציה ומערכות\nמאחוריו.',
+    'hero.headingLine': 'מתחילים במה שהעסק צריך.',
+    'hero.headingRest': 'אוטומציה ומערכות מאחוריו.',
     'hero.subtitle': 'אנחנו אלעד ורן מאלטרו. בונים אוטומציות, מערכות ניהול וחיבורים בין הכלים שלכם.',
     'hero.cta': 'לתיאום שיחה',
     'hero.ctaHint': 'שיחה ראשונה בחינם. עונים תוך יום עסקים.',
@@ -310,6 +312,8 @@ export const TRANSLATIONS = {
     'process.04.text': 'עולים לאוויר ונשארים. שימוש אמיתי מגלה דברים שבדיקות לא מגלות, ואנחנו מטפלים בהם מהר. יש גם ליווי חודשי למי שרוצה שקט.',
 
     'work.heading': 'פרויקטים',
+    'work.note': 'אתרים ששיגרנו. תיאורי פרויקט יתווספו כשיהיו מאושרים.',
+    'work.visit': 'לאתר',
     'reviews.heading': 'מה לקוחות כתבו',
     'reviews.prev': 'הביקורת הקודמת',
     'reviews.next': 'הביקורת הבאה',

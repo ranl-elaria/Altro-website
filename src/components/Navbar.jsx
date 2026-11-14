@@ -44,6 +44,7 @@ export default function Navbar() {
         </CtaButton>
 
         <button
+          type="button"
           className="navbar__hamburger"
           onClick={() => setMenuOpen(o => !o)}
           aria-label={menuOpen ? t('navbar.ariaClose') : t('navbar.ariaOpen')}

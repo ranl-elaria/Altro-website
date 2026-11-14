@@ -8,7 +8,7 @@ function FAQItem({ q, a, open, onToggle }) {
   return (
     <div className={`faq2__item${open ? ' is-open' : ''}`}>
       <h3 className="faq2__q">
-        <button id={buttonId} onClick={onToggle} aria-expanded={open} aria-controls={panelId} className="faq2__btn">
+        <button type="button" id={buttonId} onClick={onToggle} aria-expanded={open} aria-controls={panelId} className="faq2__btn">
           <span>{q}</span>
           <span className="faq2__icon" aria-hidden="true" />
         </button>

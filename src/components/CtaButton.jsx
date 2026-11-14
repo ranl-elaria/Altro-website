@@ -28,7 +28,7 @@ export default function CtaButton({
   }
 
   return (
-    <button type={type} className={cls} onClick={onClick} disabled={disabled}>
+    <button type={type} className={cls} onClick={onClick} disabled={disabled} aria-busy={disabled || undefined}>
       {inner}
     </button>
   )

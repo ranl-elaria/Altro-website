@@ -8,6 +8,7 @@ export default function Work() {
     <section className="work" id="work">
       <div className="work__inner">
         <h2 className="work__heading">{t('work.heading')}</h2>
+        <p className="work__note">{t('work.note')}</p>
         <ul className="work__grid">
           {CLIENTS.map((c) => (
             <li key={c.name}>
@@ -18,9 +19,10 @@ export default function Work() {
                 rel="noopener noreferrer"
               >
                 <div className="work-card__art">
-                  <img src={encodeURI(c.src)} alt="" />
+                  <img src={encodeURI(c.src)} alt="" width="160" height="80" loading="lazy" decoding="async" />
                 </div>
-                <p className="work-card__name">{c.name}</p>
+                <p className="work-card__name" translate="no">{c.name}</p>
+                <span className="work-card__go">{t('work.visit')}</span>
               </a>
             </li>
           ))}

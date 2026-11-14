@@ -26,6 +26,16 @@ const testimonials = [
   },
 ]
 
+function Chevron({ dir }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      {dir === 'prev'
+        ? <path d="M10 3 4 8l6 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        : <path d="M6 3l6 5-6 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />}
+    </svg>
+  )
+}
+
 export default function Testimonials() {
   const t = useT()
   const [i, setI] = useState(0)
@@ -34,11 +44,9 @@ export default function Testimonials() {
   const next = () => setI((n) => (n + 1) % testimonials.length)
 
   return (
-    <section className="testimonials section" id="testimonials">
+    <section className="testimonials" id="testimonials">
       <div className="container">
-        <div className="testimonials__header">
-          <h2 className="display-heading display-heading--accent">{t('reviews.heading')}</h2>
-        </div>
+        <h2 className="display-heading">{t('reviews.heading')}</h2>
 
         <div className="reviews-carousel">
           <blockquote className="reviews-carousel__quote" lang="en" dir="ltr">
@@ -47,13 +55,19 @@ export default function Testimonials() {
               {item.logo
                 ? <img src={encodeURI(item.logo)} alt="" className={item.darkTile ? 'reviews-carousel__logo reviews-carousel__logo--dark' : 'reviews-carousel__logo'} />
                 : <span className="reviews-carousel__initials">{item.initials}</span>}
-              <span>{item.company}</span>
+              <span translate="no">{item.company}</span>
             </p>
           </blockquote>
           <div className="reviews-carousel__nav">
-            <button type="button" onClick={prev} aria-label={t('reviews.prev')}>{t('reviews.prev')}</button>
-            <span>{i + 1} / {testimonials.length}</span>
-            <button type="button" onClick={next} aria-label={t('reviews.next')}>{t('reviews.next')}</button>
+            <button type="button" onClick={prev} aria-label={t('reviews.prev')}>
+              <Chevron dir="prev" />
+            </button>
+            <span className="reviews-carousel__count" dir="ltr" lang="en">
+              {i + 1} / {testimonials.length}
+            </span>
+            <button type="button" onClick={next} aria-label={t('reviews.next')}>
+              <Chevron dir="next" />
+            </button>
           </div>
         </div>
       </div>

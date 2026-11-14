@@ -8,6 +8,8 @@ export default function Footer() {
   const { lang } = useLanguage()
   const { openModal } = useContactModal()
   const home = lang === 'he' ? '/he/' : '/'
+  const privacy = lang === 'he' ? '/he/privacy' : '/privacy'
+  const terms = lang === 'he' ? '/he/terms' : '/terms'
 
   return (
     <footer className="footer">
@@ -28,27 +30,22 @@ export default function Footer() {
               <span className="footer__col-head">{t('footer.companyHead')}</span>
               <a href={`${home}#process`} className="footer__link">{t('footer.companyProcess')}</a>
               <a href={`${home}#faq`} className="footer__link">{t('footer.companyFaq')}</a>
-              <button onClick={openModal} className="footer__link" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', textAlign: 'inherit' }}>{t('footer.companyStart')}</button>
+              <button type="button" onClick={openModal} className="footer__link">{t('footer.companyStart')}</button>
             </div>
             <div className="footer__col">
               <span className="footer__col-head">{t('footer.contactHead')}</span>
-              <button onClick={openModal} className="footer__link" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', textAlign: 'inherit' }}>{t('footer.contactStart')}</button>
-              <a href="mailto:altroaiteam@gmail.com" className="footer__link">altroaiteam@gmail.com</a>
-            </div>
-            <div className="footer__col">
-              <span className="footer__col-head">{t('footer.legalHead')}</span>
-              <Link to="/privacy" className="footer__link">{t('footer.privacy')}</Link>
-              <Link to="/terms" className="footer__link">{t('footer.terms')}</Link>
+              <a href="https://wa.me/972546894192" className="footer__link" target="_blank" rel="noopener noreferrer">{t('hero.wa')}</a>
+              <a href="mailto:altroaiteam@gmail.com" className="footer__link">
+                <span dir="ltr">altroaiteam@gmail.com</span>
+              </a>
+              <Link to={privacy} className="footer__link">{t('footer.privacy')}</Link>
+              <Link to={terms} className="footer__link">{t('footer.terms')}</Link>
             </div>
           </div>
         </div>
 
         <div className="footer__bottom">
           <span className="footer__copy">{t('footer.copy')}</span>
-          <div className="footer__legal-links">
-            <Link to="/privacy" className="footer__legal-link">{t('footer.privacy')}</Link>
-            <Link to="/terms" className="footer__legal-link">{t('footer.terms')}</Link>
-          </div>
         </div>
       </div>
     </footer>

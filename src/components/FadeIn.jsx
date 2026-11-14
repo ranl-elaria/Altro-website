@@ -5,7 +5,7 @@ const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia(
 export default function FadeIn({ children, delay = 0, duration = 0.7, x = 0, y = 30 }) {
   return (
     <motion.div
-      initial={{ opacity: prefersReducedMotion ? 1 : 0, x: prefersReducedMotion ? 0 : x, y: prefersReducedMotion ? 0 : y }}
+      initial={{ opacity: 1, x: prefersReducedMotion ? 0 : x, y: prefersReducedMotion ? 0 : y }}
       whileInView={{ opacity: 1, x: 0, y: 0 }}
       transition={{
         duration: prefersReducedMotion ? 0 : duration,

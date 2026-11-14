@@ -14,10 +14,11 @@ export default function Team() {
             <img
               className="team__photo"
               src={TEAM_PHOTO}
-              alt={t('about.photoAlt')}
-              width="1024"
-              height="768"
-              decoding="async"
+            alt={t('about.photoAlt')}
+            width="1024"
+            height="768"
+            fetchpriority="high"
+            decoding="async"
             />
           </div>
           <figcaption className="team__names">

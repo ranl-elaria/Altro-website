@@ -13,6 +13,7 @@ export default function LangSwitcher() {
   return (
     <div className="lang-switcher" role="group" aria-label={t('a11y.langSelector')}>
       <button
+        type="button"
         className={`lang-switcher__btn${lang === 'en' ? ' lang-switcher__btn--active' : ''}`}
         onClick={() => handleLangChange('en')}
         aria-pressed={lang === 'en'}
@@ -22,6 +23,7 @@ export default function LangSwitcher() {
       </button>
       <span className="lang-switcher__sep" aria-hidden="true">/</span>
       <button
+        type="button"
         className={`lang-switcher__btn${lang === 'he' ? ' lang-switcher__btn--active' : ''}`}
         onClick={() => handleLangChange('he')}
         aria-pressed={lang === 'he'}

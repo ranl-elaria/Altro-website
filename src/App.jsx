@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { motion } from 'motion/react'
+import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom'
+import { motion, useReducedMotion } from 'motion/react'
 import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
 import { ContactModalProvider } from './context/ContactModalContext'
 import Navbar from './components/Navbar'
@@ -24,18 +24,14 @@ const PrivacyPage  = lazy(() => import('./pages/PrivacyPolicy'))
 const TermsPage    = lazy(() => import('./pages/Terms'))
 const NotFoundPage = lazy(() => import('./pages/NotFound'))
 
-const revealVariants = {
-  hidden: { opacity: 0, y: 48 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
-}
-
 function Reveal({ children }) {
+  const reduce = useReducedMotion()
   return (
     <motion.div
-      variants={revealVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: '-80px' }}
+      initial={reduce ? false : { y: 12 }}
+      whileInView={{ y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
@@ -65,7 +61,7 @@ function LocaleLayout() {
     }
   }, [])
 
-  return <Site />
+  return <Outlet />
 }
 
 export function Site() {
@@ -90,6 +86,7 @@ export function Site() {
       </main>
       <Footer />
       <CookieBanner />
+      <ContactModal />
     </div>
   )
 }
@@ -103,8 +100,12 @@ export default function App() {
     <ContactModalProvider>
       <Routes>
         <Route element={<LocaleLayout />}>
-          <Route index path="/" />
-          <Route path="/he/*" />
+          <Route index element={<Site />} />
+          <Route path="he">
+            <Route index element={<Site />} />
+            <Route path="privacy" element={<Suspense fallback={legalFallback}><PrivacyPage /></Suspense>} />
+            <Route path="terms" element={<Suspense fallback={legalFallback}><TermsPage /></Suspense>} />
+          </Route>
         </Route>
         <Route
           path="/admin/*"
@@ -127,7 +128,6 @@ export default function App() {
           element={<Suspense fallback={legalFallback}><NotFoundPage /></Suspense>}
         />
       </Routes>
-      <ContactModal />
     </ContactModalProvider>
     </BrowserRouter>
     </LanguageProvider>

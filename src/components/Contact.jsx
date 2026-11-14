@@ -8,8 +8,7 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const { t, lang } = useLanguage()
-  const isHe = lang === 'he'
+  const { t } = useLanguage()
 
   const nameId = useId()
   const emailId = useId()
@@ -24,6 +23,22 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
     setStatus('loading')
     setErrorMsg('')
     try {
+      const mock = import.meta.env.DEV
+        ? new URLSearchParams(window.location.search).get('mockForm')
+        : null
+      if (mock === 'ok') {
+        await new Promise((r) => setTimeout(r, 200))
+        setStatus('success')
+        setForm({ name: '', email: '', phone: '', message: '' })
+        if (onSubmitSuccess) onSubmitSuccess()
+        return
+      }
+      if (mock === 'err') {
+        await new Promise((r) => setTimeout(r, 200))
+        setErrorMsg(t('contact.errorDefault'))
+        setStatus('error')
+        return
+      }
       // Capture attribution: UTM params from URL + referrer + cookies set by analytics
       const url = new URL(window.location.href)
       const cookieGet = (k) => {
@@ -70,15 +85,17 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         {label} {req ? <span className="form2__req">{t('contact.required')}</span> : <span className="form2__opt">{t('contact.optional')}</span>}
       </label>
       <input id={id} type={type} name={name} value={form[name]} onChange={handleChange} placeholder={ph}
-        className="form2__input" required={req} aria-required={req ? 'true' : undefined} {...extra} />
+        className="form2__input" required={req} aria-required={req ? 'true' : undefined}
+        disabled={status === 'loading'}
+        spellCheck={type === 'email' || type === 'tel' ? false : undefined} {...extra} />
     </div>
   )
 
   const formEl = (
-    <form onSubmit={handleSubmit} className="form2" noValidate={false}>
+    <form onSubmit={handleSubmit} className={`form2${isModal ? ' form2--on-light' : ' form2--on-dark'}`} noValidate={false} aria-busy={status === 'loading'}>
       {field(nameId, 'name', 'text', t('contact.labelName'), t('contact.placeholderName'), true, { autoComplete: 'name' })}
       <div className="form2__row">
-        {field(phoneId, 'phone', 'tel', t('contact.labelPhone'), t('contact.placeholderPhone'), false, { autoComplete: 'tel', dir: 'ltr' })}
+        {field(phoneId, 'phone', 'tel', t('contact.labelPhone'), t('contact.placeholderPhone'), false, { autoComplete: 'tel', dir: 'ltr', inputMode: 'tel' })}
         {field(emailId, 'email', 'email', t('contact.labelEmail'), t('contact.placeholderEmail'), true, { autoComplete: 'email', dir: 'ltr' })}
       </div>
       <div className="form2__field">
@@ -86,7 +103,8 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
           {t('contact.labelMessage')} <span className="form2__req">{t('contact.required')}</span>
         </label>
         <textarea id={messageId} name="message" value={form.message} onChange={handleChange}
-          placeholder={t('contact.placeholderMessage')} rows="4" className="form2__input form2__textarea" required aria-required="true" />
+          placeholder={t('contact.placeholderMessage')} rows="4" className="form2__input form2__textarea" required aria-required="true"
+          disabled={status === 'loading'} />
       </div>
 
       <div id={statusId} aria-live="polite" aria-atomic="true">
