@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>טיוטת כיוון · altro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Hebrew:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0c0c0c;
+      --lift: #171714;
+      --paper: #edeae3;
+      --muted: #b1ab9f;
+      --faint: #8a8478;
+      --line: #2c2b28;
+      --amber: #e6a117;
+      --amber-ink: #1c1406;
+      --max: 1120px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: "IBM Plex Sans Hebrew", "Segoe UI", sans-serif;
+      font-size: 17px;
+      line-height: 1.5;
+    }
+    a { color: inherit; }
+    button, input, textarea { font: inherit; color: inherit; }
+    :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+    img { max-width: 100%; }
+    .ribbon {
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 13px;
+      padding: 8px 20px;
+      text-align: center;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(12, 12, 12, 0.92);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+    .navrow, main, footer {
+      width: min(var(--max), calc(100% - 48px));
+      margin-inline: auto;
+    }
+    .navrow {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 22px;
+      letter-spacing: -0.04em;
+    }
+    .mark {
+      width: 9px;
+      height: 22px;
+      border-radius: 999px;
+      background: #3aa7a2;
+      transform: rotate(-28deg);
+    }
+    nav { display: flex; align-items: center; gap: 22px; }
+    nav a { text-decoration: none; color: var(--muted); }
+    nav a:hover { color: var(--paper); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--amber);
+      color: var(--amber-ink);
+      text-decoration: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn.ghost { background: transparent; color: var(--paper); border: 1px solid var(--line); }
+    .btn.block { width: 100%; }
+    .menu {
+      display: none;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--paper);
+      border-radius: 999px;
+      padding: 8px 12px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 48px;
+      align-items: end;
+      padding: 64px 0 36px;
+    }
+    h1, h2, h3 { font-weight: 500; letter-spacing: -0.03em; }
+    h1 { margin: 0 0 16px; font-size: clamp(40px, 5.4vw, 68px); line-height: 1.05; }
+    h2 { margin: 0 0 12px; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.15; }
+    h3 { margin: 0 0 8px; font-size: 22px; }
+    .lede { max-width: 36em; color: var(--muted); margin: 0 0 24px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .fine { margin: 14px 0 0; color: var(--faint); font-size: 14px; }
+    .panel {
+      background: var(--lift);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+    .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+    .tabs button {
+      background: transparent;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    .tabs button[aria-selected="true"] { color: var(--paper); border-bottom-color: var(--amber); }
+    .stage[hidden] { display: none; }
+    .row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+    .tag { color: var(--amber); font-size: 14px; font-weight: 500; }
+    .row p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+    .logos {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 22px 0 8px;
+      border-bottom: 1px solid var(--line);
+      overflow: auto;
+    }
+    .logos img { height: 26px; width: auto; max-width: 108px; object-fit: contain; background: #fff; padding: 6px 8px; }
+    .logos span { color: var(--faint); font-size: 14px; white-space: nowrap; }
+    .band { padding: 72px 0; border-bottom: 1px solid var(--line); }
+    .intro { max-width: 40em; color: var(--muted); margin: 0 0 28px; }
+    .work {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 28px;
+    }
+    .wide { grid-column: 1 / -1; }
+    .frame {
+      background: var(--lift);
+      border: 1px solid var(--line);
+      min-height: 210px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .sheet {
+      display: grid;
+      grid-template-columns: 1fr 28px 1fr;
+      gap: 12px;
+      align-items: center;
+      height: 100%;
+    }
+    .col { border: 1px solid var(--line); padding: 12px 12px 4px; }
+    .col span, .queue span { color: var(--faint); font-size: 13px; }
+    .line, .queue div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      font-size: 15px;
+    }
+    .line em, .queue em { font-style: normal; color: var(--amber); }
+    .arrow { text-align: center; color: var(--amber); }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; align-content: center; min-height: 170px; }
+    .chip { border: 1px solid var(--line); padding: 10px 12px; }
+    .chip.hub { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); }
+    .offers, .steps { display: grid; gap: 22px; list-style: none; margin: 0; padding: 0; }
+    .offers { grid-template-columns: repeat(3, 1fr); }
+    .steps { grid-template-columns: repeat(4, 1fr); }
+    .offers article, .steps li { border-top: 1px solid var(--line); padding-top: 14px; }
+    .offers p, .steps p { color: var(--muted); margin: 0; }
+    .when { color: var(--amber); font-size: 14px; }
+    .people { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .person { display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; border-top: 1px solid var(--line); padding-top: 16px; }
+    .letter {
+      width: 96px;
+      height: 112px;
+      display: grid;
+      place-items: center;
+      background: var(--amber);
+      color: var(--amber-ink);
+      font-size: 48px;
+      font-weight: 600;
+    }
+    .person p { margin: 0; color: var(--muted); }
+    .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .slot {
+      height: 84px;
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      color: var(--faint);
+    }
+    .reviews { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 36px; }
+    blockquote { margin: 0; }
+    blockquote p { margin: 0 0 16px; font-size: clamp(22px, 2.5vw, 32px); line-height: 1.35; }
+    .who { color: var(--muted); }
+    .stack article { padding: 16px 0; border-top: 1px solid var(--line); }
+    .stack p { margin: 0 0 8px; }
+    details { border-top: 1px solid var(--line); padding: 14px 0; }
+    details:last-of-type { border-bottom: 1px solid var(--line); }
+    summary { cursor: pointer; font-size: 18px; }
+    details p { color: var(--muted); max-width: 42em; }
+    .contact { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    form { display: grid; gap: 12px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 14px; }
+    input, textarea {
+      background: var(--lift);
+      border: 1px solid var(--line);
+      padding: 12px;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    footer {
+      padding: 28px 0 48px;
+      color: var(--faint);
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+    @media (max-width: 860px) {
+      .menu { display: inline-flex; }
+      nav { display: none; }
+      nav.open {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: absolute;
+        inset-inline: 0;
+        top: 100%;
+        background: var(--ink);
+        border-bottom: 1px solid var(--line);
+        padding: 12px 24px 20px;
+      }
+      .hero, .work, .offers, .steps, .people, .reviews, .contact { grid-template-columns: 1fr; }
+      .wide { grid-column: auto; }
+      .sheet { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+      .slots { grid-template-columns: 1fr 1fr; }
+      footer { flex-direction: column; }
+    }
+    @media (max-width: 390px) {
+      .navrow, main, footer { width: min(var(--max), calc(100% - 32px)); }
+      h1 { font-size: 36px; }
+      .person { grid-template-columns: 72px 1fr; }
+      .letter { width: 72px; height: 88px; font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <p class="ribbon">טיוטה. המסכים הם דוגמה. אין כאן תוצאה, ביוגרפיה או שותף שלא אושרו.</p>
+  <header>
+    <div class="navrow">
+      <a class="logo" href="#top"><span class="mark" aria-hidden="true"></span>altro</a>
+      <button class="menu" type="button" aria-expanded="false" aria-controls="nav">תפריט</button>
+      <nav id="nav">
+        <a href="#work">עבודות</a>
+        <a href="#process">איך עובדים</a>
+        <a href="#people">אנשים</a>
+        <a href="#faq">שאלות</a>
+        <a class="btn" href="#contact">דברו איתנו</a>
+      </nav>
+    </div>
+  </header>
+  <main id="top">
+    <section class="hero">
+      <div>
+        <h1>העבודה הידנית בעסק שלכם יכולה לרוץ לבד.</h1>
+        <p class="lede">אנחנו בונים אוטומציות, מערכות ניהול וחיבורים בין הכלים שלכם. מחיר והיקף מוסכמים מראש, וגרסה ראשונה עובדת תוך 4 שבועות.</p>
+        <div class="actions">
+          <a class="btn" href="#contact">דברו איתנו</a>
+          <a class="btn ghost" href="https://wa.me/972546894192">וואטסאפ</a>
+        </div>
+        <p class="fine">שיחה ראשונה בחינם. עונים תוך יום עסקים.</p>
+      </div>
+      <aside class="panel" aria-label="דוגמה למערכת">
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" id="tab-before" aria-controls="panel-before" aria-selected="true">לפני</button>
+          <button type="button" role="tab" id="tab-system" aria-controls="panel-system" aria-selected="false">המערכת</button>
+          <button type="button" role="tab" id="tab-after" aria-controls="panel-after" aria-selected="false">אחרי</button>
+        </div>
+        <div class="stage" id="panel-before" role="tabpanel" aria-labelledby="tab-before">
+          <div class="row"><span class="tag">מייל</span><div><b>הזמנה שמקלידים ידנית</b><p>הדוגמה שכבר מופיעה בטופס באתר. לא סיפור של לקוח מסוים.</p></div></div>
+          <div class="row"><span class="tag">גיליון</span><div><b>אותו מידע, שוב</b><p>הצוות מעתיק אותו למקום שני.</p></div></div>
+          <div class="row"><span class="tag">ראש</span><div><b>רק אחד יודע את הסדר</b><p>כשהוא לא נמצא, העבודה נעצרת.</p></div></div>
+        </div>
+        <div class="stage" id="panel-system" role="tabpanel" aria-labelledby="tab-system" hidden>
+          <div class="row"><span class="tag">רשומה</span><div><b>ההזמנה נכתבת פעם אחת</b><p>מערכת ניהול, לא עוד גיליון.</p></div></div>
+          <div class="row"><span class="tag">כלים</span><div><b>המייל, החשבונית וה-CRM</b><p>מחוברים. בלי העתקה ביניהם.</p></div></div>
+          <div class="row"><span class="tag">צוות</span><div><b>כולם רואים את אותו מצב</b><p>התהליך נמצא במערכת.</p></div></div>
+        </div>
+        <div class="stage" id="panel-after" role="tabpanel" aria-labelledby="tab-after" hidden>
+          <div class="row"><span class="tag">רקע</span><div><b>הפעולה החוזרת רצה לבד</b><p>אוטומציה איפה שהיא מתאימה.</p></div></div>
+          <div class="row"><span class="tag">אדם</span><div><b>הצוות מטפל במה שצריך שיקול</b><p>לא בהקלדה.</p></div></div>
+          <div class="row"><span class="tag">היקף</span><div><b>מה נבנה נקבע לפני הקוד</b><p>לפי ארבעת השלבים שכבר באתר.</p></div></div>
+        </div>
+      </aside>
+    </section>
+
+    <div class="logos" aria-label="עסקים שמופיעים באתר">
+      <span>באתר היום</span>
+      <img src="/public/Ximus.png" alt="Ximus" />
+      <img src="/public/Logo%20Quatro.png" alt="Quatro" />
+      <img src="/public/ClipTov.jpg" alt="Cliptov" />
+      <img src="/public/PocketGarden.JPG" alt="Pocket Garden" />
+      <img src="/public/ZionistInvestor%20logo.jpeg" alt="Zionist Investor" />
+    </div>
+
+    <section class="band" id="work">
+      <h2>עבודות</h2>
+      <p class="intro">שלושה סוגי עבודה. המסכים מצוירים לדוגמה, עד שיהיה צילום מסך מאושר.</p>
+      <div class="work">
+        <article class="wide">
+          <div class="frame">
+            <div class="sheet" aria-hidden="true">
+              <div class="col">
+                <span>גיליון</span>
+                <div class="line"><span>הזמנה 14</span><span>הוקלדה</span></div>
+                <div class="line"><span>הזמנה 15</span><span>הוקלדה</span></div>
+                <div class="line"><span>הזמנה 16</span><span>ממתינה</span></div>
+              </div>
+              <div class="arrow">←</div>
+              <div class="col">
+                <span>מערכת</span>
+                <div class="line"><span>הזמנה 14</span><em>נכתבה</em></div>
+                <div class="line"><span>הזמנה 15</span><em>נכתבה</em></div>
+                <div class="line"><span>הזמנה 16</span><em>נכתבה</em></div>
+              </div>
+            </div>
+          </div>
+          <p class="tag">מערכת ניהול</p>
+          <h3>מקום לפרויקט מאושר</h3>
+        </article>
+        <article>
+          <div class="frame">
+            <div class="queue" aria-hidden="true">
+              <div><span>ממתינה לאדם אחד</span><span>לפני</span></div>
+              <div><span>רצה ברקע</span><em>אחרי</em></div>
+              <div><span>שינוי אחרי עלייה לאוויר</span><span>ליווי</span></div>
+            </div>
+          </div>
+          <p class="tag">אוטומציה</p>
+          <h3>מקום לפרויקט מאושר</h3>
+        </article>
+        <article>
+          <div class="frame">
+            <div class="chips" aria-hidden="true">
+              <span class="chip">מייל</span>
+              <span class="chip">גיליון</span>
+              <span class="chip hub">רשומה אחת</span>
+              <span class="chip">CRM</span>
+              <span class="chip">וואטסאפ</span>
+            </div>
+          </div>
+          <p class="tag">חיבור בין כלים</p>
+          <h3>מקום לפרויקט מאושר</h3>
+        </article>
+      </div>
+    </section>
+
+    <section class="band" id="services">
+      <h2>מה בונים</h2>
+      <div class="offers">
+        <article>
+          <h3>אוטומציות</h3>
+          <p>פעולות שחוזרות בצוות, והופכות לתהליך שרץ ברקע.</p>
+        </article>
+        <article>
+          <h3>מערכת ניהול</h3>
+          <p>דשבורד, פורטל או כלי פנימי, לפי איך שהעסק עובד.</p>
+        </article>
+        <article>
+          <h3>חיבור בין הכלים</h3>
+          <p>CRM, חשבוניות ומסדי נתונים, כך שהמידע לא מועתק ידנית.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="band" id="process">
+      <h2>איך עובדים</h2>
+      <p class="intro">ההיקף והמחיר קבועים לפני שכותבים שורת קוד.</p>
+      <ol class="steps">
+        <li><div class="when">1–2 פגישות</div><h3>שיחה</h3><p>מקשיבים לאיך העסק עובד לפני שמחליטים מה לבנות.</p></li>
+        <li><div class="when">כשבוע</div><h3>תוכנית</h3><p>מה נבנה, מה כלול ומתי. כתוב לפני שורת קוד.</p></li>
+        <li><div class="when">גרסה ראשונה תוך 4 שבועות</div><h3>בנייה</h3><p>מחזורים קצרים, ותוכנה עובדת מוקדם.</p></li>
+        <li><div class="when">אחרי העלייה</div><h3>ליווי</h3><p>נשארים. ליווי חודשי למי שמבקש.</p></li>
+      </ol>
+    </section>
+
+    <section class="band" id="people">
+      <h2>האנשים</h2>
+      <div class="people">
+        <article class="person">
+          <div class="letter" aria-hidden="true">ר</div>
+          <div><h3>רן</h3><p>תפקיד ושורות אחרי אישור.</p></div>
+        </article>
+        <article class="person">
+          <div class="letter" aria-hidden="true">א</div>
+          <div><h3>אלעד</h3><p>תפקיד ושורות אחרי אישור.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band" id="partners">
+      <h2>שותפים</h2>
+      <p class="intro">נפרד מהלקוחות למעלה. הלוגו נכנס רק עם אישור וסוג הקשר.</p>
+      <div class="slots" aria-hidden="true">
+        <div class="slot">לוגו</div>
+        <div class="slot">לוגו</div>
+        <div class="slot">לוגו</div>
+        <div class="slot">לוגו</div>
+      </div>
+    </section>
+
+    <section class="band" id="reviews">
+      <h2>מה לקוחות כתבו</h2>
+      <p class="intro">הניסוח המקורי מהאתר, באנגלית. תרגום רק אחרי אישור, בלי שינוי משמעות.</p>
+      <div class="reviews">
+        <blockquote>
+          <p>Excellent experience working with the Altro team. Professional, responsive, and solution-oriented. They delivered high-quality work on our app and were a pleasure to work with.</p>
+          <footer class="who">Ximus · Client</footer>
+        </blockquote>
+        <div class="stack">
+          <article>
+            <p>I highly recommend the Altro team. They were instrumental in the programming of my app, delivering high-quality, efficient work and excellent problem-solving throughout the process.</p>
+            <footer class="who">Cliptov · Client</footer>
+          </article>
+          <article>
+            <p>The team was highly professional and knew how to identify what we needed before we even knew ourselves. When our requirements shifted, they responded immediately and shipped changes at lightning speed.</p>
+            <footer class="who">Pocket Garden · Client</footer>
+          </article>
+          <article>
+            <p>I recommend the Altro team wholeheartedly. Throughout the entire development process they were available, professional, and patient — always helping us find solutions to every challenge. The service was top-tier, the personal attention was clear, and it was obvious we had someone we could rely on.</p>
+            <footer class="who">QRfeedback · Client</footer>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="faq">
+      <h2>שאלות</h2>
+      <details>
+        <summary>צריך להחליף את המערכות שיש לנו?</summary>
+        <p>לא. אנחנו בונים מעל מה שאתם משתמשים בו. הצוות ממשיך לעבוד באותם כלים, רק מהר יותר ומחובר יותר. בלי העברות ובלי הפרעה.</p>
+      </details>
+      <details>
+        <summary>המידע העסקי שלנו מאובטח?</summary>
+        <p>המידע נשאר במערכות שלכם. אנחנו מתחברים אליהן דרך ממשקים רשמיים ומאובטחים, כמו שהבנק מתחבר לתוכנת הנהלת החשבונות. אנחנו לא שומרים את המידע העסקי שלכם אצלנו.</p>
+      </details>
+      <details>
+        <summary>נהיה תלויים בכם לתמיד?</summary>
+        <p>לא. הקוד, המערכת והמידע שלכם. אפשר להעביר לכל מפתח אחר, אין קופסאות שחורות. מי שרוצה ליווי מקבל, מי שלא, לא צריך.</p>
+      </details>
+      <details>
+        <summary>כמה זה עולה?</summary>
+        <p>אחרי שיחה ראשונה, שהיא בחינם, אתם מקבלים מחיר קבוע להיקף שסיכמנו. מחיר לפרויקט, לא לשעה, ובלי הפתעות בדרך.</p>
+      </details>
+    </section>
+
+    <section class="band" id="contact">
+      <div class="contact">
+        <div>
+          <h2>דברו איתנו</h2>
+          <p class="lede">ספרו לנו בכמה מילים. נחזור אליכם תוך יום עסקים עם כיוון ראשוני.</p>
+          <p><a href="https://wa.me/972546894192">או בוואטסאפ</a></p>
+        </div>
+        <form action="#contact" onsubmit="event.preventDefault(); this.querySelector('[type=submit]').textContent = 'זו טיוטה, לא נשלח';">
+          <label>שם <input name="name" required /></label>
+          <label>אימייל <input name="email" type="email" required /></label>
+          <label>טלפון או וואטסאפ <input name="phone" placeholder="050-0000000" /></label>
+          <label>מה תרצו שנבין? <textarea name="message" required></textarea></label>
+          <button class="btn block" type="submit">שלחו</button>
+          <p class="fine">הטופס בטיוטה לא שולח.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <span>altro</span>
+    <span>טיוטת מבנה לעמוד העברי</span>
+  </footer>
+  <script>
+    const tabs = document.querySelectorAll('[role="tab"]')
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => select(tab))
+      tab.addEventListener('keydown', (event) => {
+        const list = [...tabs]
+        const index = list.indexOf(tab)
+        if (event.key === 'ArrowLeft') list[(index + 1) % list.length].focus()
+        if (event.key === 'ArrowRight') list[(index - 1 + list.length) % list.length].focus()
+      })
+    })
+    function select(tab) {
+      tabs.forEach((item) => {
+        const on = item === tab
+        item.setAttribute('aria-selected', on ? 'true' : 'false')
+        document.getElementById(item.getAttribute('aria-controls')).hidden = !on
+      })
+    }
+    const menu = document.querySelector('.menu')
+    const nav = document.querySelector('#nav')
+    menu.addEventListener('click', () => {
+      const open = nav.classList.toggle('open')
+      menu.setAttribute('aria-expanded', open ? 'true' : 'false')
+    })
+  </script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>טיוטה בהירה · altro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #f3f1ec;
+      --ink: #1c2423;
+      --soft: #3c4b49;
+      --teal: #3ecdc8;
+      --teal-deep: #0c6e6a;
+      --nav: 64px;
+      --max: 1080px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Heebo, "Segoe UI", sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    img { max-width: 100%; height: auto; }
+    a { color: var(--teal-deep); }
+    :focus-visible { outline: 2px solid var(--teal-deep); outline-offset: 3px; }
+    .skip {
+      position: absolute;
+      inset-inline-start: 12px;
+      top: -40px;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 8px 12px;
+    }
+    .skip:focus { top: 8px; z-index: 20; }
+    .draft {
+      margin: 0;
+      padding: 8px 16px;
+      background: #e7f3f2;
+      color: var(--ink);
+      font-size: 14px;
+      text-align: center;
+    }
+    .draft a { font-weight: 500; }
+    .bar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(243, 241, 236, 0.94);
+      backdrop-filter: blur(8px);
+    }
+    .navrow {
+      width: min(var(--max), calc(100% - 40px));
+      margin-inline: auto;
+      min-height: var(--nav);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.04em;
+    }
+    nav { display: flex; align-items: center; gap: 18px; }
+    nav a { color: var(--ink); text-decoration: none; }
+    nav a:hover { color: var(--teal-deep); }
+    .menu {
+      display: none;
+      background: transparent;
+      border: 1px solid #c9c6be;
+      border-radius: 999px;
+      padding: 8px 14px;
+      color: var(--ink);
+    }
+    main { width: min(var(--max), calc(100% - 40px)); margin-inline: auto; }
+    section { padding: 56px 0; scroll-margin-top: calc(var(--nav) + 12px); }
+    h1, h2, h3 { font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; scroll-margin-top: calc(var(--nav) + 12px); }
+    h1 { margin: 0 0 16px; font-size: clamp(2.1rem, 5vw, 4.1rem); max-width: 12ch; }
+    h2 { margin: 0 0 16px; font-size: clamp(1.7rem, 3vw, 2.4rem); }
+    h3 { margin: 0 0 6px; font-size: 1.25rem; }
+    .lede { margin: 0 0 22px; max-width: 38em; color: var(--soft); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--teal);
+      color: #062826;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(220px, 420px);
+      gap: 40px;
+      align-items: start;
+      padding-top: 36px;
+    }
+    .portrait { margin: 8px 0 0; max-width: 420px; }
+    .portrait img { display: block; width: 100%; height: auto; object-fit: contain; }
+    .names {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      direction: ltr;
+      margin-top: 8px;
+      text-align: center;
+      color: var(--soft);
+      font-size: 15px;
+    }
+    .clients { padding-top: 8px; }
+    .logo-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 18px 28px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .logo-row a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 52px;
+      text-decoration: none;
+    }
+    .logo-row img { height: 40px; width: auto; max-width: 140px; object-fit: contain; }
+    .logo-row a.dark { background: #111; padding: 6px 10px; }
+    .logo-row a.dark img { height: 28px; }
+    .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 22px; }
+    @media (min-width: 800px) {
+      .steps { grid-template-columns: 1fr 1fr; gap: 28px 48px; }
+    }
+    .steps li { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+    .n {
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: var(--teal-deep);
+      line-height: 1;
+      padding-top: 4px;
+    }
+    .steps p { margin: 0; color: var(--soft); }
+    .quotes { display: grid; gap: 28px; }
+    @media (min-width: 800px) {
+      .quotes { grid-template-columns: 1fr 1fr; }
+      .quotes blockquote:first-child { grid-column: 1 / -1; }
+    }
+    blockquote {
+      margin: 0;
+      direction: ltr;
+      text-align: left;
+    }
+    blockquote p { margin: 0 0 10px; }
+    .quotes blockquote:first-child p { font-size: clamp(1.15rem, 2vw, 1.45rem); line-height: 1.45; }
+    .by { margin: 0; color: var(--soft); font-size: 15px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 10px; color: var(--soft); cursor: pointer; }
+    .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--teal); }
+    .carousel-nav { display: flex; gap: 12px; }
+    .carousel-nav button { background: none; border: 1px solid #c9c6be; padding: 8px 12px; cursor: pointer; color: var(--ink); }
+    details { margin: 0; border-bottom: 1px solid #ddd8ce; padding: 14px 0; }
+    summary { cursor: pointer; font-size: 1.2rem; }
+    .kinds { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 18px; }
+    @media (min-width: 800px) { .kinds { grid-template-columns: 1.2fr 0.9fr 0.9fr; gap: 32px; } }
+    .kinds p { margin: 0; color: var(--soft); }
+    .contact {
+      display: grid;
+      gap: 24px;
+    }
+    @media (min-width: 800px) { .contact { grid-template-columns: 0.8fr 1fr; align-items: start; } }
+    .ways { margin: 0; padding: 0; list-style: none; }
+    .ways li { margin: 6px 0; }
+    form { display: grid; gap: 12px; }
+    label { display: grid; gap: 4px; font-size: 15px; }
+    input, textarea {
+      width: 100%;
+      border: 1px solid #c9c6be;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    .status { min-height: 1.4em; margin: 0; font-size: 15px; }
+    .notes {
+      background: #e7f3f2;
+      color: var(--ink);
+    }
+    .notes-inner { width: min(var(--max), calc(100% - 40px)); margin-inline: auto; padding: 40px 0 56px; }
+    .notes h2 { font-size: 1.35rem; }
+    .notes ul { margin: 0 0 28px; padding-inline-start: 1.2em; }
+    .notes li { margin: 6px 0; }
+    .site-foot {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 8px 0 36px;
+      color: var(--soft);
+      font-size: 14px;
+    }
+    @media (max-width: 799px) {
+      .menu { display: inline-flex; }
+      nav {
+        display: none;
+        position: absolute;
+        inset-inline: 0;
+        top: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 20px 18px;
+        background: var(--paper);
+      }
+      nav.open { display: flex; }
+      .bar { position: sticky; }
+      .hero { grid-template-columns: 1fr; gap: 8px; padding-top: 20px; }
+      .hero .copy { display: contents; }
+      h1 { order: 1; max-width: 14ch; }
+      .portrait { order: 2; margin: 4px auto 8px; width: min(100%, 340px); }
+      .lede { order: 3; }
+      .cta { order: 4; }
+      section { padding: 36px 0; }
+      main, .navrow, .notes-inner, .site-foot { width: min(var(--max), calc(100% - 32px)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#intro">דלגו לתוכן</a>
+  <p class="draft">טיוטה בהירה, לא האתר החי. <a href="./direction.html">הטיוטה הכהה הקודמת</a></p>
+  <header class="bar">
+    <div class="navrow">
+      <a class="brand" href="#intro">
+        <svg width="28" height="28" viewBox="0 0 50 50" aria-hidden="true">
+          <circle cx="14" cy="14" r="7" fill="#3ECDC8" />
+          <rect x="25" y="7" width="12" height="30" rx="6" fill="#3ECDC8" transform="rotate(20 31 22)" />
+        </svg>
+        altro
+      </a>
+      <button class="menu" type="button" aria-expanded="false" aria-controls="nav">תפריט</button>
+      <nav id="nav">
+        <a href="#need">הצורך</a>
+        <a href="#work">עבודה</a>
+        <a href="#process">איך עובדים</a>
+        <a href="#system">המערכת</a>
+        <a href="#reviews">לקוחות</a>
+        <a href="#contact">שיחה</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="intro" aria-labelledby="intro-heading">
+      <div class="copy">
+        <h1 id="intro-heading">מתחילים במה שהעסק שלכם צריך.</h1>
+        <p class="lede">אנחנו אלעד ורן מאלטרו. עוזרים לעסקים להבין איפה העבודה נתקעת, ובונים פתרון טכנולוגי שמתאים לדרך שבה הם עובדים.</p>
+        <p class="cta"><a class="btn" href="#contact">בואו נדבר על העסק שלכם</a></p>
+      </div>
+      <figure class="portrait">
+        <img src="/altro-team-interim.jpg" alt="אלעד ורן מאלטרו" width="1024" height="768" />
+        <figcaption class="names">
+          <span>אלעד</span>
+          <span>רן</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="need" aria-labelledby="need-heading">
+      <h2 id="need-heading">קודם העסק, אחר כך הכלי</h2>
+      <ul class="kinds">
+        <li>
+          <h3>להבין איפה זה נתקע</h3>
+          <p>שומעים איך העבודה רצה היום, לפני שמחליטים מה לבנות.</p>
+        </li>
+        <li>
+          <h3>לבנות לפי הדרך שלכם</h3>
+          <p>מערכת, חיבור או אוטומציה — רק אם זה מתאים לצוות.</p>
+        </li>
+        <li>
+          <h3>לא כל דבר ידני צריך לרוץ לבד</h3>
+          <p>יש פעולות שצריכות שיקול. אותן משאירים לאנשים.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="clients" id="work" aria-labelledby="work-heading">
+      <h2 id="work-heading">עסקים שעבדנו איתם</h2>
+      <ul class="logo-row">
+        <li><a class="dark" href="https://ximusforum.com/" target="_blank" rel="noopener noreferrer" aria-label="Ximus"><img src="/Ximus.png" alt="" /></a></li>
+        <li><a class="dark" href="https://www.quatroteam.com/" target="_blank" rel="noopener noreferrer" aria-label="Quatro"><img src="/Logo-Quatro-mark.png" alt="" /></a></li>
+        <li><a href="https://cliptov.com/" target="_blank" rel="noopener noreferrer" aria-label="Cliptov"><img src="/ClipTov.jpg" alt="" /></a></li>
+        <li><a href="https://pocketgarden.co.il/" target="_blank" rel="noopener noreferrer" aria-label="Pocket Garden"><img src="/PocketGarden.JPG" alt="" /></a></li>
+        <li><a href="https://zionistinvestor.com/" target="_blank" rel="noopener noreferrer" aria-label="Zionist Investor"><img src="/ZionistInvestor%20logo.jpeg" alt="" /></a></li>
+        <li><a href="https://www.beckyskitchen.co.il/" target="_blank" rel="noopener noreferrer" aria-label="Becky's Kitchen"><img src="/BeckysKitchen.png" alt="" /></a></li>
+      </ul>
+    </section>
+
+    <section id="process" aria-labelledby="process-heading">
+      <h2 id="process-heading">איך עובדים</h2>
+      <ol class="steps">
+        <li>
+          <span class="n" aria-hidden="true">1</span>
+          <div>
+            <h3>שיחה</h3>
+            <p>שומעים איך העסק עובד, ואיפה העבודה נתקעת.</p>
+          </div>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">2</span>
+          <div>
+            <h3>כיוון</h3>
+            <p>מסכמים מה נבנה, לפני שמתחילים לכתוב.</p>
+          </div>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">3</span>
+          <div>
+            <h3>בנייה</h3>
+            <p>מראים גרסה עובדת, וממשיכים לפי מה שרואים.</p>
+          </div>
+        </li>
+        <li>
+          <span class="n" aria-hidden="true">4</span>
+          <div>
+            <h3>אחרי העלייה</h3>
+            <p>נשארים קרובים למה שהשימוש האמיתי מגלה.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="system" aria-labelledby="system-heading">
+      <h2 id="system-heading">המערכת מאחורי העבודה</h2>
+      <p class="lede">קודם מבינים איך העסק עובד. אחר כך בונים סביב זה.</p>
+      <p class="lede">דוגמה, לא לקוח בשם: הזמנה שמקלידים מהמייל למערכת.</p>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" id="tab-before" aria-controls="panel-before" aria-selected="true">לפני</button>
+        <button type="button" role="tab" id="tab-system" aria-controls="panel-system" aria-selected="false">המערכת</button>
+        <button type="button" role="tab" id="tab-after" aria-controls="panel-after" aria-selected="false">אחרי</button>
+      </div>
+      <div id="panel-before" role="tabpanel" aria-labelledby="tab-before">
+        <h3>ההזמנה מוקלדת ידנית</h3>
+        <p class="lede">היא מגיעה במייל. מישהו מעתיק אותה למקום אחר. אם הוא לא שם, זה ממתין.</p>
+      </div>
+      <div id="panel-system" role="tabpanel" aria-labelledby="tab-system" hidden>
+        <h3>הרשומה נכתבת פעם אחת</h3>
+        <p class="lede">המייל, החשבונית וה-CRM רואים את אותה רשומה. הצוות רואה מצב אחד.</p>
+      </div>
+      <div id="panel-after" role="tabpanel" aria-labelledby="tab-after" hidden>
+        <h3>הפעולה החוזרת יכולה לרוץ ברקע</h3>
+        <p class="lede">השיקול נשאר אצל האנשים. ההקלדה לא חייבת לשבת אצל אחד.</p>
+      </div>
+    </section>
+
+    <section id="reviews" aria-labelledby="reviews-heading">
+      <h2 id="reviews-heading">מה לקוחות כתבו</h2>
+      <p class="lede">הניסוח המלא מהאתר, באנגלית. בלי קיצור.</p>
+      <blockquote class="slide" lang="en" dir="ltr">
+        <p>Excellent experience working with the Altro team. Professional, responsive, and solution-oriented. They delivered high-quality work on our app and were a pleasure to work with.</p>
+        <p class="by">Ximus</p>
+      </blockquote>
+      <blockquote class="slide" lang="en" dir="ltr" hidden>
+        <p>I highly recommend the Altro team. They were instrumental in the programming of my app, delivering high-quality, efficient work and excellent problem-solving throughout the process.</p>
+        <p class="by">Cliptov</p>
+      </blockquote>
+      <blockquote class="slide" lang="en" dir="ltr" hidden>
+        <p>I recommend the Altro team wholeheartedly. Throughout the entire development process they were available, professional, and patient — always helping us find solutions to every challenge. The service was top-tier, the personal attention was clear, and it was obvious we had someone we could rely on. Thank you for all the help — highly recommended.</p>
+        <p class="by">QRfeedback</p>
+      </blockquote>
+      <blockquote class="slide" lang="en" dir="ltr" hidden>
+        <p>The team was highly professional and knew how to identify what we needed before we even knew ourselves. When our requirements shifted, they responded immediately and shipped changes at lightning speed. Very satisfied — highly recommend.</p>
+        <p class="by">Pocket Garden</p>
+      </blockquote>
+      <p class="carousel-nav">
+        <button type="button" id="rev-prev">הקודמת</button>
+        <button type="button" id="rev-next">הבאה</button>
+      </p>
+    </section>
+
+    <section id="services" aria-labelledby="services-heading">
+      <h2 id="services-heading">מה אפשר לבנות</h2>
+      <p class="lede">לא כל פעולה ידנית צריכה להפוך לאוטומציה. אחרי שמבינים את העסק, בוחרים את סוג הפתרון.</p>
+      <ul class="kinds">
+        <li>
+          <h3>אוטומציה</h3>
+          <p>כשפעולה באמת חוזרת, והיא יכולה לרוץ ברקע.</p>
+        </li>
+        <li>
+          <h3>מערכת ניהול</h3>
+          <p>כשהצוות צריך מקום אחד שמתאים לדרך העבודה שלו.</p>
+        </li>
+        <li>
+          <h3>חיבור בין כלים</h3>
+          <p>כשהמידע כבר קיים, ורק לא עובר לבד.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">שאלות</h2>
+      <details>
+        <summary>למה לא להשתמש בתוכנה מוכנה?</summary>
+        <p>תוכנה מוכנה נבנתה לכולם, ולכן היא לא מושלמת לאף אחד. אנחנו בונים לפי איך שהעסק עובד.</p>
+      </details>
+    </section>
+
+    <section id="contact" aria-labelledby="contact-heading">
+      <div class="contact">
+        <div>
+          <h2 id="contact-heading">בואו נדבר על העסק שלכם</h2>
+          <ul class="ways">
+            <li><a href="https://wa.me/972546894192">וואטסאפ</a></li>
+            <li><a href="mailto:altroaiteam@gmail.com">altroaiteam@gmail.com</a></li>
+          </ul>
+        </div>
+        <form id="preview-form" action="#" method="post">
+          <label>שם
+            <input name="name" autocomplete="name" required />
+          </label>
+          <label>טלפון
+            <input name="phone" autocomplete="tel" inputmode="tel" />
+          </label>
+          <label>מה קורה בעסק
+            <textarea name="note" required></textarea>
+          </label>
+          <button class="btn" type="submit">שליחה בתצוגה</button>
+          <p class="status" id="form-status" role="status">הטופס בתצוגה הזו לא נשלח לשום מקום.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <aside class="notes" aria-labelledby="notes-heading">
+    <div class="notes-inner">
+      <h2 id="notes-heading">רשימת חומר שחסר</h2>
+      <p>החלק הזה לא מיועד לאתר הציבורי.</p>
+      <ul>
+        <li>תיאור מאושר לכל עבודה: מה נבנה, בלי תוצאה מומצאת.</li>
+        <li>צילום מסך מאושר, אם רוצים להראות מוצר.</li>
+        <li>שם האדם שכתב כל ביקורת.</li>
+        <li>תרגום מאושר לביקורות, בלי שינוי משמעות.</li>
+        <li>לוגו ל-QRfeedback. יש ביקורת, אין קובץ לוגו.</li>
+        <li>ביוגרפיה ותפקיד לאלעד ולרן.</li>
+        <li>רשימת שותפים, נפרדת מהלקוחות. אין רשימה, אז אין מקטע שותפים.</li>
+        <li>אישור לכתובות שעדיין לא אושרו: ximusforum.com, cliptov.com, zionistinvestor.com. אושרו: pocketgarden.co.il, quatroteam.com, beckyskitchen.co.il.</li>
+      </ul>
+      <h2>ניסוחים שמחכים לאישור</h2>
+      <p>אלה הופיעו באתר הישן. הם לא מוצגים למעלה כהבטחה לכל פרויקט.</p>
+      <ul>
+        <li>גרסה ראשונה תוך 4 שבועות.</li>
+        <li>בלי העברות ובלי הפרעה.</li>
+        <li>אנחנו לא שומרים את המידע העסקי.</li>
+        <li>מחיר קבוע מראש, בעלות על הקוד, ובלי תלות.</li>
+        <li>שיחה ראשונה בחינם, ותשובה תוך יום עסקים.</li>
+      </ul>
+    </div>
+  </aside>
+  <p class="site-foot">altro · טיוטה בהירה להשוואה</p>
+
+  <script>
+    const menu = document.querySelector('.menu')
+    const nav = document.querySelector('#nav')
+    menu.addEventListener('click', () => {
+      const open = nav.classList.toggle('open')
+      menu.setAttribute('aria-expanded', open ? 'true' : 'false')
+    })
+    nav.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        nav.classList.remove('open')
+        menu.setAttribute('aria-expanded', 'false')
+      })
+    })
+    document.getElementById('preview-form').addEventListener('submit', (event) => {
+      event.preventDefault()
+      document.getElementById('form-status').textContent = 'הטופס לא נשלח. זו תצוגה מקדימה.'
+    })
+    const tabs = document.querySelectorAll('[role="tab"]')
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((item) => {
+          const on = item === tab
+          item.setAttribute('aria-selected', on ? 'true' : 'false')
+          document.getElementById(item.getAttribute('aria-controls')).hidden = !on
+        })
+      })
+    })
+    const slides = [...document.querySelectorAll('.slide')]
+    let i = 0
+    const show = (n) => {
+      i = (n + slides.length) % slides.length
+      slides.forEach((s, k) => { s.hidden = k !== i })
+    }
+    document.getElementById('rev-prev').addEventListener('click', () => show(i - 1))
+    document.getElementById('rev-next').addEventListener('click', () => show(i + 1))
+  </script>
+</body>
+</html>

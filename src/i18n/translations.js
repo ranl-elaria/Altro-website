@@ -8,9 +8,11 @@ export const TRANSLATIONS = {
 
     // navbar
     'navbar.services': 'Services',
+    'navbar.work': 'Work',
+    'navbar.reviews': 'Reviews',
     'navbar.process': 'Process',
     'navbar.faq': 'FAQ',
-    'navbar.cta': 'Get in touch',
+    'navbar.cta': 'Book a call',
     'navbar.ariaOpen': 'Open menu',
     'navbar.ariaClose': 'Close menu',
     'navbar.skipToMain': 'Skip to main content',
@@ -21,11 +23,19 @@ export const TRANSLATIONS = {
 
     // hero
     'hero.badge': 'Automation and systems for business',
-    'hero.heading': 'The manual work in your business can run by itself.',
-    'hero.subtitle': 'We build automations, management systems and connections between your tools. Price and scope agreed up front, first working version within 4 weeks.',
-    'hero.cta': 'Tell us what\'s slowing you down',
+    'hero.heading': 'Start with what the business needs.',
+    'hero.headingLine': 'Start with what the business needs.',
+    'hero.headingRest': 'Automations and systems behind it.',
+    'hero.subtitle': "We're Elad and Ran from Altro. We build automations, management systems and connections between your tools.",
+    'hero.cta': 'Book a call',
     'hero.ctaHint': 'Free first call. We reply within one business day.',
     'hero.wa': 'Or message us on WhatsApp',
+    'hero.lead': 'Start with what the business needs',
+    'hero.words': ['Automations', 'Systems', 'Integrations'],
+    'hero.tail': 'then the tool.',
+    'hero.status': 'First working version within 4 weeks',
+    'hero.cue': 'Scroll',
+    'hero.manifesto': 'We are Elad and Ran. First we learn how your business already runs, then we build the automations, the management system and the connections that are missing — on top of the tools you already use. Fixed price and scope. First working version within 4 weeks.',
     'hero.line.in': 'Incoming data',
     'hero.line.auto': 'Automation',
     'hero.line.done': 'Done',
@@ -44,7 +54,9 @@ export const TRANSLATIONS = {
     ],
 
     // designed for (pain points)
-    'designed.heading': 'Sound familiar?',
+    'designed.heading': 'First the business,',
+    'designed.headingMark': 'then the tool.',
+    'designed.sub': 'We look at how the business already works, then build around that. Not every manual step becomes automation.',
     'designed.01.title': 'Copying data from sheet to sheet every week',
     'designed.01.text': 'Reports, leads, invoices: the same steps again and again. It works until someone makes a mistake or goes on vacation.',
     'designed.02.title': 'Your tools don\'t talk to each other',
@@ -79,6 +91,32 @@ export const TRANSLATIONS = {
     'process.04.duration': 'ongoing',
     'process.04.text': 'We go live and stay. Real use shows things tests do not, and we handle them fast. Monthly support is available for those who want peace of mind.',
 
+    'work.heading': 'Work',
+    'work.note': 'Live sites we shipped. Written case studies are not published yet.',
+    'work.visit': 'Visit site',
+    'work.kind': 'Live site',
+    'reviews.heading': 'What clients wrote',
+    'reviews.prev': 'Previous review',
+    'reviews.next': 'Next review',
+
+    'system.heading': 'The system behind the work',
+    'system.sub': 'We look at how the business already works, then build around that. Not every manual step becomes automation.',
+    'system.example': 'Example, not a named client: the order typed from email into the system, as in the contact form.',
+    'system.01.tab': 'Before',
+    'system.01.title': 'The order is typed by hand',
+    'system.01.text': 'It arrives in email. Someone copies it into another place. If they are away, it waits.',
+    'system.02.tab': 'The system',
+    'system.02.title': 'The record is written once',
+    'system.02.text': 'Mail, invoice and CRM share the same record. The team sees one status.',
+    'system.03.tab': 'After',
+    'system.03.title': 'Repeating work can run in the background',
+    'system.03.text': 'People keep the decisions. The typing does not have to sit with one person.',
+
+    'about.heading': 'Who we are',
+    'about.photoAlt': 'Elad and Ran from Altro',
+    'about.elad': 'Elad',
+    'about.ran': 'Ran',
+
     // faq
     'faq.heading': "Questions people ask",
     'faq.01.q': 'Do we need to replace our existing systems?',
@@ -95,7 +133,7 @@ export const TRANSLATIONS = {
     'faq.ctaLabel': 'Start a free call',
 
     // contact
-    'contact.heading': "Let's find what's holding you back",
+    'contact.heading': "Let's start with a call",
     'contact.sub': "Tell us in a few words. We'll get back to you within one business day with a first direction. No fine print, no pressure.",
     'contact.labelName': "Name",
     'contact.placeholderName': "What should we call you?",
@@ -114,6 +152,8 @@ export const TRANSLATIONS = {
     'contact.successBody': "We'll be in touch within one business day.",
     'contact.errorDefault': 'Something went wrong. Please try again.',
     'contact.errorNetwork': 'Network error. Please check your connection and try again.',
+    'contact.invalidRequired': 'Please fill in this field.',
+    'contact.invalidEmail': 'Please enter a valid email address.',
 
     // footer
     'footer.tagline': 'Built in Israel. Shipped to teams worldwide.',
@@ -124,9 +164,9 @@ export const TRANSLATIONS = {
     'footer.companyHead': 'Company',
     'footer.companyProcess': 'How we work',
     'footer.companyFaq': 'FAQ',
-    'footer.companyStart': 'Start a project',
+    'footer.companyStart': 'Book a call',
     'footer.contactHead': 'Contact',
-    'footer.contactStart': 'Start a conversation',
+    'footer.contactStart': 'Book a call',
     'footer.legalHead': 'Legal',
     'footer.privacy': 'Privacy Policy',
     'footer.terms': 'Terms of Service',
@@ -177,7 +217,7 @@ export const TRANSLATIONS = {
     'a11y.closeModal': 'Close modal',
 
     // floatingCTA
-    'floatingCta.text': 'Tell us what\'s slowing you down',
+    'floatingCta.text': 'Book a call',
 
     // cookieBanner
     'cookie.text': 'We use analytics cookies to understand how visitors use this site and improve the experience. Essential cookies (used for admin login) are always active.',
@@ -187,6 +227,25 @@ export const TRANSLATIONS = {
     'cookie.ariaLabel': 'Cookie consent',
     'cookie.ariaDecline': 'Decline analytics cookies',
     'cookie.ariaAccept': 'Accept all cookies',
+
+    'ovs.servicesTitle': 'Automations, a system that fits, and the connections between your tools.',
+    'ovs.servicesText': 'Three things. We build on top of what you already use.',
+    'ovs.svc1.tags': ['Workflows', 'AI when it helps', 'Stable code'],
+    'ovs.svc2.tags': ['Dashboard', 'Client portal', 'Internal tool'],
+    'ovs.svc3.tags': ['CRM', 'Invoicing', 'APIs'],
+    'ovs.workTitle': 'Live sites we shipped.',
+    'ovs.workNext': 'Your system, next',
+    'ovs.workMetric': 'Live',
+    'ovs.workMetricLabel': 'Shipped site',
+    'ovs.quotesKicker': 'What clients wrote',
+    'ovs.faqText': 'Honest answers. No fine print.',
+    'ovs.back': 'Back to top',
+    'ovs.copied': 'Copied',
+    'ovs.copiedEmail': 'Copied to clipboard',
+    'ovs.day': 'Switch to daylight',
+    'ovs.dusk': 'Switch to dusk',
+    'ovs.time': 'From 4 weeks',
+    'ovs.city': 'Israel',
 
     // notFound
     'notFound.title': 'Page not found',
@@ -207,20 +266,30 @@ export const TRANSLATIONS = {
 
     // navbar
     'navbar.services': 'שירותים',
+    'navbar.work': 'עבודה',
+    'navbar.reviews': 'לקוחות',
     'navbar.process': 'תהליך',
     'navbar.faq': 'שאלות נפוצות',
-    'navbar.cta': 'דברו איתנו',
+    'navbar.cta': 'לתיאום שיחה',
     'navbar.ariaOpen': 'פתח תפריט',
     'navbar.ariaClose': 'סגור תפריט',
     'navbar.skipToMain': 'דלג לתוכן הראשי',
 
     // hero
     'hero.badge': 'אוטומציה ומערכות לעסקים',
-    'hero.heading': 'העבודה הידנית בעסק שלכם יכולה לרוץ לבד.',
-    'hero.subtitle': 'אנחנו בונים אוטומציות, מערכות ניהול וחיבורים בין הכלים שלכם. מחיר והיקף מוסכמים מראש, וגרסה ראשונה עובדת תוך 4 שבועות.',
-    'hero.cta': 'ספרו לנו מה תוקע אתכם',
+    'hero.heading': 'מתחילים במה שהעסק צריך.',
+    'hero.headingLine': 'מתחילים במה שהעסק צריך.',
+    'hero.headingRest': 'אוטומציה ומערכות מאחוריו.',
+    'hero.subtitle': 'אנחנו אלעד ורן מאלטרו. בונים אוטומציות, מערכות ניהול וחיבורים בין הכלים שלכם.',
+    'hero.cta': 'לתיאום שיחה',
     'hero.ctaHint': 'שיחה ראשונה בחינם. עונים תוך יום עסקים.',
     'hero.wa': 'או כתבו לנו בוואטסאפ',
+    'hero.lead': 'מתחילים במה שהעסק צריך',
+    'hero.words': ['אוטומציות', 'מערכות', 'חיבורים'],
+    'hero.tail': 'ואחר כך הכלי',
+    'hero.status': 'גרסה ראשונה שעובדת תוך 4 שבועות',
+    'hero.cue': 'גללו',
+    'hero.manifesto': 'אנחנו אלעד ורן. קודם יושבים להבין איך העסק שלכם באמת רץ, ואז בונים את מה שחסר: אוטומציות, מערכת ניהול, וחיבור בין הכלים שכבר עובדים אצלכם. מחיר וסקופ קבועים מראש. גרסה ראשונה שעובדת תוך 4 שבועות.',
     'hero.line.in': 'מידע נכנס',
     'hero.line.auto': 'אוטומציה',
     'hero.line.done': 'זה כבר מוכן',
@@ -239,7 +308,9 @@ export const TRANSLATIONS = {
     ],
 
     // designed for (pain points)
-    'designed.heading': 'נשמע מוכר?',
+    'designed.heading': 'קודם העסק,',
+    'designed.headingMark': 'אחר כך הכלי.',
+    'designed.sub': 'קודם מבינים איך העסק עובד. אחר כך בונים סביב זה. לא כל פעולה ידנית הופכת לאוטומציה.',
     'designed.01.title': 'מעתיקים נתונים מאקסל לאקסל כל שבוע',
     'designed.01.text': 'הדוחות, הפניות, החשבוניות: אותן פעולות שוב ושוב, וזה עובד עד שמישהו טועה או נעלם לחופשה.',
     'designed.02.title': 'הכלים לא מדברים אחד עם השני',
@@ -274,6 +345,32 @@ export const TRANSLATIONS = {
     'process.04.duration': 'שוטף',
     'process.04.text': 'עולים לאוויר ונשארים. שימוש אמיתי מגלה דברים שבדיקות לא מגלות, ואנחנו מטפלים בהם מהר. יש גם ליווי חודשי למי שרוצה שקט.',
 
+    'work.heading': 'פרויקטים',
+    'work.note': 'אתרים ששיגרנו. תיאורי פרויקט יתווספו כשיהיו מאושרים.',
+    'work.visit': 'לאתר',
+    'work.kind': 'אתר',
+    'reviews.heading': 'מה לקוחות כתבו',
+    'reviews.prev': 'הביקורת הקודמת',
+    'reviews.next': 'הביקורת הבאה',
+
+    'system.heading': 'המערכת מאחורי העבודה',
+    'system.sub': 'קודם מבינים איך העסק עובד. אחר כך בונים סביב זה. לא כל פעולה ידנית הופכת לאוטומציה.',
+    'system.example': 'דוגמה, לא לקוח בשם: הזמנה שמקלידים מהמייל למערכת, כמו בטופס.',
+    'system.01.tab': 'לפני',
+    'system.01.title': 'ההזמנה מוקלדת ידנית',
+    'system.01.text': 'היא מגיעה במייל. מישהו מעתיק אותה למקום אחר. אם הוא לא שם, זה ממתין.',
+    'system.02.tab': 'המערכת',
+    'system.02.title': 'הרשומה נכתבת פעם אחת',
+    'system.02.text': 'המייל, החשבונית וה-CRM רואים את אותה רשומה. הצוות רואה מצב אחד.',
+    'system.03.tab': 'אחרי',
+    'system.03.title': 'הפעולה החוזרת יכולה לרוץ ברקע',
+    'system.03.text': 'השיקול נשאר אצל האנשים. ההקלדה לא חייבת לשבת אצל אחד.',
+
+    'about.heading': 'מי אנחנו',
+    'about.photoAlt': 'אלעד ורן מאלטרו',
+    'about.elad': 'אלעד',
+    'about.ran': 'רן',
+
     // faq
     'faq.heading': "שאלות נפוצות",
     'faq.01.q': "צריך להחליף את המערכות שיש לנו?",
@@ -290,7 +387,7 @@ export const TRANSLATIONS = {
     'faq.ctaLabel': 'התחילו שיחה חינם',
 
     // contact
-    'contact.heading': "בואו נבין מה תוקע אתכם",
+    'contact.heading': "מתחילים בשיחה",
     'contact.sub': "ספרו לנו בכמה מילים. נחזור אליכם תוך יום עסקים עם כיוון ראשוני. בלי אותיות קטנות ובלי לחץ.",
     'contact.labelName': "שם",
     'contact.placeholderName': "איך לקרוא לכם?",
@@ -309,6 +406,8 @@ export const TRANSLATIONS = {
     'contact.successBody': "נחזור אליכם תוך יום עסקים.",
     'contact.errorDefault': 'משהו השתבש. אנא נסו שוב.',
     'contact.errorNetwork': 'שגיאת רשת. אנא בדקו את החיבור ונסו שוב.',
+    'contact.invalidRequired': 'יש למלא את השדה הזה.',
+    'contact.invalidEmail': 'יש להזין כתובת אימייל תקינה.',
 
     // footer
     'footer.tagline': 'נבנה בישראל. נשלח לצוותים בעולם.',
@@ -319,9 +418,9 @@ export const TRANSLATIONS = {
     'footer.companyHead': 'חברה',
     'footer.companyProcess': 'איך אנחנו עובדים',
     'footer.companyFaq': 'שאלות נפוצות',
-    'footer.companyStart': 'ספרו לנו מה תוקע אתכם',
+    'footer.companyStart': 'לתיאום שיחה',
     'footer.contactHead': 'צור קשר',
-    'footer.contactStart': 'ספרו לנו מה תוקע אתכם',
+    'footer.contactStart': 'לתיאום שיחה',
     'footer.legalHead': 'משפטי',
     'footer.privacy': 'מדיניות פרטיות',
     'footer.terms': 'תנאי שירות',
@@ -372,7 +471,7 @@ export const TRANSLATIONS = {
     'a11y.closeModal': 'סגירת חלון',
 
     // floatingCTA
-    'floatingCta.text': 'ספרו לנו מה תוקע אתכם',
+    'floatingCta.text': 'לתיאום שיחה',
 
     // cookieBanner
     'cookie.text': 'אנו משתמשים בעוגיות אנליטיקה כדי להבין כיצד מבקרים משתמשים באתר זה ולשפר את החוויה. עוגיות חיוניות (המשמשות לכניסת מנהלים) תמיד פעילות.',
@@ -382,6 +481,25 @@ export const TRANSLATIONS = {
     'cookie.ariaLabel': 'הסכמה לעוגיות',
     'cookie.ariaDecline': 'דחה עוגיות אנליטיקה',
     'cookie.ariaAccept': 'קבל את כל העוגיות',
+
+    'ovs.servicesTitle': 'אוטומציות, מערכת שמתאימה, והחיבורים בין הכלים שלכם.',
+    'ovs.servicesText': 'שלושה דברים. בונים מעל מה שכבר יש לכם.',
+    'ovs.svc1.tags': ['תהליכים', 'AI כשזה עוזר', 'קוד יציב'],
+    'ovs.svc2.tags': ['דשבורד', 'פורטל לקוחות', 'כלי פנימי'],
+    'ovs.svc3.tags': ['CRM', 'חשבוניות', 'ממשקים'],
+    'ovs.workTitle': 'אתרים ששיגרנו.',
+    'ovs.workNext': 'המערכת שלכם, הבאה',
+    'ovs.workMetric': 'חי',
+    'ovs.workMetricLabel': 'אתר שעלה',
+    'ovs.quotesKicker': 'מה לקוחות כתבו',
+    'ovs.faqText': 'תשובות כנות. בלי אותיות קטנות.',
+    'ovs.back': 'חזרה למעלה',
+    'ovs.copied': 'הועתק',
+    'ovs.copiedEmail': 'הועתק ללוח',
+    'ovs.day': 'מעבר לאור יום',
+    'ovs.dusk': 'מעבר לדמדומים',
+    'ovs.time': 'מ־4 שבועות',
+    'ovs.city': 'ישראל',
 
     // notFound
     'notFound.title': 'הדף לא נמצא',

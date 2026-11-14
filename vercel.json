@@ -8,6 +8,11 @@
     { "path": "/api/finance/fx-refresh", "schedule": "0 5 * * *" },
     { "path": "/api/finance/overdue-check", "schedule": "0 7 * * *" }
   ],
+  "redirects": [
+    { "source": "/en", "destination": "/", "permanent": false },
+    { "source": "/en/", "destination": "/", "permanent": false },
+    { "source": "/en/:path*", "destination": "/:path*", "permanent": false }
+  ],
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "headers": [
     {

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && vite build --ssr src/entry-server.jsx --outDir dist-ssr && node scripts/prerender.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:a11y": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.106.0",
@@ -14,6 +15,7 @@
     "@tailwindcss/vite": "^4.2.2",
     "dompurify": "^3.4.11",
     "framer-motion": "^12.38.0",
+    "gsap": "^3.15.1",
     "marked": "^18.0.5",
     "motion": "^12.40.0",
     "motion-v": "^2.3.0",
@@ -25,6 +27,8 @@
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.1",
     "@vitejs/plugin-react": "^4.4.1",
     "supabase": "^2.92.1",
     "tinyglobby": "^0.2.17",
