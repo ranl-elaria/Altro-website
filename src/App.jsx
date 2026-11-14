@@ -1,41 +1,22 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
-import { motion, useReducedMotion } from 'motion/react'
-import { LanguageProvider, useT, useLanguage } from './i18n/LanguageContext'
+import { LanguageProvider, useLanguage } from './i18n/LanguageContext'
 import { ContactModalProvider } from './context/ContactModalContext'
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import Challenges from './components/Challenges'
-import LogoStrip from './components/LogoStrip'
-import Work from './components/Work'
-import Services from './components/Services'
-import Testimonials from './components/Testimonials'
-import Process from './components/Process'
-import SystemBehind from './components/SystemBehind'
-import FAQ from './components/FAQ'
-import Contact from './components/Contact'
 import ContactModal from './components/ContactModal'
-import Footer from './components/Footer'
-import FloatingCTA from './components/FloatingCTA'
 import CookieBanner from './components/CookieBanner'
+import LogoIntro from './components/LogoIntro'
+import Home from './pages/Home'
 
-const AdminPage    = lazy(() => import('./pages/AdminPage'))
-const PrivacyPage  = lazy(() => import('./pages/PrivacyPolicy'))
-const TermsPage    = lazy(() => import('./pages/Terms'))
-const NotFoundPage = lazy(() => import('./pages/NotFound'))
+const AdminPage         = lazy(() => import('./pages/AdminPage'))
+const PrivacyPage       = lazy(() => import('./pages/PrivacyPolicy'))
+const TermsPage         = lazy(() => import('./pages/Terms'))
+const NotFoundPage      = lazy(() => import('./pages/NotFound'))
+const OverstoryPreview  = lazy(() => import('./pages/OverstoryPreview'))
 
-function Reveal({ children }) {
-  const reduce = useReducedMotion()
-  return (
-    <motion.div
-      initial={reduce ? false : { opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-48px' }}
-      transition={{ duration: reduce ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {children}
-    </motion.div>
-  )
+function PublicLogoIntro() {
+  const { pathname } = useLocation()
+  if (pathname.startsWith('/admin')) return null
+  return <LogoIntro />
 }
 
 function LocaleLayout() {
@@ -65,29 +46,12 @@ function LocaleLayout() {
 }
 
 export function Site() {
-  const t = useT()
-
   return (
-    <div className="page">
-        <a href="#main-content" className="skip-link">{t('navbar.skipToMain')}</a>
-        <Navbar />
-        <FloatingCTA />
-        <main id="main-content">
-          <Hero />
-          <Reveal><Challenges /></Reveal>
-          <Reveal><LogoStrip /></Reveal>
-          <Reveal><Work /></Reveal>
-          <Reveal><Testimonials /></Reveal>
-          <Reveal><Process /></Reveal>
-          <Reveal><SystemBehind /></Reveal>
-          <Reveal><Services /></Reveal>
-          <Reveal><FAQ /></Reveal>
-          <Reveal><Contact /></Reveal>
-      </main>
-      <Footer />
+    <>
+      <Home />
       <CookieBanner />
       <ContactModal />
-    </div>
+    </>
   )
 }
 
@@ -98,6 +62,7 @@ export default function App() {
     <LanguageProvider>
     <BrowserRouter>
     <ContactModalProvider>
+      <PublicLogoIntro />
       <Routes>
         <Route element={<LocaleLayout />}>
           <Route index element={<Site />} />
@@ -107,6 +72,14 @@ export default function App() {
             <Route path="terms" element={<Suspense fallback={legalFallback}><TermsPage /></Suspense>} />
           </Route>
         </Route>
+        <Route
+          path="/preview/overstory"
+          element={
+            <Suspense fallback={<div className="legal-loading" aria-busy="true">Loading preview…</div>}>
+              <OverstoryPreview />
+            </Suspense>
+          }
+        />
         <Route
           path="/admin/*"
           element={
