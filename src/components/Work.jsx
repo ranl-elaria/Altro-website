@@ -21,6 +21,7 @@ export default function Work() {
                 <div className={`work-card__art${c.art ? ` work-card__art--${c.art}` : ''}`}>
                   <img src={encodeURI(c.src)} alt="" width="160" height="80" loading="lazy" decoding="async" />
                 </div>
+                <span className="work-card__tag">{t('work.kind')}</span>
                 <p className="work-card__name" translate="no">{c.name}</p>
                 <span className="work-card__go">{t('work.visit')}</span>
               </a>

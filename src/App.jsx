@@ -28,10 +28,10 @@ function Reveal({ children }) {
   const reduce = useReducedMotion()
   return (
     <motion.div
-      initial={reduce ? false : { y: 12 }}
-      whileInView={{ y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      initial={reduce ? false : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-48px' }}
+      transition={{ duration: reduce ? 0 : 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
