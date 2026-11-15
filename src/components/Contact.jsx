@@ -79,11 +79,17 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         body: JSON.stringify({
           name: form.name,
           email: form.email,
-          message: form.phone.trim() ? `${form.message}\n\nPhone / WhatsApp: ${form.phone.trim()}` : form.message,
+          phone: form.phone.trim() || null,
+          message: form.message,
           attribution,
         }),
       })
-      const data = await res.json()
+      let data = {}
+      try {
+        data = await res.json()
+      } catch {
+        data = {}
+      }
       if (!res.ok) {
         setErrorMsg(data.error ?? t('contact.errorDefault'))
         setStatus('error')

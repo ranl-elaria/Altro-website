@@ -1,7 +1,6 @@
 import { useT } from '../i18n/LanguageContext'
 import { useContactModal } from '../context/ContactModalContext'
 import CtaButton from './CtaButton'
-import Team from './Team'
 
 const WA_URL = 'https://wa.me/972546894192'
 
@@ -18,7 +17,7 @@ export default function Hero() {
   const { openModal } = useContactModal()
 
   return (
-    <section id="home" className="hero2">
+    <section id="home" className="hero2 hero2--copy">
       <div className="hero2__inner">
         <div className="hero2__copy">
           <h1 className="hero2__title">
@@ -34,7 +33,6 @@ export default function Hero() {
             </a>
           </div>
         </div>
-        <Team />
       </div>
     </section>
   )

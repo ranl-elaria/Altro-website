@@ -4,7 +4,7 @@ import LangSwitcher from '../components/LangSwitcher'
 import { useContactModal } from '../context/ContactModalContext'
 import { useLanguage, useT } from '../i18n/LanguageContext'
 import { CLIENTS } from '../lib/clients'
-import { CUPOLA } from '../lib/skies'
+import { STEEL } from '../lib/skies'
 
 const WORK_TINTS = [
   ['#cfe8e6', '#3ecdc8'],
@@ -13,24 +13,22 @@ const WORK_TINTS = [
   ['#e6d9e4', '#b48aa8'],
 ]
 
-const MOCKS = ['dashboard', 'mobile', 'chat', 'doc']
-
 const QUOTES = [
   {
-    quote: 'Excellent experience working with the Altro team. Professional, responsive, and solution-oriented. They delivered high-quality work on our app and were a pleasure to work with.',
     name: 'Ximus',
+    quote: 'Excellent experience working with the Altro team. Professional, responsive, and solution-oriented. They delivered high-quality work on our app and were a pleasure to work with.',
   },
   {
-    quote: 'I highly recommend the Altro team. They were instrumental in the programming of my app, delivering high-quality, efficient work and excellent problem-solving throughout the process.',
     name: 'Cliptov',
+    quote: 'I highly recommend the Altro team. They were instrumental in the programming of my app, delivering high-quality, efficient work and excellent problem-solving throughout the process.',
   },
   {
-    quote: 'I recommend the Altro team wholeheartedly. Throughout the entire development process they were available, professional, and patient — always helping us find solutions to every challenge. The service was top-tier, the personal attention was clear, and it was obvious we had someone we could rely on. Thank you for all the help — highly recommended.',
     name: 'QRfeedback',
+    quote: 'I recommend the Altro team wholeheartedly. Throughout the entire development process they were available, professional, and patient — always helping us find solutions to every challenge. The service was top-tier, the personal attention was clear, and it was obvious we had someone we could rely on. Thank you for all the help — highly recommended.',
   },
   {
-    quote: 'The team was highly professional and knew how to identify what we needed before we even knew ourselves. When our requirements shifted, they responded immediately and shipped changes at lightning speed. Very satisfied — highly recommend.',
     name: 'Pocket Garden',
+    quote: 'The team was highly professional and knew how to identify what we needed before we even knew ourselves. When our requirements shifted, they responded immediately and shipped changes at lightning speed. Very satisfied — highly recommend.',
   },
 ]
 
@@ -53,7 +51,7 @@ export default function Home() {
       email="altroaiteam@gmail.com"
       season="summer"
       seed={11}
-      photo={CUPOLA.photo}
+      photo={STEEL.photo}
       photoUpright
       theme="light"
       themeToggle={false}
@@ -62,6 +60,8 @@ export default function Home() {
       soft="#c9e8e6"
       navEnd={<LangSwitcher />}
       skipLabel={t('navbar.skipToMain')}
+      whatsapp="https://wa.me/972546894192"
+      whatsappLabel={t('hero.wa')}
       quotesKicker={t('ovs.quotesKicker')}
       labels={{
         copied: t('ovs.copied'),
@@ -130,21 +130,34 @@ export default function Home() {
         kicker: t('navbar.work'),
         title: t('ovs.workTitle'),
         next: t('ovs.workNext'),
-        items: CLIENTS.map((c, i) => ({
-          client: c.name,
-          kind: t('work.kind'),
-          title: c.name,
-          metric: t('ovs.workMetric'),
-          metricLabel: t('ovs.workMetricLabel'),
-          year: '',
-          mock: MOCKS[i % MOCKS.length],
-          tint: WORK_TINTS[i % WORK_TINTS.length],
-          href: c.href,
-        })),
+        items: CLIENTS.map((c, i) => {
+          let host = ''
+          try {
+            host = new URL(c.href).hostname.replace(/^www\./, '')
+          } catch {
+            host = ''
+          }
+          return {
+            client: c.name,
+            kind: t('work.kind'),
+            title: c.name,
+            metric: t('ovs.workMetric'),
+            metricLabel: t('ovs.workMetricLabel'),
+            year: '',
+            image: c.shot,
+            logo: c.mark || c.src,
+            logoDark: !!c.dark,
+            shotPos: c.shotPos,
+            host,
+            tint: WORK_TINTS[i % WORK_TINTS.length],
+            href: c.href,
+          }
+        }),
       }}
       process={{
-        kicker: t('process.heading'),
-        title: String(t('process.sub')).split('\n')[0],
+        kicker: t('navbar.process'),
+        title: t('process.heading'),
+        text: t('process.sub'),
         steps: [1, 2, 3, 4].map((n) => ({
           name: t(`process.0${n}.title`),
           when: t(`process.0${n}.duration`),
@@ -155,7 +168,7 @@ export default function Home() {
       quotes={QUOTES.map((q) => ({
         quote: q.quote,
         name: q.name,
-        role: t('work.kind'),
+        role: '',
       }))}
       pricing={null}
       faq={{
@@ -202,7 +215,6 @@ export default function Home() {
             links: [
               { label: t('footer.privacy'), href: privacy },
               { label: t('footer.terms'), href: terms },
-              { label: t('hero.wa'), href: 'https://wa.me/972546894192' },
             ],
           },
         ],

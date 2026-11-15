@@ -56,7 +56,7 @@ export default function Services() {
           {items.map((it, i) => (
             <li key={it.n}>
               <FadeIn delay={0.08 * i} duration={0.8} y={40}>
-                <article className="svc2-card">
+                <article className={`svc2-card${i === 1 ? ' svc2-card--featured' : ''}`}>
                   <div className="svc2-card__art">{it.art}</div>
                   <span className="svc2-card__num" aria-hidden="true">{it.n}</span>
                   <h3 className="svc2-card__title">{it.title}</h3>

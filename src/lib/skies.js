@@ -8,6 +8,7 @@ export const SKIES = [
 ]
 
 export const GLASSHOUSE = SKIES.find((s) => s.id === 'glasshouse')
+export const STEEL = SKIES.find((s) => s.id === 'steel')
 export const CUPOLA = SKIES.find((s) => s.id === 'cupola')
 
 export function pickSky() {

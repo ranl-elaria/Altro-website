@@ -12,6 +12,9 @@ export default function SystemBehind() {
         <h2 id="system-heading" className="system__heading">{t('system.heading')}</h2>
         <p className="system__sub">{t('system.sub')}</p>
         <p className="system__note">{t('system.example')}</p>
+        <div className="system__chrome" aria-hidden="true">
+          <span /><span /><span />
+        </div>
         <div className="system__tabs" role="tablist" aria-label={t('system.heading')}>
           {tabs.map((id) => (
             <button

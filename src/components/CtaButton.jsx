@@ -5,8 +5,9 @@ export default function CtaButton({
   className = '',
   href,
   disabled = false,
+  variant = 'fill',
 }) {
-  const cls = `cta${className ? ` ${className}` : ''}`
+  const cls = `cta${variant === 'outline' ? ' cta--outline' : ''}${className ? ` ${className}` : ''}`
   const inner = (
     <>
       <span className="cta__fill" aria-hidden="true" />

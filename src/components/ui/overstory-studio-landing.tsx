@@ -54,6 +54,17 @@ export type OvsCase = {
   metricLabel: string
   year: string
   mock?: OvsMock
+  /** Real project screenshot. Never a stand-in UI. */
+  image?: string
+  /** Small client mark in the card meta. */
+  logo?: string
+  logoDark?: boolean
+  /** Hostname shown in the browser chrome. */
+  host?: string
+  /** object-position for the screenshot crop */
+  shotPos?: string
+  /** Shown on the card when a real screenshot is not on file. */
+  pendingShot?: string
   /** Two colours for the card's backdrop. */
   tint?: [string, string]
   href?: string
@@ -109,7 +120,7 @@ export interface OverstoryStudioLandingProps {
   stats?: OvsStat[] | null
   services?: { kicker?: string; title?: string; text?: string; items?: OvsService[] } | null
   work?: { kicker?: string; title?: string; items?: OvsCase[]; next?: string } | null
-  process?: { kicker?: string; title?: string; steps?: OvsStep[] } | null
+  process?: { kicker?: string; title?: string; text?: string; steps?: OvsStep[] } | null
   quotes?: OvsQuote[] | null
   pricing?: { kicker?: string; title?: string; text?: string; plans?: OvsPlan[]; quarterlyNote?: string } | null
   faq?: { kicker?: string; title?: string; text?: string; items?: OvsFaq[] } | null
@@ -144,6 +155,9 @@ export interface OverstoryStudioLandingProps {
   themeToggle?: boolean
   /** Called by every "book a call" button. Without it they scroll to the contact section. */
   onBook?: (from: string) => void
+  /** Extra WhatsApp link. Does not replace existing book-a-call destinations. */
+  whatsapp?: string
+  whatsappLabel?: string
   /** Called with a valid email from the newsletter. Return (or resolve) `false`, or throw, to show an error. */
   onSubscribe?: (email: string) => unknown
   /** Height of the hero and finale stages. A definite length, so it survives any host layout. */
@@ -1127,7 +1141,7 @@ function Split({ text, className, as = "h2" }: { text: string; className?: strin
 function Kicker({ n, text }: { n: string; text: string }) {
   return (
     <p className="ovs-kicker" data-rv>
-      <span className="ovs-kicker-n">( {n} )</span>
+      <span className="ovs-kicker-n" dir="ltr">({n})</span>
       <span>{text}</span>
     </p>
   )
@@ -1330,6 +1344,40 @@ function CaseMock({ mock, name }: { mock?: OvsMock; name: string }) {
   )
 }
 
+function caseHost(host?: string, href?: string) {
+  if (host) return host
+  if (!href || href.startsWith("#")) return ""
+  try {
+    return new URL(href).hostname.replace(/^www\./, "")
+  } catch {
+    return ""
+  }
+}
+
+function CaseShot({ image, logo, logoDark, host, href, shotPos }: Pick<OvsCase, "image" | "logo" | "logoDark" | "host" | "href" | "shotPos">) {
+  const bar = caseHost(host, href)
+  return (
+    <div className={"ovs-mock ovs-mock-shot" + (image ? "" : " ovs-mock-mark")} data-mock style={shotPos ? ({ "--shot-pos": shotPos } as React.CSSProperties) : undefined}>
+      <div className="ovs-mk-bar" dir="ltr">
+        <i />
+        <i />
+        <i />
+        {bar ? <span>{bar}</span> : null}
+      </div>
+      <div className="ovs-mock-viewport">
+        {image ? (
+          <img src={encodeURI(image)} alt="" />
+        ) : logo ? (
+          <div className="ovs-mock-fallback">
+            <img src={encodeURI(logo)} alt="" className={logoDark ? "ovs-mock-logo-dark" : undefined} />
+            {bar ? <span dir="ltr">{bar}</span> : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 /* -------------------------------------------------------------- the tree */
 
 function GrowingTree({ seed, space }: { seed: number; space?: boolean }) {
@@ -1479,6 +1527,8 @@ export default function OverstoryStudioLanding({
   theme = "auto",
   themeToggle = true,
   onBook,
+  whatsapp,
+  whatsappLabel,
   onSubscribe,
   height = "100svh",
   className = "",
@@ -1492,8 +1542,10 @@ export default function OverstoryStudioLanding({
   const uid = "ovs" + React.useId().replace(/[^a-zA-Z0-9]/g, "")
   const root = React.useRef(null as HTMLDivElement | null)
   const space = className.includes("ovs-space")
+  const altro = className.includes("ovs-altro")
   const H = { ...DEFAULT_HERO, ...hero }
-  const words = H.words && H.words.length ? H.words : DEFAULT_HERO.words
+  const words = Array.isArray(H.words) ? H.words : DEFAULT_HERO.words
+  const hasMorph = words.length > 1
   const svc = services === null ? null : {
     kicker: services?.kicker || "What we grow",
     title: services?.title || "One team for the brand, the product and the code behind it.",
@@ -1506,7 +1558,7 @@ export default function OverstoryStudioLanding({
     next: work?.next || "Your product, next",
     items: work?.items || (DEFAULT_CASES as OvsCase[]),
   }
-  const pr = process === null ? null : { kicker: process?.kicker || "How we work", title: process?.title || "From seed to canopy in eight weeks.", steps: process?.steps || DEFAULT_STEPS }
+  const pr = process === null ? null : { kicker: process?.kicker || "How we work", title: process?.title || "From seed to canopy in eight weeks.", text: process?.text || "", steps: process?.steps || DEFAULT_STEPS }
   const pc = pricing === null ? null : {
     kicker: pricing?.kicker || "Engagements",
     title: pricing?.title || "Simple pricing. No surprises at the end of the month.",
@@ -1947,13 +1999,13 @@ export default function OverstoryStudioLanding({
 
   // quotes: words rise on every change
   useIso(() => {
-    if (still || !root.current) return
+    if (still || altro || !root.current) return
     const ws = root.current.querySelectorAll("[data-quote] [data-qw]")
     const t = gsap.fromTo(ws, { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1, stagger: 0.02, ease: "expo.out" })
     return () => {
       t.kill()
     }
-  }, [quote, still])
+  }, [quote, still, altro])
 
   const copyEmail = () => {
     const done = () => {
@@ -2088,16 +2140,33 @@ export default function OverstoryStudioLanding({
                 <span className="ovs-line">
                   <span>{H.lead}</span>
                 </span>
-                <span className="ovs-line">
-                  <span>
-                    <span className="ovs-sr">{words[0]} </span>
-                    <span aria-hidden="true">
-                      <WordMorph words={words} still={still} />
-                    </span>{" "}
-                    {H.tail}
+                {hasMorph || H.tail ? (
+                  <span className="ovs-line">
+                    <span>
+                      {hasMorph ? (
+                        <>
+                          <span className="ovs-sr">{words[0]} </span>
+                          <span aria-hidden="true">
+                            <WordMorph words={words} still={still} />
+                          </span>{" "}
+                        </>
+                      ) : null}
+                      {H.tail}
+                    </span>
                   </span>
-                </span>
+                ) : null}
               </h1>
+              <div className="ovs-hero-actions">
+                <a className="ovs-btn ovs-btn-dark" href="#contact" onClick={book("hero")}>
+                  <span>{bookLabel}</span>
+                  <Arrow />
+                </a>
+                {whatsapp ? (
+                  <a className="ovs-btn ovs-btn-glass" href={whatsapp} target="_blank" rel="noopener noreferrer">
+                    {whatsappLabel || "WhatsApp"}
+                  </a>
+                ) : null}
+              </div>
               {logos && logos.length ? (
                 <>
                   <p className="ovs-trusted">{H.trusted}</p>
@@ -2266,7 +2335,7 @@ export default function OverstoryStudioLanding({
                   </span>
                 </div>
                 <div className="ovs-work-meter" aria-hidden="true">
-                  <span className="ovs-work-count">
+                  <span className="ovs-work-count" dir="ltr">
                     {String(caseIdx + 1).padStart(2, "0")} / {String(wk.items.length + 1).padStart(2, "0")}
                   </span>
                   <span className="ovs-work-track">
@@ -2277,20 +2346,35 @@ export default function OverstoryStudioLanding({
               <div className="ovs-track" data-track>
                 {wk.items.map((c, i) => (
                   <article key={c.client + i} className="ovs-card" data-card style={{ "--t1": (c.tint || ["#dfe8d6", "#9fbf7a"])[0], "--t2": (c.tint || ["#dfe8d6", "#9fbf7a"])[1] } as React.CSSProperties}>
-                    <a href={c.href || "#contact"} onClick={c.href ? undefined : go("#contact")} className="ovs-card-link" aria-label={c.client + ": " + c.title}>
+                    <a
+                      href={c.href || "#contact"}
+                      target={c.href?.startsWith("http") ? "_blank" : undefined}
+                      rel={c.href?.startsWith("http") ? "noopener noreferrer" : undefined}
+                      onClick={c.href ? undefined : go("#contact")}
+                      className="ovs-card-link"
+                      aria-label={c.client + ": " + c.title}
+                    >
                       <div className="ovs-card-art">
                         <span className="ovs-card-sun" />
-                        <CaseMock mock={c.mock} name={c.client} />
+                        {c.image || c.logo ? (
+                          <CaseShot image={c.image} logo={c.logo} logoDark={c.logoDark} host={c.host} href={c.href} shotPos={c.shotPos} />
+                        ) : (
+                          <CaseMock mock={c.mock} name={c.client} />
+                        )}
                       </div>
                       <div className="ovs-card-meta">
                         <p className="ovs-card-client">
-                          {c.mark ? <Mark kind={c.mark} uid={uid + "c" + i} /> : null}
+                          {c.logo ? (
+                            <img className={"ovs-card-mark" + (c.logoDark ? " ovs-card-mark-dark" : "")} src={encodeURI(c.logo)} alt="" />
+                          ) : c.mark ? (
+                            <Mark kind={c.mark} uid={uid + "c" + i} />
+                          ) : null}
                           {c.client}
                           <span>
-                            {c.kind} · {c.year}
+                            {c.year ? c.kind + " · " + c.year : c.kind}
                           </span>
                         </p>
-                        <h3 className="ovs-card-title">{c.title}</h3>
+                        {c.title && c.title !== c.client ? <h3 className="ovs-card-title">{c.title}</h3> : null}
                         <p className="ovs-card-metric">
                           <b>{c.metric}</b>
                           <span>{c.metricLabel}</span>
@@ -2321,26 +2405,45 @@ export default function OverstoryStudioLanding({
               <span id={uid + "pr"}>
                 <Split text={pr.title} className="ovs-h2 ovs-h2-wide" />
               </span>
+              {pr.text ? <p className="ovs-proc-note">{pr.text}</p> : null}
               <div className="ovs-proc-grid">
                 <div className="ovs-tree-col">
                   <div className="ovs-tree-stick">
                     <GrowingTree seed={seed} space={space} />
                   </div>
                 </div>
-                <ol className="ovs-steps">
+                <ol className={"ovs-steps" + (altro ? " ovs-steps-stations" : "")}>
                   {pr.steps.map((s, i) => (
                     <li key={s.name} className="ovs-step">
-                      <p className="ovs-step-k">
-                        <span>0{i + 1}</span>
-                        <b>{s.name}</b>
-                        <em>{s.when}</em>
-                      </p>
-                      <h3>{s.title}</h3>
-                      <p>{s.text}</p>
+                      {altro ? (
+                        <>
+                          <span className="ovs-step-n" dir="ltr">0{i + 1}</span>
+                          <em className="ovs-step-when" dir={/^\u200E?\d/.test(s.when) ? "ltr" : undefined}>{s.when}</em>
+                          <h3>{s.name}</h3>
+                          <p>{s.text}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="ovs-step-k">
+                            <span dir="ltr">0{i + 1}</span>
+                            <b>{s.name}</b>
+                            <em dir={/^\u200E?\d/.test(s.when) ? "ltr" : undefined}>{s.when}</em>
+                          </p>
+                          {s.title && s.title !== s.name ? <h3>{s.title}</h3> : null}
+                          <p>{s.text}</p>
+                        </>
+                      )}
                     </li>
                   ))}
                 </ol>
               </div>
+              {altro ? (
+                <div className="ovs-proc-cta">
+                  <a href="#contact" className="ovs-btn ovs-btn-dark" onClick={book("process")}>
+                    {bookLabel} <Arrow />
+                  </a>
+                </div>
+              ) : null}
             </div>
           </section>
         ) : null}
@@ -2348,7 +2451,7 @@ export default function OverstoryStudioLanding({
         {/* --------------------------------------------------------- quotes */}
         {curQuote ? (
           <section className="ovs-shade" data-sec="quotes" aria-label={labels.quotes || quotesKicker || "What founders say"} onPointerEnter={() => setQuotePaused(true)} onPointerLeave={() => setQuotePaused(false)} onFocus={() => setQuotePaused(true)} onBlur={() => setQuotePaused(false)}>
-            {usePhoto ? <div className="ovs-shade-photo" aria-hidden="true" style={{ backgroundImage: "url(" + photo + ")" }} /> : null}
+            {usePhoto && !className.includes("ovs-altro") ? <div className="ovs-shade-photo" aria-hidden="true" style={{ backgroundImage: "url(" + photo + ")" }} /> : null}
             <div className="ovs-dapple" aria-hidden="true">
               <i />
               <i />
@@ -2357,19 +2460,21 @@ export default function OverstoryStudioLanding({
             </div>
             <div className="ovs-wrap ovs-quote-wrap">
               <p className="ovs-kicker ovs-kicker-light" data-rv>
-                <span className="ovs-kicker-n">( ✦ )</span>
+                <span className="ovs-kicker-n" dir="ltr">(✦)</span>
                 <span>{quotesKicker || "In the shade, with founders"}</span>
               </p>
               <figure className="ovs-quote" data-quote aria-live="polite">
-                <blockquote lang="en" dir="ltr">
+                <blockquote lang={/[\u0590-\u05FF]/.test(curQuote.quote) ? "he" : "en"} dir={/[\u0590-\u05FF]/.test(curQuote.quote) ? "rtl" : "ltr"}>
                   <p>
-                    {curQuote.quote.split(" ").map((w, i) => (
-                      <React.Fragment key={quote + "-" + i}>
-                        <span className="ovs-w">
-                          <span data-qw>{w}</span>
-                        </span>{" "}
-                      </React.Fragment>
-                    ))}
+                    {altro
+                      ? curQuote.quote
+                      : curQuote.quote.split(" ").map((w, i) => (
+                          <React.Fragment key={quote + "-" + i}>
+                            <span className="ovs-w">
+                              <span data-qw>{w}</span>
+                            </span>{" "}
+                          </React.Fragment>
+                        ))}
                   </p>
                 </blockquote>
                 <figcaption>
@@ -2386,7 +2491,7 @@ export default function OverstoryStudioLanding({
                 </figcaption>
               </figure>
               {qs.length > 1 ? (
-                <div className="ovs-quote-nav">
+                <div className="ovs-quote-nav" dir="ltr">
                   <button type="button" className="ovs-round" aria-label={labels.prevQuote || "Previous quote"} onClick={() => setQuote((v) => (v - 1 + qs.length) % qs.length)}>
                     <svg className="ovs-svg" viewBox="0 0 16 16" aria-hidden="true">
                       <path d="M13 8H3m4-4L3 8l4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -2528,7 +2633,13 @@ export default function OverstoryStudioLanding({
           <section className="ovs-fin" data-fin data-sec="contact" aria-labelledby={uid + "cta"}>
             <div className="ovs-fin-stage">
               <div className="ovs-window">
-                {usePhoto ? <PhotoCanopy src={photo as string} season={season} scheme={scheme} turn upright={photoUpright} /> : <Canopy seed={seed + 31} scheme={scheme} palette={pal} lazy />}
+                {className.includes("ovs-altro") ? (
+                  <div className="ovs-fin-night" aria-hidden="true" />
+                ) : usePhoto ? (
+                  <PhotoCanopy src={photo as string} season={season} scheme={scheme} turn upright={photoUpright} />
+                ) : (
+                  <Canopy seed={seed + 31} scheme={scheme} palette={pal} lazy />
+                )}
                 <div className="ovs-fin-copy">
                   <h2 id={uid + "cta"} className="ovs-fin-h">
                     {cta.title || DEFAULT_CTA.title}
@@ -2539,6 +2650,11 @@ export default function OverstoryStudioLanding({
                       <span>{cta.button || DEFAULT_CTA.button}</span>
                       <Arrow />
                     </Magnet>
+                    {whatsapp ? (
+                      <a className="ovs-btn ovs-btn-glass ovs-btn-xl" href={whatsapp} target="_blank" rel="noopener noreferrer">
+                        {whatsappLabel || "WhatsApp"}
+                      </a>
+                    ) : null}
                     <button type="button" className="ovs-btn ovs-btn-glass ovs-btn-xl" onClick={copyEmail}>
                       <span aria-live="polite">{copied ? copiedLabel : email}</span>
                       <svg className="ovs-svg ovs-arrow" viewBox="0 0 16 16" aria-hidden="true">
@@ -2609,6 +2725,11 @@ export default function OverstoryStudioLanding({
                     <li>
                       <a href={"mailto:" + email}>{email}</a>
                     </li>
+                    {whatsapp ? (
+                      <li>
+                        <a href={whatsapp} target="_blank" rel="noopener noreferrer">{whatsappLabel || "WhatsApp"}</a>
+                      </li>
+                    ) : null}
                   </ul>
                 </div>
               </div>
@@ -2620,7 +2741,7 @@ export default function OverstoryStudioLanding({
             ))}
           </div>
           <div className="ovs-wrap ovs-foot-bottom">
-            <span>
+            <span dir="ltr">
               © {new Date().getFullYear()} {brand}{ft.copySuffix !== undefined ? ft.copySuffix : " Studio"}
             </span>
             <span>{ft.note}</span>
@@ -2872,6 +2993,9 @@ const OVS_CSS = `
 .ovs-work[data-h] .ovs-card{width:min(64vw,760px);height:min(calc(var(--ovs-h) - 370px),540px);min-height:360px}
 .ovs-card-link{display:flex;flex-direction:column;flex:1;min-height:0}
 .ovs-card-art{position:relative;flex:1;min-height:260px;overflow:hidden;background:radial-gradient(120% 90% at 80% 10%,var(--t1),var(--t2));display:flex;align-items:center;justify-content:center;padding:28px}
+.ovs-card-shot{position:relative;width:min(100%,280px);min-height:180px;display:grid;place-items:center}
+.ovs-card-shot img{max-width:72%;max-height:140px;object-fit:contain;filter:drop-shadow(0 12px 28px rgba(0,0,0,.28))}
+.ovs-card-pending{position:absolute;bottom:0;inset-inline:0;text-align:center;font-size:12px;font-weight:600;letter-spacing:-.01em;padding:7px 10px;border-radius:999px;background:rgba(7,11,20,.78);color:#e8eef8}
 .ovs-root[data-scheme="dark"] .ovs-card-art{background:radial-gradient(120% 90% at 80% 10%,color-mix(in oklab,var(--t2) 60%,#000),color-mix(in oklab,var(--t2) 22%,#000))}
 .ovs-card-sun{position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(rgba(255,255,255,.75),transparent 70%);transition:transform 1.2s cubic-bezier(.2,.8,.2,1)}
 .ovs-card:hover .ovs-card-sun{transform:translate(-40px,30px) scale(1.3)}
@@ -2957,8 +3081,8 @@ const OVS_CSS = `
 .ovs-dapple i:nth-child(4){width:200px;height:200px;right:30%;top:-40px;animation-duration:12s;opacity:.3}
 @keyframes ovs-dap{0%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,40px) scale(1.15)}100%{transform:translate(-40px,70px) scale(.9)}}
 .ovs-quote-wrap{position:relative;z-index:2}
-.ovs-quote blockquote{unicode-bidi:isolate;text-align:left}
-.ovs-quote blockquote p{font-size:clamp(28px,3.9vw,58px);line-height:1.12;letter-spacing:-.04em;font-weight:500;max-width:20em;min-height:3.4em}
+.ovs-quote blockquote{unicode-bidi:isolate;text-align:start;max-width:100%}
+.ovs-quote blockquote p{font-size:clamp(22px,3.4vw,58px);line-height:1.2;letter-spacing:-.04em;font-weight:500;max-width:min(20em,100%);min-height:0;overflow-wrap:anywhere;word-break:break-word}
 .ovs-quote figcaption{display:flex;align-items:center;gap:16px;margin-top:clamp(34px,4vw,52px);font-size:15px}
 .ovs-quote figcaption>span:nth-child(2){display:flex;flex-direction:column}
 .ovs-quote figcaption b{font-weight:600}
@@ -3057,14 +3181,55 @@ const OVS_CSS = `
 /* responsive */
 @media (max-width:1020px){.ovs-links{display:none}.ovs-burger{display:flex}.ovs-nav-in{justify-content:space-between}.ovs-plans{grid-template-columns:1fr;max-width:520px}.ovs-stats{grid-template-columns:repeat(2,1fr);row-gap:40px}.ovs-foot-top{grid-template-columns:1fr}.ovs-svc-time{display:none}.ovs-svc-h button{grid-template-columns:44px 1fr 40px}.ovs-svc-body{grid-template-columns:44px 1fr}}
 @media (max-width:820px){.ovs-proc-grid{grid-template-columns:1fr}.ovs-tree-col{display:none}.ovs-step{opacity:1;min-height:0}.ovs-faq-grid{grid-template-columns:1fr}.ovs-foot-cols{grid-template-columns:repeat(2,1fr);row-gap:36px}.ovs-card-meta{grid-template-columns:1fr}.ovs-card-metric{text-align:start;align-items:flex-start}.ovs-svc-prev{display:none}}
-@media (max-width:560px){.ovs-root[data-photo] .ovs-copy::before{left:-4%;right:-4%;top:-14%;bottom:-14%}.ovs-nav-cta{display:none}.ovs-root.ovs-altro .ovs-logos,.ovs-root.ovs-altro .ovs-trusted{display:none}.ovs-h1{font-size:clamp(28px,7.6vw,40px);text-wrap:balance}.ovs-wordmark{font-size:clamp(40px,15vw,80px);letter-spacing:-.06em}.ovs-quote figcaption{flex-wrap:wrap}.ovs-mock-phone{width:190px}.ovs-mk-kpis b{font-size:14px}.ovs-acc-item p{padding-inline-end:0}.ovs-portrait{max-width:none}.ovs-portrait-note{font-size:12px}.ovs-status{font-size:12px;padding:6px 12px 6px 10px;margin-bottom:16px}.ovs-sheet{padding:100px 22px 32px;overflow:auto}}
+@media (max-width:560px){.ovs-root[data-photo] .ovs-copy::before{left:-8%;right:-8%;top:-18%;bottom:-18%}.ovs-nav-cta{display:none}.ovs-root.ovs-altro .ovs-logos,.ovs-root.ovs-altro .ovs-trusted{display:none}.ovs-h1{font-size:clamp(26px,7.2vw,38px);text-wrap:balance}.ovs-wordmark{font-size:clamp(40px,15vw,80px);letter-spacing:-.06em}.ovs-quote figcaption{flex-wrap:wrap}.ovs-quote blockquote p{font-size:clamp(20px,6.4vw,28px)}.ovs-w{overflow:visible}.ovs-mock-phone{width:190px}.ovs-mk-kpis b{font-size:14px}.ovs-acc-item p{padding-inline-end:0}.ovs-portrait{max-width:none}.ovs-portrait-note{font-size:12px}.ovs-status{font-size:12px;padding:6px 12px 6px 10px;margin-bottom:16px}.ovs-sheet{padding:100px 22px 32px;overflow:auto}.ovs-hero-actions{margin-top:18px}.ovs-cue{display:none}.ovs-process{padding-top:48px;padding-bottom:36px}.ovs-step{padding:14px 0}.ovs-foot-bottom{padding-inline:4px}}
 @media (prefers-reduced-motion:reduce){.ovs-sway,.ovs-sway-p,.ovs-status i,.ovs-clock i,.ovs-dapple i,.ovs-plan-ring,.ovs-cue-line::after,.ovs-sheet a{animation:none}.ovs-dots i{animation:none;transform:scaleX(1)}.ovs-fold,.ovs-svc-art,.ovs-svc-row::after,.ovs-svc-t,.ovs-seg-pill,.ovs-nav,.ovs-mock,.ovs-card-sun{transition:none}}
+.ovs-hero-actions{display:none;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px;position:relative;z-index:3}
+@media (max-width:1020px){.ovs-hero-actions{display:flex}}
+.ovs-fin-night{position:absolute;inset:0;background:radial-gradient(80% 64% at 50% 42%,#163044,#070b14 72%)}
 .ovs-root.ovs-altro,.ovs-root:dir(rtl){--ovs-sans:"Noto Sans Hebrew",Inter,Heebo,sans-serif}
 .ovs-root.ovs-altro .ovs-h1,.ovs-root.ovs-altro .ovs-man,.ovs-root.ovs-altro .ovs-h2{font-weight:800}
 .ovs-root.ovs-altro .ovs-morph{color:#0a6e6a;font-weight:800}
+.ovs-root.ovs-he .ovs-morph{font-family:var(--ovs-sans);transform:none}
+.ovs-root.ovs-he .ovs-morph-word{transform:none;transform-origin:100% 50%}
+.ovs-root.ovs-altro .ovs-hero-actions{display:flex;justify-content:flex-start}
+.ovs-root.ovs-altro .ovs-card-art{padding:18px 18px 0;align-items:stretch;justify-content:flex-end}
+.ovs-root.ovs-altro .ovs-mock-shot{width:100%;max-width:none;height:100%;display:flex;flex-direction:column;border-radius:18px 18px 0 0}
+.ovs-root.ovs-altro .ovs-mock-viewport{flex:1;min-height:0;overflow:hidden;background:#070b14}
+.ovs-root.ovs-altro .ovs-mock-shot .ovs-mk-bar{background:#0c1422;border-bottom-color:rgba(255,255,255,.1)}
+.ovs-root.ovs-altro .ovs-mock-shot .ovs-mk-bar i:nth-child(1){background:#ff5f57}
+.ovs-root.ovs-altro .ovs-mock-shot .ovs-mk-bar i:nth-child(2){background:#febc2e}
+.ovs-root.ovs-altro .ovs-mock-shot .ovs-mk-bar i:nth-child(3){background:#28c840}
+.ovs-root.ovs-altro .ovs-mock-viewport img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--shot-pos, 0 0);max-width:none;max-height:none;filter:none}
+.ovs-root.ovs-altro .ovs-mock-mark .ovs-mock-viewport{display:grid;place-items:center;background:#f4f6f0}
+.ovs-root.ovs-altro .ovs-mock-fallback{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px}
+.ovs-root.ovs-altro .ovs-mock-mark .ovs-mock-viewport img{width:auto;height:auto;max-width:220px;max-height:56px;object-fit:contain}
+.ovs-root.ovs-altro .ovs-mock-fallback span{font-size:13px;color:var(--ovs-ink2)}
+.ovs-card-mark{height:20px;width:auto;max-width:52px;object-fit:contain;border-radius:4px}
+.ovs-card-mark-dark{background:#111;padding:3px 6px}
+.ovs-root.ovs-altro .ovs-card-client{grid-column:1;grid-row:1}
+.ovs-root.ovs-altro .ovs-card-metric{grid-column:2;grid-row:1;align-self:center}
+@media (max-width:820px){.ovs-root.ovs-altro .ovs-card-metric{grid-column:1;grid-row:auto}}
+.ovs-root.ovs-altro .ovs-process{padding:clamp(56px,8vw,110px) 0}
+.ovs-root.ovs-altro .ovs-proc-note{white-space:pre-line;margin-top:14px;max-width:28em;font-size:clamp(16px,1.5vw,20px);line-height:1.55;color:var(--ovs-ink2)}
+.ovs-root.ovs-altro .ovs-proc-grid{grid-template-columns:1fr;margin-top:clamp(28px,4vw,48px)}
+.ovs-root.ovs-altro .ovs-tree-col{display:none}
+.ovs-root.ovs-altro .ovs-steps-stations{display:grid;grid-template-columns:1fr;gap:32px 28px}
+@media (min-width:900px){.ovs-root.ovs-altro .ovs-steps-stations{grid-template-columns:repeat(4,1fr)}}
+.ovs-root.ovs-altro .ovs-steps-stations .ovs-step{opacity:1;min-height:0;padding:0;border:0;gap:8px;justify-content:flex-start}
+.ovs-root.ovs-altro .ovs-step-n{font-size:clamp(2.1rem,4.2vw,3.25rem);font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--ovs-ink)}
+.ovs-root.ovs-altro .ovs-step-when{font-style:normal;font-size:13px;color:var(--ovs-accent)}
+.ovs-root.ovs-altro .ovs-steps-stations h3{font-size:clamp(1.15rem,1.5vw,1.4rem);font-weight:800;letter-spacing:-.03em;line-height:1.25;margin:0}
+.ovs-root.ovs-altro .ovs-steps-stations p{font-size:15px;line-height:1.65;max-width:none}
+.ovs-root.ovs-altro .ovs-proc-cta{margin-top:clamp(28px,4vw,44px)}
+.ovs-root.ovs-altro .ovs-shade{padding:clamp(48px,7vw,96px) 0}
+.ovs-root.ovs-altro .ovs-quote blockquote p{font-size:clamp(18px,3.2vw,34px);line-height:1.35;letter-spacing:-.02em;max-width:100%}
+.ovs-root.ovs-altro .ovs-fin{height:auto}
+.ovs-root.ovs-altro .ovs-fin-stage{position:relative;min-height:min(56svh,520px)}
+.ovs-root.ovs-altro .ovs-quote .ovs-w{overflow:visible}
 .ovs-root.ovs-space{--ovs-ink:#e8eef8;--ovs-ink2:#9aabc0;--ovs-paper:#070b14;--ovs-card:#121a28;--ovs-mist:#0c1422;--ovs-line:rgba(232,238,246,.14);--ovs-bark:#8aa0bc;--ovs-leaf2:#3ecdc8;--ovs-forest:#05080f}
 .ovs-root.ovs-altro.ovs-space .ovs-h1{color:#10150d;text-shadow:0 1px 0 rgba(255,255,255,.92),0 0 18px rgba(255,255,255,.78),0 2px 28px rgba(255,255,255,.5)}
 .ovs-root.ovs-altro.ovs-space .ovs-morph{color:#10150d}
+@media (max-width:560px){.ovs-root.ovs-altro.ovs-space[data-photo] .ovs-copy::before{background:radial-gradient(closest-side,rgba(7,11,20,.78),rgba(7,11,20,.42) 58%,rgba(7,11,20,0));filter:blur(8px)}.ovs-root.ovs-altro.ovs-space .ovs-h1,.ovs-root.ovs-altro.ovs-space .ovs-morph{color:#f4f7fb;text-shadow:0 1px 12px rgba(0,0,0,.55)}.ovs-root.ovs-altro.ovs-space .ovs-status{background:rgba(7,11,20,.72);border-color:rgba(255,255,255,.18);color:#f4f7fb}}
 .ovs-root.ovs-altro.ovs-space .ovs-trusted,.ovs-root.ovs-altro.ovs-space .ovs-logo{text-shadow:0 1px 0 rgba(255,255,255,.85),0 0 14px rgba(255,255,255,.55);color:#10150d}
 .ovs-root.ovs-space .ovs-process{background:var(--ovs-paper)}
 .ovs-root.ovs-space .ovs-traj .ovs-svg,.ovs-root.ovs-space .ovs-traj{filter:drop-shadow(0 0 10px rgba(62,205,200,.25))}
@@ -3075,7 +3240,11 @@ const OVS_CSS = `
 .ovs-root.ovs-space .ovs-fin-copy{position:relative}
 .ovs-root.ovs-space .ovs-fin-copy::before{content:"";position:absolute;left:-12%;right:-12%;top:-28%;bottom:-24%;z-index:-1;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.58),rgba(255,255,255,.16) 55%,rgba(255,255,255,0));filter:blur(10px);pointer-events:none}
 .ovs-root.ovs-space .ovs-fin-h{color:#10150d;text-shadow:0 1px 0 rgba(255,255,255,.92),0 0 18px rgba(255,255,255,.75)}
+.ovs-root.ovs-altro .ovs-fin-copy::before{display:none}
+.ovs-root.ovs-altro .ovs-fin-h{color:#f4f7fb;text-shadow:0 1px 16px rgba(0,0,0,.45)}
+.ovs-root.ovs-altro .ovs-fin-copy{color:#e8eef8}
 .ovs-root.ovs-space .ovs-fin-copy>p{color:#10150d;text-shadow:0 1px 0 rgba(255,255,255,.8)}
+.ovs-root.ovs-altro .ovs-fin-copy>p{color:#d5deea;text-shadow:none}
 .ovs-root.ovs-space[data-solid] .ovs-nav-in{color:var(--ovs-ink);text-shadow:none}
 .ovs-root:dir(rtl) .ovs-morph,.ovs-root:dir(rtl) .ovs-above{font-family:var(--ovs-sans);font-weight:800}
 .ovs-root:dir(rtl) .ovs-line>span,.ovs-root:dir(rtl) .ovs-w>span{transform-origin:100% 100%}

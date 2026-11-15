@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useT } from '../i18n/LanguageContext'
+import { useRef, useState } from 'react'
+import { useT, useLanguage } from '../i18n/LanguageContext'
 
 const testimonials = [
   {
@@ -38,26 +38,60 @@ function Chevron({ dir }) {
 
 export default function Testimonials() {
   const t = useT()
+  const { lang } = useLanguage()
+  const rtl = lang === 'he'
   const [i, setI] = useState(0)
-  const item = testimonials[i]
+  const startX = useRef(null)
   const prev = () => setI((n) => (n - 1 + testimonials.length) % testimonials.length)
   const next = () => setI((n) => (n + 1) % testimonials.length)
+
+  const onTouchStart = (e) => {
+    startX.current = e.touches[0].clientX
+  }
+  const onTouchEnd = (e) => {
+    if (startX.current == null) return
+    const dx = e.changedTouches[0].clientX - startX.current
+    startX.current = null
+    if (Math.abs(dx) < 40) return
+    const swipeNext = rtl ? dx > 0 : dx < 0
+    if (swipeNext) next()
+    else prev()
+  }
 
   return (
     <section className="testimonials" id="testimonials">
       <div className="container">
         <h2 className="display-heading">{t('reviews.heading')}</h2>
 
-        <div className="reviews-carousel">
-          <blockquote className="reviews-carousel__quote" lang="en" dir="ltr">
-            <p>{item.quote}</p>
-            <p className="reviews-carousel__who">
-              {item.logo
-                ? <img src={encodeURI(item.logo)} alt="" className={item.darkTile ? 'reviews-carousel__logo reviews-carousel__logo--dark' : 'reviews-carousel__logo'} />
-                : <span className="reviews-carousel__initials">{item.initials}</span>}
-              <span translate="no">{item.company}</span>
-            </p>
-          </blockquote>
+        <div
+          className="reviews-carousel"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <div className="reviews-carousel__viewport">
+            <div
+              className="reviews-carousel__track"
+              style={{ transform: `translateX(${-i * 100}%)` }}
+            >
+              {testimonials.map((item) => (
+                <blockquote
+                  key={item.company}
+                  className="reviews-carousel__quote"
+                  lang="en"
+                  dir="ltr"
+                >
+                  <p className="reviews-carousel__pill">{item.company}</p>
+                  <p>{item.quote}</p>
+                  <p className="reviews-carousel__who">
+                    {item.logo
+                      ? <img src={encodeURI(item.logo)} alt="" className={item.darkTile ? 'reviews-carousel__logo reviews-carousel__logo--dark' : 'reviews-carousel__logo'} />
+                      : <span className="reviews-carousel__initials">{item.initials}</span>}
+                    <span translate="no">{item.company}</span>
+                  </p>
+                </blockquote>
+              ))}
+            </div>
+          </div>
           <div className="reviews-carousel__nav">
             <button type="button" onClick={prev} aria-label={t('reviews.prev')}>
               <Chevron dir="prev" />

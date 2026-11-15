@@ -6,7 +6,8 @@
     { "path": "/api/sync-xplace", "schedule": "0 8 * * *" },
     { "path": "/api/marketing/services/competitors-snapshot-all", "schedule": "0 6 * * 0" },
     { "path": "/api/finance/fx-refresh", "schedule": "0 5 * * *" },
-    { "path": "/api/finance/overdue-check", "schedule": "0 7 * * *" }
+    { "path": "/api/finance/overdue-check", "schedule": "0 7 * * *" },
+    { "path": "/api/crm-retry", "schedule": "0 4 * * *" }
   ],
   "redirects": [
     { "source": "/en", "destination": "/", "permanent": false },
@@ -32,9 +33,18 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.resend.com https://www.googleapis.com https://api.canva.com; frame-ancestors 'none'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://api.resend.com https://www.googleapis.com https://api.canva.com https://va.vercel-scripts.com https://vitals.vercel-analytics.com; frame-ancestors 'none'"
         }
       ]
+    },
+    {
+      "source": "/preview",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/he/preview",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     }
-  ]
+  ],
+  "functions": { "api/crm-retry.js": { "maxDuration": 60 } }
 }
