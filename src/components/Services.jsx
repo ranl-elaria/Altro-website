@@ -1,6 +1,7 @@
 import { useT } from '../i18n/LanguageContext'
 import { useContactModal } from '../context/ContactModalContext'
 import FadeIn from './FadeIn'
+import CtaButton from './CtaButton'
 
 /* Three small line illustrations. Decorative only. */
 const ART = {
@@ -55,7 +56,7 @@ export default function Services() {
           {items.map((it, i) => (
             <li key={it.n}>
               <FadeIn delay={0.08 * i} duration={0.8} y={40}>
-                <article className="svc2-card">
+                <article className={`svc2-card${i === 1 ? ' svc2-card--featured' : ''}`}>
                   <div className="svc2-card__art">{it.art}</div>
                   <span className="svc2-card__num" aria-hidden="true">{it.n}</span>
                   <h3 className="svc2-card__title">{it.title}</h3>
@@ -69,7 +70,7 @@ export default function Services() {
         <FadeIn delay={0.2} duration={0.8} y={30}>
           <div className="services2__cta">
             <p>{t('services.cta')}</p>
-            <button type="button" className="btn btn--amber" onClick={openModal}><span>{t('hero.cta')}</span></button>
+            <CtaButton onClick={openModal}>{t('hero.cta')}</CtaButton>
           </div>
         </FadeIn>
       </div>

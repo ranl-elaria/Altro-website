@@ -19,6 +19,8 @@ import { generateProposal } from '../../src/lib/sales/proposal.js'
 import { sendDealProposal, notifyNewLead } from '../../src/lib/sales/notify.js'
 import { createOrUpdateHubspotDeal, updateHubspotDealStage } from '../../src/lib/sales/hubspot-sync.js'
 import { logActivity } from '../../src/lib/cockpit/activity.js'
+import { deliverLead } from '../../src/lib/sales/crm-delivery.js'
+import { timingSafeEqual } from 'node:crypto'
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -63,6 +65,24 @@ export default async function handler(req, res) {
     if (updErr) return res.status(500).json({ error: updErr.message })
     const notify = await notifyNewLead(lead).catch(e => ({ ok: false, error: e?.message }))
     return res.status(200).json({ ok: true, notify })
+  }
+
+  // ── CRM-RETRY ─────────────────────────────────────
+  // Vercel cron (authed by CRON_SECRET Bearer, not the CMO token). Retries
+  // queued CRM deliveries from submissions. Moved here from a standalone
+  // api/crm-retry.js to stay under the Hobby 12-function cap.
+  if (action === 'crm-retry') {
+    if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' })
+    const expected = Buffer.from('Bearer ' + (process.env.CRON_SECRET || ''))
+    const actual = Buffer.from(req.headers.authorization || '')
+    if (!process.env.CRON_SECRET || actual.length !== expected.length || !timingSafeEqual(actual, expected)) return res.status(401).json({ error: 'unauthorized' })
+    if (!process.env.CRM_LEADS_URL || !process.env.CRM_LEADS_TOKEN) return res.status(503).json({ error: 'crm_not_configured' })
+    try {
+      const { data, error } = await supabase.from('submissions').select('*').eq('crm_status', 'pending').lte('crm_next_attempt_at', new Date().toISOString()).order('crm_next_attempt_at').limit(10)
+      if (error) throw error
+      for (const row of data) await deliverLead(supabase, row)
+      return res.status(200).json({ processed: data.length })
+    } catch { return res.status(503).json({ error: 'retry_unavailable' }) }
   }
 
   const user = await authCheck(req)

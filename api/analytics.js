@@ -17,6 +17,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 const CMO_EMAIL = 'ranl.woohoo@gmail.com'
 
 const cache = new Map()
+const trackHits = new Map()
 const TTL_MS = 5 * 60 * 1000
 
 async function authCheck(req) {
@@ -349,7 +350,47 @@ async function actionPlausible(req) {
 
 export default async function handler(req, res) {
   const action = req.query.action || 'plausible'
-  // Only Plausible is public (no auth). All new actions require CMO auth.
+  // Only Plausible and track are public (no auth). All new actions require CMO auth.
+
+  // ── TRACK (public, POST) ──────────────────────────
+  // Website pageview/event beacon, forwards to the CRM pageviews endpoint.
+  // Moved here from a standalone api/track.js to stay under the Hobby
+  // 12-function cap; /api/track is preserved via a vercel.json rewrite.
+  if (action === 'track') {
+    if (req.method !== 'POST') return res.status(405).end()
+    const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown'
+    const nowT = Date.now()
+    const entry = trackHits.get(ip)
+    if (!entry || nowT - entry.first > 60 * 60 * 1000) trackHits.set(ip, { count: 1, first: nowT })
+    else { entry.count++; if (entry.count > 120) return res.status(204).end() }
+    const leadsUrl = process.env.CRM_LEADS_URL
+    const leadsToken = process.env.CRM_LEADS_TOKEN
+    if (!leadsUrl || !leadsToken || leadsToken.length < 32) return res.status(204).end()
+    const body = req.body && typeof req.body === 'object' ? req.body : {}
+    try {
+      const endpoint = new URL(leadsUrl)
+      if (endpoint.protocol !== 'https:') throw Error('invalid_crm')
+      endpoint.pathname = endpoint.pathname.replace(/\/website-leads\/?$/, '/website-pageviews')
+      await fetch(endpoint.href, {
+        method: 'POST',
+        redirect: 'error',
+        headers: {
+          Authorization: 'Bearer ' + leadsToken,
+          'Content-Type': 'application/json',
+          'User-Agent': String(req.headers['user-agent'] || ''),
+        },
+        body: JSON.stringify({
+          event: body.event || 'pageview',
+          path: body.path || '/',
+          ref: body.ref || null,
+          sid: body.sid || '',
+        }),
+        signal: AbortSignal.timeout(4000),
+      })
+    } catch (_) {}
+    return res.status(204).end()
+  }
+
   if (action !== 'plausible') {
     const user = await authCheck(req)
     if (!user) return res.status(401).json({ error: 'unauthorized' })

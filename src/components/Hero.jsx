@@ -1,7 +1,6 @@
 import { useT } from '../i18n/LanguageContext'
 import { useContactModal } from '../context/ContactModalContext'
-import FadeIn from './FadeIn'
-import ProductionLine from './ProductionLine'
+import CtaButton from './CtaButton'
 
 const WA_URL = 'https://wa.me/972546894192'
 
@@ -18,38 +17,22 @@ export default function Hero() {
   const { openModal } = useContactModal()
 
   return (
-    <section id="home" className="hero2">
-      <div className="hero2__glow" aria-hidden="true" />
-      <div className="hero2__grid" aria-hidden="true" />
+    <section id="home" className="hero2 hero2--copy">
       <div className="hero2__inner">
-        <FadeIn delay={0.05} duration={0.7} y={16}>
-          <p className="eyebrow"><span className="eyebrow__dot" />{t('hero.badge')}</p>
-        </FadeIn>
-
-        <FadeIn delay={0.12} duration={0.8} y={32}>
-          <h1 className="hero2__title">{t('hero.heading')}</h1>
-        </FadeIn>
-
-        <FadeIn delay={0.25} duration={0.8} y={20}>
+        <div className="hero2__copy">
+          <h1 className="hero2__title">
+            <span>{t('hero.headingLine')}</span>
+            <span className="hero2__rest">{t('hero.headingRest')}</span>
+          </h1>
           <p className="hero2__sub">{t('hero.subtitle')}</p>
-        </FadeIn>
-
-        <FadeIn delay={0.38} duration={0.8} y={20}>
           <div className="hero2__actions">
-            <button type="button" className="btn btn--amber" onClick={openModal}>
-              <span>{t('hero.cta')}</span>
-            </button>
-            <a className="btn btn--ghost" href={WA_URL} target="_blank" rel="noopener noreferrer">
+            <CtaButton onClick={openModal}>{t('hero.cta')}</CtaButton>
+            <a className="hero2__wa" href={WA_URL} target="_blank" rel="noopener noreferrer">
               <WhatsAppIcon />
               <span>{t('hero.wa')}</span>
             </a>
           </div>
-          <p className="hero2__hint">{t('hero.ctaHint')}</p>
-        </FadeIn>
-
-        <FadeIn delay={0.5} duration={1} y={24}>
-          <ProductionLine />
-        </FadeIn>
+        </div>
       </div>
     </section>
   )

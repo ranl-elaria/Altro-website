@@ -1,3 +1,4 @@
+import { Link, useLocation } from 'react-router-dom'
 import LegalLayout from './LegalLayout'
 
 function Section({ title, children }) {
@@ -10,6 +11,7 @@ function Section({ title, children }) {
 }
 
 export default function Terms() {
+  const privacy = useLocation().pathname.startsWith("/he/") ? "/he/privacy" : "/privacy"
   return (
     <LegalLayout title="Terms of Service" lastUpdated="April 2026">
 
@@ -88,7 +90,7 @@ export default function Terms() {
           </li>
           <li>
             We will handle your submission in accordance with our{' '}
-            <a href="/privacy" className="legal-link">Privacy Policy</a>
+            <Link to={privacy} className="legal-link">Privacy Policy</Link>
           </li>
         </ul>
       </Section>
@@ -132,7 +134,7 @@ export default function Terms() {
       <Section title="9. Privacy">
         <p>
           Your use of the Site is also governed by our{' '}
-          <a href="/privacy" className="legal-link">Privacy Policy</a>, which is
+          <Link to={privacy} className="legal-link">Privacy Policy</Link>, which is
           incorporated into these Terms by reference.
         </p>
       </Section>

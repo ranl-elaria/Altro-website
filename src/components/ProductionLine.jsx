@@ -21,7 +21,7 @@ export default function ProductionLine() {
           <linearGradient id="pl-grad" x1={rtl ? 1 : 0} x2={rtl ? 0 : 1} y1="0" y2="0">
             <stop offset="0" stopColor="#0CB6B1" stopOpacity="0.15" />
             <stop offset="0.55" stopColor="#0DCFCA" />
-            <stop offset="1" stopColor="#F5A524" />
+            <stop offset="1" stopColor="#3ECDC8" />
           </linearGradient>
           <filter id="pl-blur" x="-10%" y="-200%" width="120%" height="500%">
             <feGaussianBlur stdDeviation="7" />

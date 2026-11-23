@@ -1,8 +1,8 @@
 import LegalLayout from './LegalLayout'
 
-function Section({ title, children }) {
+function Section({ title, children, id }) {
   return (
-    <section className="legal-section">
+    <section className="legal-section" id={id}>
       <h2 className="legal-section__title">{title}</h2>
       {children}
     </section>
@@ -60,7 +60,7 @@ export default function PrivacyPolicy() {
         </p>
       </Section>
 
-      <Section title="4. Cookies and Tracking">
+      <Section title="4. Cookies and Tracking" id="cookies">
         <p>
           Our website uses cookies in the following contexts:
         </p>

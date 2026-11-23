@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="We build automations, management systems and connections between your tools. Fixed price and scope, first working version within 4 weeks." />
-    <title>altro — automations and systems for your business</title>
+    <meta name="description" content="AltroAI develops systems and apps, automates business workflows, and helps organizations adopt AI." />
+    <title>AltroAI — automations and systems for your business</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -13,7 +13,7 @@
     <link rel="canonical" href="https://www.altroai.net/" />
 
     <!-- Theme color -->
-    <meta name="theme-color" content="#0C0C0C" />
+    <meta name="theme-color" content="#faf8f4" />
 
     <!-- hreflang -->
     <link rel="alternate" hreflang="en" href="https://www.altroai.net/" />
@@ -22,9 +22,9 @@
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="altro" />
-    <meta property="og:title" content="altro — automations and systems for your business" />
-    <meta property="og:description" content="We build automations, management systems and connections between your tools. Fixed price and scope, first working version within 4 weeks." />
+    <meta property="og:site_name" content="AltroAI" />
+    <meta property="og:title" content="AltroAI — automations and systems for your business" />
+    <meta property="og:description" content="AltroAI develops systems and apps, automates business workflows, and helps organizations adopt AI." />
     <meta property="og:url" content="https://www.altroai.net" />
     <meta property="og:image" content="https://www.altroai.net/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -32,8 +32,8 @@
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="altro — automations and systems for your business" />
-    <meta name="twitter:description" content="We build automations, management systems and connections between your tools. Fixed price and scope, first working version within 4 weeks." />
+    <meta name="twitter:title" content="AltroAI — automations and systems for your business" />
+    <meta name="twitter:description" content="AltroAI develops systems and apps, automates business workflows, and helps organizations adopt AI." />
     <meta name="twitter:image" content="https://www.altroai.net/og-image.png" />
 
     <!-- Structured Data: Organization -->
@@ -41,11 +41,11 @@
       {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "altro",
+        "name": "AltroAI",
         "alternateName": "Altro AI",
         "url": "https://www.altroai.net",
         "logo": "https://www.altroai.net/og-image.png",
-        "description": "We build automations, management systems and connections between your tools. Fixed price and scope, first working version within 4 weeks.",
+        "description": "AltroAI develops systems and apps, automates business workflows, and helps organizations adopt AI.",
         "email": "altroaiteam@gmail.com",
         "address": {
           "@type": "PostalAddress",
@@ -61,53 +61,13 @@
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "altro",
+        "name": "AltroAI",
         "url": "https://www.altroai.net",
         "inLanguage": ["en", "he"]
       }
     </script>
 
-    <!-- Structured Data: FAQPage -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "Do we need to replace our existing systems?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "No. We build on top of what you already use. Your team keeps working in the same tools — we just make them faster and better connected. No migrations, no disruption."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Is our business data safe?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Your data stays in your systems. We connect to them through secure, official APIs — the same way your bank connects to your accounting software. We never store your business data ourselves."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Why not just use off-the-shelf software?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Generic software is built for everyone, which means it fits nobody perfectly. Your team ends up working around its limitations. We build exactly what you need and nothing you don't — so it actually gets used."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Will we be dependent on you forever?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "You own everything we build: the code, the system, the data. We're happy to stay on for support, but the moment we're done you could hand it to any developer in the world. No black boxes, ever."
-            }
-          }
-        ]
-      }
-    </script>
+
 
     <!-- Analytics (self-built, consent-gated) -->
     <script>
@@ -126,9 +86,69 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Space+Grotesk:wght@400..700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@200;400;600;800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+Hebrew:wght@300;400;500;700;800&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet" />
+    <script>
+      (() => {
+        if (location.pathname.startsWith('/admin')) return;
+        try {
+          if (sessionStorage.getItem('altro_wordmark_intro') === '1') return;
+        } catch {}
+        document.documentElement.dataset.logoIntro = 'pending';
+      })();
+    </script>
+    <style>
+      #logo-intro { display: none; }
+      html[data-logo-intro] { background: #faf8f4; }
+      html[data-logo-intro] #root { visibility: hidden; }
+      html[data-logo-intro] #logo-intro {
+        position: fixed; inset: 0; z-index: 10000; display: grid;
+        place-items: center; background: #faf8f4;
+      }
+      #logo-intro .logo-intro__brand { position: relative; width: min(80vw, 460px); }
+      #logo-intro img { display: block; width: 100%; height: auto; }
+      #logo-intro .logo-intro__base { opacity: .16; }
+      #logo-intro .logo-intro__fill { position: absolute; inset: 0; clip-path: inset(0 91% 0 0); }
+      html[data-logo-intro="playing"] .logo-intro__fill {
+        animation: logo-intro-fill 2.35s cubic-bezier(.25,.7,.3,1) both;
+      }
+      @keyframes logo-intro-fill { to { clip-path: inset(0); } }
+      @media (prefers-reduced-motion: reduce) {
+        #logo-intro .logo-intro__fill { clip-path: none; animation: none !important; }
+      }
+    </style>
   </head>
   <body>
+    <div id="logo-intro" aria-hidden="true">
+      <div class="logo-intro__brand" dir="ltr">
+        <img class="logo-intro__base" src="/altro%20tranparent%20bg.png" alt="" width="2000" height="2000" />
+        <img class="logo-intro__fill" src="/altro%20tranparent%20bg.png" alt="" width="2000" height="2000" />
+      </div>
+    </div>
+    <script>
+      (() => {
+        const html = document.documentElement;
+        if (!html.dataset.logoIntro) return;
+        const logo = document.querySelector('#logo-intro .logo-intro__fill');
+        let ready = false;
+        let elapsed = false;
+        function reveal() {
+          if (!ready || !elapsed) return;
+          delete html.dataset.logoIntro;
+          try { sessionStorage.setItem('altro_wordmark_intro', '1'); } catch {}
+        }
+        window.addEventListener('altro:app-ready', () => { ready = true; reveal(); }, { once: true });
+        function start() {
+          html.dataset.logoIntro = 'playing';
+          window.setTimeout(() => { elapsed = true; reveal(); }, 3000);
+        }
+        if (logo.complete) start();
+        else {
+          logo.addEventListener('load', start, { once: true });
+          logo.addEventListener('error', start, { once: true });
+        }
+        window.setTimeout(() => { delete html.dataset.logoIntro; }, 15000);
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

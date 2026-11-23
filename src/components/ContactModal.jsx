@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { useContactModal } from '../context/ContactModalContext'
-import { useLanguage, useT } from '../i18n/LanguageContext'
+import { useT } from '../i18n/LanguageContext'
 import Contact from './Contact'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 export default function ContactModal() {
   const { isOpen, closeModal } = useContactModal()
-  const { lang } = useLanguage()
   const t = useT()
+  const reduce = useReducedMotion()
   const [showSuccess, setShowSuccess] = useState(false)
   const dialogRef = useRef(null)
   const previouslyFocused = useRef(null)
@@ -27,7 +27,6 @@ export default function ContactModal() {
     }, 2400)
   }
 
-  // ESC + focus trap + focus restoration
   useEffect(() => {
     if (!isOpen) return
 
@@ -57,22 +56,21 @@ export default function ContactModal() {
 
     document.addEventListener('keydown', handleKey)
 
-    // Focus first focusable in dialog
     requestAnimationFrame(() => {
       const dialog = dialogRef.current
       if (!dialog) return
+      const heading = dialog.querySelector('#contact-modal-heading')
+      if (heading) heading.setAttribute('tabindex', '-1')
       const focusables = dialog.querySelectorAll(FOCUSABLE)
       if (focusables.length > 0) focusables[0].focus()
     })
 
-    // Lock body scroll
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
     return () => {
       document.removeEventListener('keydown', handleKey)
       document.body.style.overflow = prevOverflow
-      // Restore focus
       if (previouslyFocused.current && typeof previouslyFocused.current.focus === 'function') {
         previouslyFocused.current.focus()
       }
@@ -83,96 +81,57 @@ export default function ContactModal() {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
+          className="contact-modal"
+          initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          exit={reduce ? undefined : { opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Backdrop */}
-          <motion.div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          <button
+            type="button"
+            className="contact-modal__backdrop"
             onClick={handleClose}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            aria-hidden="true"
+            aria-label={t('a11y.closeModal')}
           />
 
-          {/* Modal content */}
           <motion.div
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="contact-modal-heading"
-            className="relative bg-surface rounded-[32px] sm:rounded-[48px] w-full max-w-2xl max-h-[90vh] overflow-y-auto border-default"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="contact-modal__panel"
+            initial={reduce ? false : { y: 16 }}
+            animate={{ y: 0 }}
+            exit={reduce ? undefined : { y: 16 }}
+            transition={{ duration: 0.25 }}
           >
-            {/* Close button */}
             <button
+              type="button"
               onClick={handleClose}
-              className="absolute top-5 right-5 sm:top-8 sm:right-8 z-10 w-10 h-10 flex items-center justify-center rounded-full transition-colors text-secondary hover:bg-opacity-10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-              style={{ backgroundColor: 'rgba(215,226,234,0.05)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.1)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(215,226,234,0.05)'}
+              className="contact-modal__close"
               aria-label={t('a11y.closeModal')}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            {/* Success message overlay */}
             <AnimatePresence>
               {showSuccess && (
                 <motion.div
-                  className="absolute inset-0 bg-surface rounded-[32px] sm:rounded-[48px] flex flex-col items-center justify-center z-20"
-                  initial={{ opacity: 0 }}
+                  className="contact-modal__success"
+                  initial={reduce ? false : { opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
+                  exit={reduce ? undefined : { opacity: 0 }}
                   role="status"
                   aria-live="polite"
                 >
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.1 }}
-                  >
-                    <svg
-                      className="w-16 h-16 text-teal-500 mb-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
-                    className="text-center px-6"
-                  >
-                    <h3 className="text-2xl font-black mb-2 text-accent">{t('contact.successTitle')}</h3>
-                    <p className="text-sm text-secondary">
-                      {t('contact.successBody')}
-                    </p>
-                  </motion.div>
+                  <h3>{t('contact.successTitle')}</h3>
+                  <p>{t('contact.successBody')}</p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Form content */}
             <Contact isModal={true} onSubmitSuccess={handleSubmitSuccess} headingId="contact-modal-heading" />
           </motion.div>
         </motion.div>

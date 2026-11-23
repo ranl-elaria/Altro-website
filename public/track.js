@@ -15,6 +15,7 @@
   }
 
   function send(event, props) {
+    if (event === 'pageview') return
     var payload = JSON.stringify({
       event: event,
       props: props || {},
