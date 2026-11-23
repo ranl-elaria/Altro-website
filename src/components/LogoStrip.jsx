@@ -1,73 +1,40 @@
-import { useRef } from 'react'
-import {
-  motion,
-  useScroll,
-  useSpring,
-  useTransform,
-  useMotionValue,
-  useVelocity,
-  useAnimationFrame,
-} from 'motion/react'
-import { wrap } from 'motion'
+import { useReducedMotion } from 'motion/react'
 import { useT } from '../i18n/LanguageContext'
+import { CLIENTS } from '../lib/clients'
 
-const clients = [
-  { name: 'Ximus',            src: '/Ximus.png',                    dark: true },
-  { name: 'Quatro',           src: '/Logo Quatro.png' },
-  { name: 'Cliptov',          src: '/ClipTov.jpg' },
-  { name: 'Pocket Garden',    src: '/PocketGarden.JPG' },
-  { name: 'Zionist Investor', src: '/ZionistInvestor logo.jpeg' },
-]
-
-function VelocityRow({ baseVelocity = 3, children }) {
-  const baseX = useMotionValue(0)
-  const { scrollY } = useScroll()
-  const scrollVelocity = useVelocity(scrollY)
-  const smoothVelocity = useSpring(scrollVelocity, {
-    damping: 50,
-    stiffness: 400,
-  })
-  const velocityFactor = useTransform(smoothVelocity, [0, 1000], [0, 5], {
-    clamp: false,
-  })
-
-  const x = useTransform(baseX, (v) => `${wrap(-25, -75, v)}%`)
-
-  const directionFactor = useRef(1)
-  useAnimationFrame((_, delta) => {
-    let moveBy = directionFactor.current * baseVelocity * (delta / 1000)
-    if (velocityFactor.get() < 0) directionFactor.current = -1
-    else if (velocityFactor.get() > 0) directionFactor.current = 1
-    moveBy += directionFactor.current * moveBy * velocityFactor.get()
-    baseX.set(baseX.get() + moveBy)
-  })
-
+function LogoItem({ c }) {
   return (
-    <div className="logostrip__viewport">
-      <motion.div className="logostrip__row" style={{ x }}>
-        {children}
-        {children}
-        {children}
-        {children}
-      </motion.div>
-    </div>
+    <li>
+      <a
+        className={`logostrip__item${c.dark ? ' logostrip__item--dark' : ''}`}
+        href={c.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={c.name}
+      >
+        <img src={encodeURI(c.src)} alt="" loading="lazy" />
+      </a>
+    </li>
   )
 }
 
 export default function LogoStrip() {
   const t = useT()
-  const items = clients.map((c) => (
-    <div key={c.name} className={`logostrip__item${c.dark ? ' logostrip__item--dark' : ''}`}>
-      <img src={encodeURI(c.src)} alt={`${c.name} logo`} loading="lazy" />
-    </div>
-  ))
+  const reduce = useReducedMotion()
+  const loop = reduce ? CLIENTS : [...CLIENTS, ...CLIENTS]
 
   return (
-    <section className="logostrip" aria-label="Trusted by">
+    <section className="logostrip" aria-label={t('logos.eyebrow')}>
       <div className="container">
         <p className="logostrip__eyebrow">{t('logos.eyebrow')}</p>
       </div>
-      <VelocityRow baseVelocity={2}>{items}</VelocityRow>
+      <div className={`logostrip__viewport${reduce ? ' logostrip__viewport--static' : ''}`}>
+        <ul className={`logostrip__row${reduce ? '' : ' logostrip__row--marquee'}`}>
+          {loop.map((c, i) => (
+            <LogoItem key={`${c.name}-${i}`} c={c} />
+          ))}
+        </ul>
+      </div>
     </section>
   )
 }

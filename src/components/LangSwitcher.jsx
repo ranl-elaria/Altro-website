@@ -1,34 +1,44 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useLanguage, useT } from '../i18n/LanguageContext'
+
+function isPreviewPath(pathname) {
+  return pathname === '/preview' || pathname.startsWith('/preview/') || pathname === '/he/preview' || pathname.startsWith('/he/preview/')
+}
+
+function isOverstoryPath(pathname) {
+  return pathname === '/overstory' || pathname.startsWith('/overstory/') || pathname === '/he/overstory' || pathname.startsWith('/he/overstory/')
+}
 
 export default function LangSwitcher() {
   const { lang } = useLanguage()
   const t = useT()
-  const navigate = useNavigate()
-
-  const handleLangChange = (newLang) => {
-    navigate(newLang === 'he' ? '/he/' : '/')
-  }
+  const { pathname } = useLocation()
+  const preview = isPreviewPath(pathname)
+  const overstory = isOverstoryPath(pathname)
+  const enTo = preview ? '/preview' : overstory ? '/overstory' : '/'
+  const heTo = preview ? '/he/preview' : overstory ? '/he/overstory' : '/he/'
 
   return (
     <div className="lang-switcher" role="group" aria-label={t('a11y.langSelector')}>
-      <button
-        className={`lang-switcher__btn${lang === 'en' ? ' lang-switcher__btn--active' : ''}`}
-        onClick={() => handleLangChange('en')}
-        aria-pressed={lang === 'en'}
+      <Link
+        to={enTo}
+        hrefLang="en"
         lang="en"
+        className={`lang-switcher__btn${lang === 'en' ? ' lang-switcher__btn--active' : ''}`}
+        aria-current={lang === 'en' ? 'page' : undefined}
       >
         EN
-      </button>
+      </Link>
       <span className="lang-switcher__sep" aria-hidden="true">/</span>
-      <button
-        className={`lang-switcher__btn${lang === 'he' ? ' lang-switcher__btn--active' : ''}`}
-        onClick={() => handleLangChange('he')}
-        aria-pressed={lang === 'he'}
+      <Link
+        to={heTo}
+        hrefLang="he"
         lang="he"
+        className={`lang-switcher__btn${lang === 'he' ? ' lang-switcher__btn--active' : ''}`}
+        aria-current={lang === 'he' ? 'page' : undefined}
       >
         עב
-      </button>
+      </Link>
     </div>
   )
 }

@@ -1,28 +1,64 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { useLanguage } from '../i18n/LanguageContext'
 import FadeIn from './FadeIn'
+import CtaButton from './CtaButton'
 
 export default function Contact({ isModal = false, onSubmitSuccess, headingId }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
   const [status, setStatus] = useState('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const { t, lang } = useLanguage()
-  const isHe = lang === 'he'
+  const { t } = useLanguage()
 
   const nameId = useId()
   const emailId = useId()
   const phoneId = useId()
   const messageId = useId()
   const statusId = useId()
+  const submittingRef = useRef(false)
 
-  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  const handleChange = (e) => {
+    e.target.setCustomValidity('')
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  const handleInvalid = (e) => {
+    e.preventDefault()
+    const field = e.target
+    if (field !== e.currentTarget.querySelector("input:invalid, textarea:invalid")) return
+    const msg = field.type === 'email' && field.validity.typeMismatch
+      ? t('contact.invalidEmail')
+      : t('contact.invalidRequired')
+    field.setCustomValidity(msg)
+    setErrorMsg(msg)
+    setStatus('error')
+    field.focus()
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    e.stopPropagation()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setStatus('loading')
     setErrorMsg('')
     try {
+      const mock = import.meta.env.DEV
+        ? new URLSearchParams(window.location.search).get('mockForm')
+        : null
+      if (mock === 'ok') {
+        await new Promise((r) => setTimeout(r, 200))
+        setStatus('success')
+        setForm({ name: '', email: '', phone: '', message: '' })
+        if (onSubmitSuccess) onSubmitSuccess()
+        return
+      }
+      if (mock === 'err') {
+        await new Promise((r) => setTimeout(r, 200))
+        setErrorMsg(t('contact.errorDefault'))
+        setStatus('error')
+        return
+      }
       // Capture attribution: UTM params from URL + referrer + cookies set by analytics
       const url = new URL(window.location.href)
       const cookieGet = (k) => {
@@ -44,11 +80,17 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         body: JSON.stringify({
           name: form.name,
           email: form.email,
-          message: form.phone.trim() ? `${form.message}\n\nPhone / WhatsApp: ${form.phone.trim()}` : form.message,
+          phone: form.phone.trim() || null,
+          message: form.message,
           attribution,
         }),
       })
-      const data = await res.json()
+      let data = {}
+      try {
+        data = await res.json()
+      } catch {
+        data = {}
+      }
       if (!res.ok) {
         setErrorMsg(data.error ?? t('contact.errorDefault'))
         setStatus('error')
@@ -60,6 +102,8 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
     } catch {
       setErrorMsg(t('contact.errorNetwork'))
       setStatus('error')
+    } finally {
+      submittingRef.current = false
     }
   }
 
@@ -69,15 +113,25 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         {label} {req ? <span className="form2__req">{t('contact.required')}</span> : <span className="form2__opt">{t('contact.optional')}</span>}
       </label>
       <input id={id} type={type} name={name} value={form[name]} onChange={handleChange} placeholder={ph}
-        className="form2__input" required={req} aria-required={req ? 'true' : undefined} {...extra} />
+        className="form2__input" required={req} aria-required={req ? 'true' : undefined}
+        disabled={status === 'loading'}
+        spellCheck={type === 'email' || type === 'tel' ? false : undefined} {...extra} />
     </div>
   )
 
   const formEl = (
-    <form onSubmit={handleSubmit} className="form2" noValidate={false}>
+    <form
+      method="post"
+      action="/api/submit"
+      onSubmit={handleSubmit}
+      onInvalid={handleInvalid}
+      className={`form2${isModal ? ' form2--on-light' : ' form2--on-dark'}`}
+      noValidate={false}
+      aria-busy={status === 'loading'}
+    >
       {field(nameId, 'name', 'text', t('contact.labelName'), t('contact.placeholderName'), true, { autoComplete: 'name' })}
       <div className="form2__row">
-        {field(phoneId, 'phone', 'tel', t('contact.labelPhone'), t('contact.placeholderPhone'), false, { autoComplete: 'tel', dir: 'ltr' })}
+        {field(phoneId, 'phone', 'tel', t('contact.labelPhone'), t('contact.placeholderPhone'), false, { autoComplete: 'tel', dir: 'ltr', inputMode: 'tel' })}
         {field(emailId, 'email', 'email', t('contact.labelEmail'), t('contact.placeholderEmail'), true, { autoComplete: 'email', dir: 'ltr' })}
       </div>
       <div className="form2__field">
@@ -85,7 +139,8 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
           {t('contact.labelMessage')} <span className="form2__req">{t('contact.required')}</span>
         </label>
         <textarea id={messageId} name="message" value={form.message} onChange={handleChange}
-          placeholder={t('contact.placeholderMessage')} rows="4" className="form2__input form2__textarea" required aria-required="true" />
+          placeholder={t('contact.placeholderMessage')} rows="4" className="form2__input form2__textarea" required aria-required="true"
+          disabled={status === 'loading'} />
       </div>
 
       <div id={statusId} aria-live="polite" aria-atomic="true">
@@ -94,9 +149,9 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
       </div>
 
       <div className="form2__actions">
-        <button type="submit" className="btn btn--amber" disabled={status === 'loading'} aria-describedby={statusId}>
+        <CtaButton type="submit" disabled={status === 'loading'}>
           {status === 'loading' ? t('contact.submitting') : t('contact.submit')}
-        </button>
+        </CtaButton>
         <p className="form2__hint">{t('contact.ctaHint')}</p>
       </div>
     </form>
@@ -120,6 +175,10 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         </FadeIn>
         <FadeIn delay={0.15} duration={0.8} y={32}>
           <div className="closing2__card">{formEl}</div>
+          <ul className="closing2__ways">
+            <li><a href="https://wa.me/972546894192" target="_blank" rel="noopener noreferrer">{t('hero.wa')}</a></li>
+            <li><a href="mailto:altroaiteam@gmail.com">altroaiteam@gmail.com</a></li>
+          </ul>
         </FadeIn>
       </div>
     </section>

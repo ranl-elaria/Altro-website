@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useT } from '../i18n/LanguageContext'
+import { Link } from 'react-router-dom'
+import { useT, useLanguage } from '../i18n/LanguageContext'
 
 const STORAGE_KEY = 'altro_cookie_consent'
 const ANALYTICS_KEY = 'altro_analytics_consent'
@@ -7,11 +8,18 @@ const ANALYTICS_KEY = 'altro_analytics_consent'
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
   const t = useT()
+  const { lang } = useLanguage()
+  const privacyHref = lang === 'he' ? '/he/privacy#cookies' : '/privacy#cookies'
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (!saved) setVisible(true)
   }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('has-cookie-banner', visible)
+    return () => document.documentElement.classList.remove('has-cookie-banner')
+  }, [visible])
 
   const accept = () => {
     localStorage.setItem(STORAGE_KEY, 'accepted')
@@ -33,26 +41,25 @@ export default function CookieBanner() {
   return (
     <div
       className="cookie-banner"
-      role="dialog"
-      aria-live="polite"
+      role="region"
       aria-label={t('cookie.ariaLabel')}
     >
       <p className="cookie-banner__text">
         {t('cookie.text')}{' '}
-        <a href="/privacy#cookies" className="cookie-banner__link">{t('cookie.learnMore')}</a>
+        <Link to={privacyHref} className="cookie-banner__link">{t('cookie.learnMore')}</Link>
       </p>
       <div className="cookie-banner__actions">
         <button
+          type="button"
           className="cookie-banner__btn cookie-banner__btn--decline"
           onClick={decline}
-          aria-label={t('cookie.ariaDecline')}
         >
           {t('cookie.decline')}
         </button>
         <button
+          type="button"
           className="cookie-banner__btn cookie-banner__btn--accept"
           onClick={accept}
-          aria-label={t('cookie.ariaAccept')}
         >
           {t('cookie.accept')}
         </button>
