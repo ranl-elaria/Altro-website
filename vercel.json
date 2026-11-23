@@ -3,26 +3,74 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "crons": [
-    { "path": "/api/sync-xplace", "schedule": "0 8 * * *" },
-    { "path": "/api/marketing/services/competitors-snapshot-all", "schedule": "0 6 * * 0" },
-    { "path": "/api/finance/fx-refresh", "schedule": "0 5 * * *" },
-    { "path": "/api/finance/overdue-check", "schedule": "0 7 * * *" },
-    { "path": "/api/crm-retry", "schedule": "0 4 * * *" }
+    {
+      "path": "/api/sync-xplace",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/marketing/services/competitors-snapshot-all",
+      "schedule": "0 6 * * 0"
+    },
+    {
+      "path": "/api/finance/fx-refresh",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/finance/overdue-check",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/sales/crm-retry",
+      "schedule": "0 4 * * *"
+    }
   ],
   "redirects": [
-    { "source": "/en", "destination": "/", "permanent": false },
-    { "source": "/en/", "destination": "/", "permanent": false },
-    { "source": "/en/:path*", "destination": "/:path*", "permanent": false }
+    {
+      "source": "/en",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/en/",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/en/:path*",
+      "destination": "/:path*",
+      "permanent": false
+    }
   ],
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
+  "rewrites": [
+    {
+      "source": "/api/track",
+      "destination": "/api/analytics?action=track"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
         {
           "key": "Permissions-Policy",
           "value": "camera=(), geolocation=(), payment=(), microphone=(self)"
@@ -39,12 +87,26 @@
     },
     {
       "source": "/preview",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     },
     {
       "source": "/he/preview",
-      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ],
-  "functions": { "api/crm-retry.js": { "maxDuration": 60 } }
+  "functions": {
+    "api/sales/[action].js": {
+      "maxDuration": 60
+    }
+  }
 }
