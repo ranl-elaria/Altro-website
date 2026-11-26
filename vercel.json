@@ -43,6 +43,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/crm-retry",
+      "destination": "/api/sales/crm-retry"
+    },
+    {
       "source": "/api/track",
       "destination": "/api/analytics?action=track"
     },
@@ -105,6 +109,9 @@
     }
   ],
   "functions": {
+    "api/submit.js": {
+      "maxDuration": 60
+    },
     "api/sales/[action].js": {
       "maxDuration": 60
     }

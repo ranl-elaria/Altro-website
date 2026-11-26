@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { useLanguage } from '../i18n/LanguageContext'
+import { contactAttempt, clearContactAttempt } from '../lib/contact-attempt.js'
 import FadeIn from './FadeIn'
 import CtaButton from './CtaButton'
 
@@ -16,6 +17,7 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
   const messageId = useId()
   const statusId = useId()
   const submittingRef = useRef(false)
+  const attemptRef = useRef(null)
 
   const handleChange = (e) => {
     e.target.setCustomValidity('')
@@ -74,10 +76,13 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
         referrer: document.referrer || null,
         landing_path: url.pathname,
       }
+      const attempt = await contactAttempt(form, attemptRef.current)
+      attemptRef.current = attempt
       const res = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          external_id: attempt.id,
           name: form.name,
           email: form.email,
           phone: form.phone.trim() || null,
@@ -91,10 +96,12 @@ export default function Contact({ isModal = false, onSubmitSuccess, headingId })
       } catch {
         data = {}
       }
-      if (!res.ok) {
+      if (!res.ok || data.success !== true || data.external_id !== attempt.id) {
         setErrorMsg(data.error ?? t('contact.errorDefault'))
         setStatus('error')
       } else {
+        clearContactAttempt(attempt)
+        attemptRef.current = null
         setStatus('success')
         setForm({ name: '', email: '', phone: '', message: '' })
         if (onSubmitSuccess) onSubmitSuccess()

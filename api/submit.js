@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { deliverLead, payload } from '../src/lib/sales/crm-delivery.js'
+import { CRM_REQUEST_TIMEOUT_MS, deliverLead, payload } from '../src/lib/sales/crm-delivery.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -54,6 +54,8 @@ export default async function handler(req, res) {
   const email   = body.email?.trim().toLowerCase()
   const message = body.message?.trim()
   const phone = body.phone?.trim() || null
+  if (body.external_id != null && (typeof body.external_id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.external_id))) return res.status(400).json({ error: 'Invalid external_id' })
+  const externalId = body.external_id?.toLowerCase() || crypto.randomUUID()
   const rawAttribution = body.attribution ?? {}
   if (!rawAttribution || typeof rawAttribution !== 'object' || Array.isArray(rawAttribution)) return res.status(400).json({ error: 'Invalid attribution' })
   const attribution = {}
@@ -76,7 +78,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Missing server env vars: CRM_LEADS_URL and CRM_LEADS_TOKEN, or Supabase' })
     }
     try {
-      const row = { id: crypto.randomUUID(), created_at: new Date().toISOString(), name, company, email, phone, message, attribution }
+      const row = { id: externalId, created_at: new Date().toISOString(), name, company, email, phone, message, attribution }
       const endpoint = new URL(process.env.CRM_LEADS_URL)
       if (endpoint.protocol !== 'https:' || process.env.CRM_LEADS_TOKEN.length < 32) throw Error('Invalid CRM configuration')
       const response = await fetch(endpoint.href, {
@@ -84,12 +86,12 @@ export default async function handler(req, res) {
         redirect: 'error',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.CRM_LEADS_TOKEN}` },
         body: JSON.stringify(payload(row)),
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(CRM_REQUEST_TIMEOUT_MS),
       })
       if (!response.ok) throw Error('crm_http')
       const ack = await response.json()
       if (ack.accepted !== true || ack.external_id !== row.id) throw Error('crm_ack')
-      return res.status(200).json({ success: true })
+      return res.status(200).json({ success: true, external_id: externalId })
     } catch {
       return res.status(500).json({ error: 'Could not save enquiry. Please try again.' })
     }
@@ -97,14 +99,22 @@ export default async function handler(req, res) {
 
   const { data: submission, error: dbError } = await supabase
     .from('submissions')
-    .insert({ name, company, email, phone, message, attribution, crm_status: 'pending', crm_next_attempt_at: new Date().toISOString() }).select('*').single()
+    .insert({ id: externalId, name, company, email, phone, message, attribution, crm_status: 'pending', crm_next_attempt_at: new Date().toISOString() }).select('*').single()
 
+  if (dbError?.code === '23505') {
+    const { data: existing, error: readError } = await supabase.from('submissions').select('*').eq('id', externalId).single()
+    if (readError || !existing) return res.status(503).json({ error: 'Could not confirm enquiry. Retry the same form.' })
+    if (existing.name !== name || existing.email !== email || existing.message !== message || (existing.phone || null) !== phone || (existing.company || null) !== company) return res.status(409).json({ error: 'This submission identifier belongs to a different enquiry.' })
+    try { await deliverLead(supabase, existing) } catch { console.error('CRM delivery remains queued') }
+    return res.status(200).json({ success: true, external_id: externalId, duplicate: true })
+  }
   if (dbError || !submission) {
     console.error('Submission save failed:', dbError?.code)
     return res.status(500).json({ error: 'Could not save enquiry. Please try again.' })
   }
-  try { await deliverLead(supabase, submission) }
-  catch { console.error('CRM delivery deferred; saved enquiry remains queued') }
+  const crmDelivery = deliverLead(supabase, submission).catch(() => {
+    console.error('CRM delivery deferred; saved enquiry remains queued')
+  })
 
   // Log conversion event tagged with utm_campaign so MEASURE can attribute
   if (attribution.utm_campaign) {
@@ -227,5 +237,6 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(200).json({ success: true })
+  await crmDelivery
+  return res.status(200).json({ success: true, external_id: externalId })
 }

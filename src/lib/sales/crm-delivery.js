@@ -1,4 +1,5 @@
 const MAX_ATTEMPTS = 8
+export const CRM_REQUEST_TIMEOUT_MS = 56_000
 export function payload(row) {
   const a = row.attribution || {}
   return { external_id: row.id, source: 'altroai.net', name: row.name, company: row.company,
@@ -22,7 +23,7 @@ export async function deliverLead(db, row, env = process.env, send = fetch) {
   if (!claimed) return { skipped: true }
   let status = 'pending', lastError = null
   try {
-    const response = await send(endpoint.href, {method:'POST',redirect:'error',headers:{'Content-Type':'application/json',Authorization:`Bearer ${env.CRM_LEADS_TOKEN}`},body:JSON.stringify(payload(row)),signal:AbortSignal.timeout(4000)})
+    const response = await send(endpoint.href, {method:'POST',redirect:'error',headers:{'Content-Type':'application/json',Authorization:`Bearer ${env.CRM_LEADS_TOKEN}`},body:JSON.stringify(payload(row)),signal:AbortSignal.timeout(CRM_REQUEST_TIMEOUT_MS)})
     if (response.ok) {
       const ack = await response.json()
       if (ack.accepted === true && ack.external_id === row.id) status = 'delivered'
